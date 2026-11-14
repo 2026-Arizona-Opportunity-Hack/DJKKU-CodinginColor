@@ -11,7 +11,6 @@ import type {
   Activity,
   Assessment,
   AssessmentResult,
-  ClaimResult,
   ClassOutline,
   HintResult,
   ImportResult,
@@ -19,7 +18,6 @@ import type {
   MyProgress,
   NextActivity,
   OpenModule,
-  RosterSeat,
   SelfRegisterResult,
   SubmitResult,
 } from './types'
@@ -30,12 +28,9 @@ export type Me = { display_name: string; class_id: string; class_name: string }
 export interface StudentApi {
   readonly source: 'mock' | 'supabase'
 
-  // Session
+  // Session (signing in is the auth feature's job, at /sign-in)
   getMe(): Promise<Me | null>
   signOut(): Promise<void>
-  claimLoginCode(code: string): Promise<ClaimResult>
-  listJoinRoster(joinCode: string): Promise<RosterSeat[]>
-  claimRosterSeat(joinCode: string, memberId: string): Promise<ClaimResult>
 
   // Learning
   getMyClasses(): Promise<MyClass[]>

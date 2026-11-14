@@ -62,7 +62,7 @@ describe('B14 diagnostics', () => {
 
   it('maps server errors to codes in one place', () => {
     expect(fromRpcError({ message: 'locked', code: 'P0001' }, 'r').code).toBe('locked')
-    expect(fromRpcError({ message: 'boom', hint: 'invalid_code' }, 'r').code).toBe('invalid_code')
+    expect(fromRpcError({ message: 'boom', hint: 'already_taken' }, 'r').code).toBe('already_taken')
     expect(fromRpcError({ message: 'jwt expired', code: 'PGRST301' }, 'r').code).toBe('unauthenticated')
     expect(fromRpcError({ message: 'TypeError: Failed to fetch' }, 'r').code).toBe('offline')
     expect(fromHttpStatus(429, 'r').code).toBe('rate_limited')

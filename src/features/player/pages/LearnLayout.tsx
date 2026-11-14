@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router'
 
 import { ErrorState, PageSkeleton } from '@/features/player/components/states'
+import { GuestImportNotice } from '@/features/player/components/GuestImportNotice'
 import { StudentLayout } from '@/features/player/components/StudentLayout'
 import { describeError } from '@/features/player/errors'
 import { paths } from '@/features/player/outline'
@@ -23,9 +24,10 @@ export function LearnLayout() {
       </StudentLayout>
     )
   }
-  if (!me.data) return <Navigate to={paths.start} replace />
+  if (!me.data) return <Navigate to={paths.signIn} replace />
   return (
     <StudentLayout me={me.data}>
+      <GuestImportNotice />
       <Outlet />
     </StudentLayout>
   )

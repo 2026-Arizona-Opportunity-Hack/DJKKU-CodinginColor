@@ -7,10 +7,11 @@ import { describe, expect, it, vi } from 'vitest'
 import { ApiError } from '@/features/player/errors'
 import { GUEST_STORAGE_KEY, markGuestCompleted, readGuestProgress } from '@/features/player/guestProgress'
 import { log } from '@/lib/log'
-import { expectNoSeriousA11yViolations, mockApi, renderRoute } from '@/features/player/test/render'
+import { expectNoSeriousA11yViolations, MAYA, mockApi, renderRoute } from '@/features/player/test/render'
 
 import { ExplorePage } from '../pages/ExplorePage'
 import { GuestActivityPage } from '../pages/GuestActivityPage'
+import { LearnLayout } from '../pages/LearnLayout'
 import { SaveProgressPage } from '../pages/SaveProgressPage'
 
 describe('B3 guest progress storage', () => {
@@ -62,52 +63,56 @@ describe('B4 self-register', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Save my progress' }))
   }
 
-  it('registers, shows the code once, signs in and merges device progress exactly once', async () => {
+  it('registers once, shows the code with a link to sign in, and keeps device progress for the merge', async () => {
     markGuestCompleted('act-vars-video')
     const api = mockApi()
-    const importSpy = vi.spyOn(api, 'importGuestProgress')
-    const { container } = renderRoute(<SaveProgressPage />, { path: '/explore/save', url: '/explore/save', api })
+    const registerSpy = vi.spyOn(api, 'selfRegister')
+    const { container } = renderRoute(<SaveProgressPage />, { path: '/learn/explore/save', url: '/learn/explore/save', api })
     await register('Sam P.')
-    expect(await screen.findByText(/GREEN-OWL-41/)).toBeInTheDocument()
-    expect(screen.getByText(/Write this down or print it/)).toBeInTheDocument()
-    expect(screen.getByText(/copied 1 finished activity/)).toBeInTheDocument()
-    expect(importSpy).toHaveBeenCalledTimes(1)
-    expect(await api.getMe()).toMatchObject({ display_name: 'Sam P.' })
-    expect(readGuestProgress().completed).toEqual({}) // merged, so cleared from the device
+    expect(await screen.findByText('GREEN-OWL-41')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Sign in with this code' })).toHaveAttribute('href', '/sign-in')
+    expect(registerSpy).toHaveBeenCalledTimes(1)
+    expect(readGuestProgress().completed['act-vars-video']).toBeDefined()
     await expectNoSeriousA11yViolations(container)
   })
 
   it('rejects emails and links on the client', async () => {
     const api = mockApi()
     const spy = vi.spyOn(api, 'selfRegister')
-    renderRoute(<SaveProgressPage />, { path: '/explore/save', url: '/explore/save', api })
+    renderRoute(<SaveProgressPage />, { path: '/learn/explore/save', url: '/learn/explore/save', api })
     await register('sam@example.com')
     expect(await screen.findByText('Leave out email addresses.')).toBeInTheDocument()
     expect(screen.getByLabelText('Display name')).toHaveAttribute('aria-invalid', 'true')
     expect(spy).not.toHaveBeenCalled()
   })
 
-  it('shows a friendly message on 429 and does not merge', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+  it('shows a friendly message on 429 and keeps the name in the form', async () => {
+    vi.spyOn(log, 'error').mockImplementation(() => {})
     const api = mockApi()
     vi.spyOn(api, 'selfRegister').mockRejectedValue(new ApiError('rate_limited', { status: 429, requestId: 'ratelimit-1' }))
-    const importSpy = vi.spyOn(api, 'importGuestProgress')
-    renderRoute(<SaveProgressPage />, { path: '/explore/save', url: '/explore/save', api })
+    renderRoute(<SaveProgressPage />, { path: '/learn/explore/save', url: '/learn/explore/save', api })
     await register('Sam P.')
     expect(await screen.findByText(/Too many tries right now/)).toBeInTheDocument()
-    expect(importSpy).not.toHaveBeenCalled()
     expect(screen.getByLabelText('Display name')).toHaveValue('Sam P.')
   })
 
-  it('still shows the code if only the merge fails, and keeps device progress', async () => {
+  it('after sign-in, merges device progress exactly once and clears it', async () => {
+    markGuestCompleted('act-vars-video')
+    const api = mockApi({ me: MAYA })
+    const importSpy = vi.spyOn(api, 'importGuestProgress')
+    renderRoute(<LearnLayout />, { path: '/learn', url: '/learn', api })
+    expect(await screen.findByText(/We copied 1 finished activity/)).toBeInTheDocument()
+    expect(importSpy).toHaveBeenCalledTimes(1)
+    expect(readGuestProgress().completed).toEqual({})
+  })
+
+  it('if the merge fails, says so and keeps device progress', async () => {
     const logged = vi.spyOn(log, 'error').mockImplementation(() => {})
     markGuestCompleted('act-vars-video')
-    const api = mockApi()
+    const api = mockApi({ me: MAYA })
     vi.spyOn(api, 'importGuestProgress').mockRejectedValue(new ApiError('unavailable', { requestId: 'imp-1' }))
-    renderRoute(<SaveProgressPage />, { path: '/explore/save', url: '/explore/save', api })
-    await register('Sam P.')
-    expect(await screen.findByText(/GREEN-OWL-41/)).toBeInTheDocument()
-    expect(screen.getByText(/didn't copy over/)).toBeInTheDocument()
+    renderRoute(<LearnLayout />, { path: '/learn', url: '/learn', api })
+    expect(await screen.findByText(/didn't copy over/)).toBeInTheDocument()
     expect(readGuestProgress().completed['act-vars-video']).toBeDefined()
     expect(logged).toHaveBeenCalledWith('student.guest.import.fail', expect.objectContaining({ requestId: 'imp-1' }))
   })
@@ -121,21 +126,18 @@ describe('review fixes', () => {
     for (const link of screen.getAllByRole('link')) expect(link.getAttribute('href')).toMatch(/^\/learn\//)
   })
 
-  it('keeps and shows the new code when sign-in fails, and a retry re-uses it (no second account)', async () => {
-    vi.spyOn(log, 'error').mockImplementation(() => {})
+  it('keeps the issued code across a reload, so a second click cannot create a second account', async () => {
     const api = mockApi()
-    const register = vi.spyOn(api, 'selfRegister')
-    const claim = vi.spyOn(api, 'claimLoginCode').mockRejectedValueOnce(new ApiError('unavailable', { requestId: 'claim-1' }))
-    renderRoute(<SaveProgressPage />, { path: '/learn/explore/save', url: '/learn/explore/save', api })
+    const registerSpy = vi.spyOn(api, 'selfRegister')
+    const first = renderRoute(<SaveProgressPage />, { path: '/learn/explore/save', url: '/learn/explore/save', api })
     await userEvent.type(screen.getByLabelText('Display name'), 'Sam P.')
     await userEvent.click(screen.getByRole('button', { name: 'Save my progress' }))
+    await screen.findByText('GREEN-OWL-41')
+    first.unmount()
+    renderRoute(<SaveProgressPage />, { path: '/learn/explore/save', url: '/learn/explore/save', api })
     expect(await screen.findByText('GREEN-OWL-41')).toBeInTheDocument()
-    expect(await screen.findByText(/isn't available right now/)).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Try signing in again' }))
-    expect(await screen.findByText('Your progress is saved')).toBeInTheDocument()
-    expect(register).toHaveBeenCalledTimes(1)
-    expect(claim).toHaveBeenCalledTimes(2)
-    expect(claim).toHaveBeenLastCalledWith('GREEN-OWL-41')
+    expect(screen.queryByLabelText('Display name')).toBeNull()
+    expect(registerSpy).toHaveBeenCalledTimes(1)
   })
 
   it('blocked storage never crashes: reads return empty, writes are no-ops, one warn', () => {

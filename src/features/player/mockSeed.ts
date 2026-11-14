@@ -4,7 +4,7 @@
  * authored shape (content + key) and split with lane C's splitQuestion(), so the mock
  * hands out exactly what the real server would and keeps keys to itself.
  *
- * Demo codes: login code BLUE-FOX-27 (Maya R.), join code SAT-CODERS.
+ * The mock starts signed in as SEED_STUDENT (Maya R., login code BLUE-FOX-27).
  */
 import type { AuthoredQuestion } from '@shared/authoring/schemas'
 
@@ -31,15 +31,8 @@ export type SeedModule = {
 }
 
 export const SEED_CLASS = { class_id: 'class-sat', class_name: 'Saturday Coders', kind: 'cohort' } as const
-export const SEED_LOGIN_CODES: Record<string, { member_id: string; display_name: string }> = {
-  'BLUE-FOX-27': { member_id: 'm-maya', display_name: 'Maya R.' },
-}
-export const SEED_JOIN_CODE = 'SAT-CODERS'
-export const SEED_ROSTER = [
-  { member_id: 'm-jordan', label: 'Jordan T.' },
-  { member_id: 'm-ava', label: 'Ava K.' },
-  { member_id: 'm-luis', label: 'Luis M.' },
-]
+/** The demo student the mock starts signed in as (login code BLUE-FOX-27 in the shared demo data). */
+export const SEED_STUDENT = { display_name: 'Maya R.', class_id: SEED_CLASS.class_id, class_name: SEED_CLASS.class_name }
 
 const hints = ['Re-read the question and underline the key word.', 'Look back at the example in this lesson.', 'Try the simplest case first.']
 

@@ -12,15 +12,14 @@ import { ActivityContentSchema } from './content'
 export const ItemStatus = z.enum(['locked', 'available', 'done'])
 export type ItemStatus = z.infer<typeof ItemStatus>
 
-export const ClaimResult = z.object({
+/** Who is signed in (get_me). */
+export const MeSchema = z.object({
   class_id: z.string(),
   class_name: z.string(),
   display_name: z.string(),
 })
-export type ClaimResult = z.infer<typeof ClaimResult>
 
-export const RosterSeat = z.object({ member_id: z.string(), label: z.string() })
-export type RosterSeat = z.infer<typeof RosterSeat>
+
 
 export const MyClass = z.object({ class_id: z.string(), class_name: z.string(), kind: z.string() })
 export type MyClass = z.infer<typeof MyClass>

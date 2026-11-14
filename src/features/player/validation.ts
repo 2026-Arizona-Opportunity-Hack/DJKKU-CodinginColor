@@ -9,10 +9,3 @@ export const DisplayNameSchema = z
   .refine((s) => !/\S+@\S+/.test(s), 'Leave out email addresses.')
   .refine((s) => !/(https?:\/\/|www\.|\b[a-z0-9-]+\.(com|org|net|io|dev|edu|gov)\b)/i.test(s), 'Leave out links.')
 
-/** Login and join codes: letters, digits and dashes. The server is the authority. */
-export const CodeSchema = z
-  .string()
-  .trim()
-  .min(4, 'Enter the full code.')
-  .max(32, 'That code is too long.')
-  .regex(/^[A-Za-z0-9 -]+$/, 'Codes use only letters, numbers and dashes.')

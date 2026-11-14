@@ -11,15 +11,14 @@ import { log } from '@/lib/log'
 import { newRequestId } from '@/lib/requestId'
 import { getSupabase } from '@/lib/supabase'
 
-import { safeGet, safeParse, safeRemove, safeSet } from './safeStorage'
 
-import type { Me, StudentApi } from './api'
+import type { StudentApi } from './api'
 import { ApiError, fromHttpStatus, fromRpcError, isOnline } from './errors'
 import {
   Activity,
   Assessment,
   AssessmentResult,
-  ClaimResult,
+  MeSchema,
   ClassOutline,
   HintResult,
   ImportResult,
@@ -27,13 +26,11 @@ import {
   MyProgress,
   NextActivity,
   OpenModule,
-  RosterSeat,
   SelfRegisterResult,
   SubmitResult,
 } from './types'
 
 const TIMEOUT_MS = 15_000
-const ME_KEY = 'cic.me.v1'
 
 function parse<S extends z.ZodTypeAny>(schema: S, data: unknown, requestId: string, fn: string): z.infer<S> {
   const parsed = schema.safeParse(data)
@@ -94,44 +91,19 @@ export function createSupabaseApi(sb: SupabaseClient = getSupabase()): StudentAp
     return parse(schema, json, serverId, path)
   }
 
-  /** Students without an account get an anonymous Supabase user; claiming a code binds it. */
-  async function ensureSession(): Promise<void> {
-    const { data } = await sb.auth.getSession()
-    if (data.session) return
-    const { error } = await sb.auth.signInAnonymously()
-    if (error) throw fromRpcError(error, newRequestId())
-  }
-
-  /** Cache who signed in. A failed write only loses the "Signed in as" label; it never fails the claim. */
-  function remember(me: Me): Me {
-    safeSet(ME_KEY, JSON.stringify(me))
-    return me
-  }
-
   return {
     source: 'supabase',
 
     async getMe() {
       const { data } = await sb.auth.getSession()
       if (!data.session) return null
-      const parsed = ClaimResult.safeParse(safeParse(safeGet(ME_KEY)))
-      return parsed.success ? parsed.data : null
+      // PROPOSED lane A RPC get_me() -> {display_name, class_id, class_name}.
+      return rpc('get_me', {}, MeSchema.nullable())
     },
 
     async signOut() {
-      safeRemove(ME_KEY)
       const { error } = await sb.auth.signOut()
       if (error) throw fromRpcError(error, newRequestId())
-    },
-
-    async claimLoginCode(code) {
-      await ensureSession()
-      return remember(await rpc('claim_login_code', { p_code: code }, ClaimResult))
-    },
-    listJoinRoster: (joinCode) => rpc('list_join_roster', { p_join_code: joinCode }, RosterSeat.array()),
-    async claimRosterSeat(joinCode, memberId) {
-      await ensureSession()
-      return remember(await rpc('claim_roster_seat', { p_join_code: joinCode, p_member_id: memberId }, ClaimResult))
     },
 
     getMyClasses: () => rpc('get_my_classes', {}, MyClass.array()),

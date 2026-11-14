@@ -26,7 +26,7 @@ export function StudentLayout({ me, children }: { me?: Me | null; children: Reac
             variant="outline"
             size="sm"
             disabled={signOut.isPending}
-            onClick={() => signOut.mutate(undefined, { onSettled: () => navigate(paths.start) })}
+            onClick={() => signOut.mutate(undefined, { onSettled: () => navigate(paths.signIn) })}
           >
             Not you? Sign out
           </Button>

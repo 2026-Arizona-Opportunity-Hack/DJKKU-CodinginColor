@@ -6,8 +6,6 @@ import { log } from '@/lib/log'
 
 // Errors that a retry can't fix.
 const NO_RETRY: ReadonlySet<ErrorCode> = new Set([
-  'invalid_code',
-  'already_claimed_elsewhere',
   'locked',
   'not_found',
   'unauthenticated',

@@ -13,15 +13,13 @@ import { GuestProgressSchema, type GuestProgress } from './guestProgress'
 import {
   FALLBACK_HINTS,
   SEED_CLASS,
-  SEED_JOIN_CODE,
-  SEED_LOGIN_CODES,
   SEED_MODULES,
-  SEED_ROSTER,
+  SEED_STUDENT,
   type SeedActivity,
   type SeedAssessment,
   type SeedModule,
 } from './mockSeed'
-import type { Activity, ClaimResult, ClassOutline, ItemStatus, OutlineModule, SubmitResult } from './types'
+import type { Activity, ClassOutline, ItemStatus, OutlineModule, SubmitResult } from './types'
 import { getStore, safeGet, safeParse, safeSet } from './safeStorage'
 import { DisplayNameSchema } from './validation'
 
@@ -29,7 +27,6 @@ export type MockState = {
   me: Me | null
   done: string[] // activity ids
   assessments: Record<string, { score_pct: number }>
-  claimedSeats: string[]
   extraCodes: Record<string, string> // login code -> display name (self-registered)
   hintsUsed: Record<string, number>
   seconds: Record<string, number>
@@ -38,11 +35,11 @@ export type MockState = {
 export const MOCK_STORAGE_KEY = 'cic.mock.v1'
 export const MAX_HINTS = 3
 
+/** Mock mode has no working sign-in page (the auth feature owns login), so it starts signed in as the demo student. */
 export const initialMockState = (): MockState => ({
-  me: null,
+  me: { ...SEED_STUDENT },
   done: [],
   assessments: {},
-  claimedSeats: [],
   extraCodes: {},
   hintsUsed: {},
   seconds: {},
@@ -50,7 +47,6 @@ export const initialMockState = (): MockState => ({
 
 type Options = { storage?: Storage | null; latencyMs?: number; state?: Partial<MockState> }
 
-const normalizeCode = (code: string) => code.trim().toUpperCase().replace(/\s+/g, '')
 const clone = <T>(v: T): T => structuredClone(v)
 
 function allActivities(m: SeedModule): SeedActivity[] {
@@ -212,12 +208,6 @@ export function createMockApi(opts: Options = {}): StudentApi & { readonly state
     return { prev: list[i - 1]?.activity_id, next: list[i + 1]?.activity_id }
   }
 
-  function claim(display_name: string): ClaimResult {
-    const me: Me = { display_name, class_id: SEED_CLASS.class_id, class_name: SEED_CLASS.class_name }
-    update((s) => ({ ...s, me }))
-    return clone(me)
-  }
-
   const api: StudentApi & { readonly state: MockState } = {
     source: 'mock',
     get state() {
@@ -226,31 +216,6 @@ export function createMockApi(opts: Options = {}): StudentApi & { readonly state
 
     getMe: () => delay(() => clone(state.me)),
     signOut: () => delay(() => update((s) => ({ ...s, me: null }))),
-
-    claimLoginCode: (code) =>
-      delay(() => {
-        const c = normalizeCode(code)
-        const seeded = SEED_LOGIN_CODES[c]
-        const name = seeded?.display_name ?? state.extraCodes[c]
-        if (!name) throw new ApiError('invalid_code')
-        return claim(name)
-      }),
-
-    listJoinRoster: (joinCode) =>
-      delay(() => {
-        if (normalizeCode(joinCode) !== SEED_JOIN_CODE) throw new ApiError('invalid_code')
-        return clone(SEED_ROSTER.filter((s) => !state.claimedSeats.includes(s.member_id)))
-      }),
-
-    claimRosterSeat: (joinCode, memberId) =>
-      delay(() => {
-        if (normalizeCode(joinCode) !== SEED_JOIN_CODE) throw new ApiError('invalid_code')
-        const seat = SEED_ROSTER.find((s) => s.member_id === memberId)
-        if (!seat) throw new ApiError('not_found')
-        if (state.claimedSeats.includes(memberId)) throw new ApiError('seat_taken')
-        update((s) => ({ ...s, claimedSeats: [...s.claimedSeats, memberId] }))
-        return claim(seat.label)
-      }),
 
     getMyClasses: () =>
       delay(() => {
