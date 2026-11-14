@@ -17,13 +17,14 @@ Roles: **guest** (not signed in), **student** (incl. a signed-in anonymous sessi
 
 | Function | Who | Returns |
 |---|---|---|
+| `get_me()` | any signed-in user (anonymous student sessions too) | `{profile_id, role, can_author, display_name, class_id, class_name}`, or `null` when there is no user. `display_name` is the roster name when the student holds a seat. `class_id` and `class_name` are the most recently claimed student seat, and `null` for staff and for a student who has not claimed a seat yet (role is `student`). |
 | `claim_login_code(p_code)` | student | `{class_id, class_name, display_name}`. Binds this device to the roster seat. A code works once. |
 | `list_join_roster(p_join_code)` | guest, student | `[{member_id, label}]` of UNCLAIMED seats |
 | `claim_roster_seat(p_join_code, p_member_id)` | student | `{class_id, class_name, display_name}` |
 | `self_register(p_display_name)` | student | `{class_id, login_code}`. Name only, no email. Joins CIC Open. |
 | `get_my_classes()` | student | `[{class_id, class_name, kind}]` |
 | `get_class_outline(p_class_id)` | student | `{modules:[{module_id,title,position,pretest,posttest,lessons:[{lesson_id,title,position,activities:[{activity_id,title,kind,position,required,status,locked_reason}]}]}]}`; `status` is `locked`, `available` or `done` |
-| `next_activity(p_class_id)` | student | `{module_id, lesson_id, activity_id}` or `null` (finished, or the next step is a pre or post test) |
+| `next_activity(p_class_id)` | student | `{module_id, lesson_id, activity_id}` or `null` (finished, or the next step is a pre or post test). `null` means finished OR the next step is the module's pre-test or post-test; the client must check `get_class_outline` for a `pretest`/`posttest` with status `available`. |
 | `get_activity(p_activity_id)` | guest (CIC Open modules), student, staff preview | `{activity_id,title,kind,status,prev_id,next_id,content}`. Errors if locked. Content never has keys. |
 | `submit_answer(p_activity_id, p_response, p_class_id?)` | student | `{is_correct, score, feedback, explanation, completed, next_activity_id, module_completed, unlocked_module_title}` |
 | `heartbeat(p_activity_id, p_seconds)` | student | `{ok:true}` (0 to 60 seconds per call) |
@@ -87,6 +88,8 @@ content that contains an answer-key field, and any key that does not match its q
 | `set_profile_role(p_profile_id, p_role, p_can_author?)` | admin | Change a role. You cannot change your own. |
 | `assign_mentor(p_mentor_id, p_student_id, p_active?)` | admin | Mentors see only assigned students |
 | `create_api_key(p_name, p_scope)` / `revoke_api_key(p_id)` | admin | `{api_key_id, raw_key}` shown once; stored as a sha256 hash |
+| `add_class_instructor(p_class_id, p_profile_id)` | admin | Returns nothing (`void`). Puts an existing instructor or admin on a class so they can see it. Errors: `Only a CIC admin can add instructors`, `Class not found`, `That person is not an instructor yet. Invite them as an instructor first`, `That person is a student in this class`. Adding someone twice does nothing. |
+| `remove_class_instructor(p_class_id, p_profile_id)` | admin | Returns nothing (`void`). Removes that instructor from the class. Errors: `Only a CIC admin can remove instructors`, `Class not found`, `A class needs at least one instructor` (a school class never ends up with none). Removing someone who is not an instructor of the class does nothing. |
 | `validate_api_key(p_raw_key)` | **service_role only** | `{api_key_id, scope}` or `null` |
 
 ## Views

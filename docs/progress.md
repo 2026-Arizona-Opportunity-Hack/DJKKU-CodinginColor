@@ -122,3 +122,13 @@ instead of repeating them.
   view names; Cloudflare Pages deploy.
 - Blocked: CIC's answers on the dashboard; Cloudflare access to the org repo.
 
+
+### 2026-11-14: Umang (lane A)
+- Done: added the migration `20261114160000_lane_a_session_and_staffing.sql`. `get_me()` gives the
+  player and the sign-in redirect the user's role, display name and claimed class (it did not
+  exist, so every `/learn` page errored in Supabase mode). `add_class_instructor` and
+  `remove_class_instructor` let an admin staff a class, because the seeded demo classes had no
+  instructor and `create_class` only makes the caller the instructor. 10 new DB tests (45 in `supabase/tests`). Contract and README updated, including the note on `next_activity`
+  returning `null` when the next step is a pre or post test.
+- Next: sign-in page (next PR) reads `get_me`; lane B checks `get_class_outline` when `next_activity` is null.
+- Blocked: nothing.

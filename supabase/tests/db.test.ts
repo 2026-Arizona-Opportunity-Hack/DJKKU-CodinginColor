@@ -628,3 +628,106 @@ describe.skipIf(!up)('stuck and not-started lists', () => {
     expect(ns).toEqual(['Cam R.', 'Demo S.', 'Fay L.'])        // pre-test only, the unclaimed demo seat, and a student who never started
   })
 })
+
+describe.skipIf(!up)('get_me and class staffing', () => {
+  /** A signed-in role with no uid, the way a request with a malformed JWT would look. */
+  async function asNoUid() {
+    await client.query('reset role')
+    await client.query('set local role authenticated')
+    await client.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ role: 'authenticated' })])
+  }
+  const meAs = async (uid: string) => { await as(uid); return one<Row | null>('select public.get_me() as r') }
+  const classIdsAs = async (uid: string) => { await as(uid); return (await q<{ id: string }>('select id from classes')).map((c) => c.id) }
+
+  it('get_me is null when there is no user id, and anon cannot execute it at all', async () => {
+    await asNoUid()
+    expect(await one('select public.get_me() as r')).toBeNull()
+    await as(null)
+    await fails('select public.get_me()', [], /permission denied/)
+  })
+
+  it('a fresh anonymous student is a student with no class', async () => {
+    const id = await mkUser()
+    expect(await meAs(id)).toEqual({ profile_id: id, role: 'student', can_author: false, display_name: '', class_id: null, class_name: null })
+  })
+
+  it('after claiming the demo login code the student gets class and roster name', async () => {
+    const id = await mkUser()
+    await as(id)
+    await q('select public.claim_login_code($1)', ['DEMO-0000-0000-0001'])
+    expect(await meAs(id)).toMatchObject({ role: 'student', class_id: P1, class_name: 'Demo Period 1', display_name: 'Demo S.' })
+  })
+
+  it('staff get their role and no class', async () => {
+    const id = await mkUser('instructor', { author: true })
+    expect(await meAs(id)).toMatchObject({ role: 'instructor', can_author: true, class_id: null, class_name: null })
+  })
+
+  it('an admin adds an instructor to a class and they then see its data', async () => {
+    const admin = await mkUser('cic_admin')
+    const ins = await mkUser('instructor')
+    expect(await classIdsAs(ins)).toEqual([])
+    await as(admin)
+    await q('select public.add_class_instructor($1, $2)', [P1, ins])
+    expect(await classIdsAs(ins)).toEqual([P1])
+    expect(new Set((await q<{ class_id: string }>('select class_id from v_class_progress')).map((r) => r.class_id))).toEqual(new Set([P1]))
+    const stuck = await q<{ student_id: string }>('select student_id from v_stuck')
+    expect(stuck.map((r) => r.student_id)).toEqual(['b0000000-0000-4000-8000-000000000004'])
+  })
+
+  it('adding the same instructor twice is a no-op', async () => {
+    const admin = await mkUser('cic_admin')
+    const ins = await mkUser('instructor')
+    await as(admin)
+    await q('select public.add_class_instructor($1, $2)', [P1, ins])
+    await q('select public.add_class_instructor($1, $2)', [P1, ins])
+    await asSuper()
+    expect(await q(`select 1 from class_members where class_id = $1 and profile_id = $2`, [P1, ins])).toHaveLength(1)
+  })
+
+  it('only a CIC admin can add or remove instructors', async () => {
+    const ins = await mkUser('instructor')
+    const other = await mkUser('instructor')
+    await as(ins)
+    await fails('select public.add_class_instructor($1, $2)', [P1, other], /Only a CIC admin can add instructors/)
+    await fails('select public.remove_class_instructor($1, $2)', [P1, other], /Only a CIC admin can remove instructors/)
+    await as(SEED_STUDENT_1)
+    await fails('select public.add_class_instructor($1, $2)', [P1, other], /Only a CIC admin/)
+  })
+
+  it('rejects a student profile, a missing class and a student already in the class', async () => {
+    const admin = await mkUser('cic_admin')
+    const stu = await mkUser()
+    const ins = await mkUser('instructor')
+    await as(admin)
+    await fails('select public.add_class_instructor($1, $2)', [P1, stu], /not an instructor/)
+    await fails('select public.add_class_instructor($1, $2)', [randomUUID(), ins], /Class not found/)
+    await fails('select public.add_class_instructor($1, $2)', [P1, randomUUID()], /not an instructor/)
+    await asSuper()
+    await q(`insert into class_members (class_id, profile_id, member_role, display_name) values ($1, $2, 'student', 'Odd S.')`, [P1, ins])
+    await as(admin)
+    await fails('select public.add_class_instructor($1, $2)', [P1, ins], /student in this class/)
+  })
+
+  it('removing an instructor works, but a school class keeps at least one', async () => {
+    const admin = await mkUser('cic_admin')
+    const a = await mkUser('instructor')
+    const b = await mkUser('instructor')
+    await as(admin)
+    await q('select public.add_class_instructor($1, $2)', [P1, a])
+    await q('select public.add_class_instructor($1, $2)', [P1, b])
+    await fails('select public.remove_class_instructor($1, $2)', [randomUUID(), a], /Class not found/)
+    await q('select public.remove_class_instructor($1, $2)', [P1, a])
+    expect(await classIdsAs(a)).toEqual([])
+    expect(await classIdsAs(b)).toEqual([P1])
+    await as(admin)
+    await fails('select public.remove_class_instructor($1, $2)', [P1, b], /at least one instructor/)
+    await q('select public.remove_class_instructor($1, $2)', [P1, a])   // not an instructor any more: no-op
+  })
+
+  it('anon and students cannot execute the staffing functions', async () => {
+    await as(null)
+    await fails('select public.add_class_instructor($1, $2)', [P1, randomUUID()], /permission denied/)
+    await fails('select public.remove_class_instructor($1, $2)', [P1, randomUUID()], /permission denied/)
+  })
+})

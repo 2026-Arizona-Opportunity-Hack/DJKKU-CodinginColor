@@ -56,6 +56,18 @@ invites staff, assigns mentors and makes API keys. The per-role proof is in `tes
 5. Keep the project awake and backed up (lane E's GitHub Actions: daily keepalive, nightly
    encrypted dump). A free project pauses after a week idle.
 
+## Demo staff setup (hosted demo project only)
+
+The seeded demo classes have no instructor, and a class made by an admin has the admin as its
+only instructor, so a real instructor sees nothing until an admin adds them:
+
+1. The admin invites teammates: `select public.invite_staff('<email>', 'instructor', true);`
+2. They sign in once with Google.
+3. The admin adds them to a class (profile id: `select id, role from public.profiles where role <> 'student';`):
+   `select public.add_class_instructor('11000000-0000-4000-8000-000000000001', '<their profile id>');`
+
+`remove_class_instructor` undoes it. A school class always keeps at least one instructor.
+
 ## Rules for changing this folder
 
 - A new table gets RLS in the same migration, plus a comment on each policy.
@@ -64,3 +76,5 @@ invites staff, assigns mentors and makes API keys. The per-role proof is in `tes
   `member_login_codes`.
 - Never edit a migration that has been applied to a shared project; add a new one.
 - Seed data is fake. Never put real student data or real keys here.
+- Every new migration revokes its new functions from `public, anon, authenticated` and then grants
+  execute explicitly (Supabase gives new objects to anon by default).
