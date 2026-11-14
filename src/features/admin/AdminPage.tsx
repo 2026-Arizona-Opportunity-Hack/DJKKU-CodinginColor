@@ -4,6 +4,7 @@ import {
   createClass,
   isAdminDatabaseConfigured,
 } from './api.supabase'
+import { ModuleAssignment } from './ModuleAssignment'
 
 export function AdminPage() {
   const databaseConfigured = isAdminDatabaseConfigured()
@@ -181,6 +182,7 @@ export function AdminPage() {
           </button>
         </form>
       </section>
+      <ModuleAssignment />
     </div>
   )
 }
