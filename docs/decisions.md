@@ -65,7 +65,7 @@ also change how the system works. A dash means the ADR file is not written yet.
 | 20 | Learning gain: post minus pre, normalized gain, incomplete never zero, matched by pair_key (lane C) | Accepted | [0020](adr/0020-learning-gain-definition.md) |
 | 21 | Lane C pure logic in `lane-c-logic/` until the app scaffold lands (lane C) | Accepted | [0021](adr/0021-lane-c-logic-folder.md) |
 | 22 | Authored questions split into student content and answer key; keys never in student payloads (lane C) | Accepted | [0022](adr/0022-keys-split-from-content.md) |
-| 23 | Module versions are rows; published versions immutable (lane C proposal) | Proposed | [0023](adr/0023-immutable-module-versions.md) |
+| 23 | Module versions are rows; published versions immutable (lane C proposal, built by lane A) | Accepted | [0023](adr/0023-immutable-module-versions.md) |
 | 24 | Lane A database: clients read through RLS and write only through checked functions; secrets in side tables (lane A, reviewed by lane C) | Accepted | [0024](adr/0024-lane-a-database-design.md) |
 
 Changed in the Nov 14 revision: reviewer magic links → Google sign-in (17); the

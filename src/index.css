@@ -1,1 +1,85 @@
 @import "tailwindcss";
+
+/* ---- Design tokens (shadcn/ui convention), added by lane B; shared by all lanes. ---- */
+/*
+ * Design tokens (shadcn/ui convention). Colors chosen for >= 4.5:1 text contrast
+ * on their paired background. Status never relies on color alone: every status
+ * also has an icon and a text label.
+ */
+:root {
+  --radius: 0.625rem;
+  --background: #ffffff;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --primary: #4338ca;
+  --primary-foreground: #ffffff;
+  --secondary: #eef2ff;
+  --secondary-foreground: #1e1b4b;
+  --muted: #f3f4f6;
+  --muted-foreground: #4b5563;
+  --accent: #e0e7ff;
+  --accent-foreground: #1e1b4b;
+  --destructive: #b91c1c;
+  --destructive-foreground: #ffffff;
+  --success: #166534;
+  --success-muted: #dcfce7;
+  --warning-muted: #fef3c7;
+  --warning: #92400e;
+  --border: #d1d5db;
+  --input: #6b7280;
+  --ring: #4338ca;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-muted: var(--success-muted);
+  --color-warning: var(--warning);
+  --color-warning-muted: var(--warning-muted);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer base {
+  /* shadcn components expect a light default border color and a visible focus ring. */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
