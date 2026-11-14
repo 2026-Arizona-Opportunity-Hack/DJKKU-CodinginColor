@@ -1,4 +1,4 @@
-# 0021. Authored questions split into student content and answer key
+# 0022. Authored questions split into student content and answer key
 
 Status: Accepted
 Date: 2026-11-14
@@ -10,7 +10,7 @@ studio edits a question and its answer together, which is where leaks happen.
 ## Decision
 - A question is `{content, key}`. Content schemas are `.strict()`, so an
   answer field in content is rejected, not forwarded.
-- `splitQuestion` and `splitModule` in `lane-c-logic/src/schemas.ts` are the only
+- `splitQuestion` and `splitModule` in `shared/authoring/schemas.ts` are the only
   places a question is split. Content goes to `activities` / student payloads,
   keys go to `activity_keys`.
 - Ordering questions are re-sorted in content so the displayed order is never

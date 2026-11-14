@@ -3,13 +3,15 @@
 Running list of what lane C needs from other lanes and what it gives them.
 Newest entries at the bottom. Do not delete old entries; add a correction.
 
-## To lane A (Koen): views must match `lane-c-logic/src/gain.ts`
+## To lane A (Koen): views must match `shared/authoring/gain.ts`
 
-Source of truth for the math is [ADR 0019](../adr/0019-learning-gain-definition.md)
+Source of truth for the math is [ADR 0020](../adr/0020-learning-gain-definition.md)
 and the tested code. Summary for `v_learning_gain` and `v_concept_mastery`:
 
 - Scores are percentages (0 to 100), computed as earned points / possible points.
-- Join pre and post items on `pair_key`; drop items with no twin.
+- Join pre and post items on `pair_key`; drop items with no twin. Enforce
+  `unique (assessment_id, pair_key)`; if a duplicate ever exists, exclude that key
+  from both sides.
 - Per student: `gain = post - pre`; `normalized = (post - pre) / (100 - pre)`,
   null when `pre = 100`.
 - Missing pre or post: return NULL gain columns and `status = 'incomplete'`.
@@ -21,7 +23,7 @@ and the tested code. Summary for `v_learning_gain` and `v_concept_mastery`:
 
 ## To lane E (Krishna): CSV helper
 
-`lane-c-logic/src/csv.ts` exports `toCsv` with spreadsheet formula protection.
+`shared/authoring/csv.ts` exports `toCsv` with spreadsheet formula protection.
 Reuse it for any export that includes student names.
 
 ## From other lanes (what lane C needs)
@@ -43,9 +45,9 @@ Added 2026-11-14. Untested proposal, free to rewrite. Things I need from you:
   and a `new_module_version(id)` that copies a published module into a draft
   version + 1. I have not written either.
 - Make `v_learning_gain` a full outer join and add class and concept rollups
-  per ADR 0019. Mine is per student only.
+  per ADR 0020. Mine is per student only.
 - Grading (`submit_answer`) should read `activity_keys.key`. Key shapes are in
-  `lane-c-logic/src/schemas.ts` (`questionKey`): mcq `correctChoiceId`,
+  `shared/authoring/schemas.ts` (`questionKey`): mcq `correctChoiceId`,
   short answer `accepted[]`, fill blank `blanks[][]`, ordering `correctOrder[]`;
   `caseSensitive` flags on text types.
 

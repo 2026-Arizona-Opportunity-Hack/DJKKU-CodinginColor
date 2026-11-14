@@ -48,3 +48,39 @@ instead of repeating them.
   CLI runs locally; studio UI as soon as a Vite scaffold is on main.
 - Blocked: no app scaffold or lane A schema on main yet. SQL is unverified.
 
+
+### 2026-11-14: Krishna (lane E)
+- Done: scaffolded the app (Vite, React, TypeScript, Tailwind, React Router) with
+  one folder per feature in `src/features/`, registered in `src/app/features.ts`;
+  `functions/` with a health check and typed env; `shared/` and the `supabase/`
+  layout; Vitest with first tests (Jad's stuck logic, a feature-registry guard); a
+  CI workflow draft (lint, typecheck, test, build, gitleaks); and a fuller
+  "Stack, commands and layout" section in `AGENTS.md` (lane ownership, recipes,
+  conventions). Not pushed yet.
+- Next: push in small PRs; connect Cloudflare Pages and verify `/api/health`; run
+  CI on GitHub; add Lighthouse CI; write the OpenAPI contract with Koen.
+- Blocked: Cloudflare access to the org repo is unconfirmed. Local Node must be
+  22.12 or newer.
+
+### 2026-11-14: Umang (lane C, correction)
+- Done: merged Krishna's scaffold (PR #5) into `lane-c/gain-math` and fixed the
+  overlaps. Corrections to my entry above: the learning gain ADR is now
+  [0020](adr/0020-learning-gain-definition.md) (Krishna took 0019 for repo
+  structure) and the folder ADR is [0021](adr/0021-lane-c-logic-folder.md),
+  now superseded. Code moved from `lane-c-logic/` to `shared/authoring/`, as
+  the scaffold rules require. Fixed Jad's review comment on PR #3: duplicate
+  `pairKey` values are now excluded from gain and reported. Root `npm run lint`,
+  `typecheck` and `test` pass (34 tests).
+- Next: rebase PR #4 the same way (schemas move to `shared/authoring/`, add
+  `zod`), then merge order #5, #3, #4.
+- Blocked: PR #5 must merge first.
+
+### 2026-11-14: Umang (lane C, correction)
+- Done: merged the scaffold and PR #3 into PR #4's branch. ADR numbers moved
+  again: keys split is now [0022](adr/0022-keys-split-from-content.md) and
+  module versions is [0023](adr/0023-immutable-module-versions.md); earlier
+  entries above that cite 0021/0022 mean these. Schemas moved to
+  `shared/authoring/schemas.ts`; added `zod` as a root dependency (already in the
+  decided stack).
+- Next: merge order #5, #3, #4. SQL role tests once Koen reviews the proposal.
+- Blocked: nothing.

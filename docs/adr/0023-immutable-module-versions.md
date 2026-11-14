@@ -1,4 +1,4 @@
-# 0022. Module versions are rows; published versions are immutable
+# 0023. Module versions are rows; published versions are immutable
 
 Status: Proposed (needs lane A agreement)
 Date: 2026-11-14

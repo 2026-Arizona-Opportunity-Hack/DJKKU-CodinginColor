@@ -75,3 +75,29 @@ Findings:
 - [open, medium] RLS policies in `lane_c_proposal.sql` are untested. Needs per-role SQL tests: student cannot select `activity_keys`, reviewer cannot write, draft invisible to students. Tracked in the next slice.
 - [open, low] `assessment_items` stores key and content together, so it is staff-only for now. Lane A should split it (see handoff).
 
+
+### 2026-11-14 Lane C gain math after scaffold merge and review fix
+Commit: see PR #3 · Run by: Umang (with Claude Code) · Command: root `npm run lint && npm run typecheck && npm test`
+
+| Check | Result | Notes |
+|---|---|---|
+| Lint (oxlint) | Pass | |
+| Type check (`tsc -b`, TS 7, strict, `erasableSyntaxOnly`) | Pass | |
+| Tests (Vitest) | 34 passed across 3 files | 22 lane C gain/CSV, rest from lane D and the feature registry |
+| Duplicate pair_key (Jad's review) | Fixed, 2 new tests | key excluded from both tests and reported |
+
+Findings:
+- [fixed, medium] Duplicate `pairKey` in one test counted twice on that side and once on the other, skewing gain. Fixed in PR #3.
+
+### 2026-11-14 Lane C schemas after scaffold merge
+Commit: see PR #4 · Run by: Umang (with Claude Code) · Command: root `npm run lint && npm run typecheck && npm test && npm run build`
+
+| Check | Result | Notes |
+|---|---|---|
+| Lint, type check (TS 7 strict), build | Pass | |
+| Tests | 66 passed across 4 files | 54 lane C (gain, CSV, schemas), rest from other lanes |
+| Key leak test, input validation | Still pass after the move to `shared/authoring/` | |
+
+Findings:
+- [open] SQL proposal still unverified against Postgres (see earlier entry).
+

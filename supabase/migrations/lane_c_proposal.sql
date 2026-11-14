@@ -9,7 +9,7 @@
 -- and these tables: classes, class_members, assessment_results
 --   (student_id, class_id, assessment_id, score_pct).
 --
--- Mirrors lane-c-logic/src/schemas.ts (shapes) and gain.ts (math, ADR 0019).
+-- Mirrors shared/authoring/schemas.ts (shapes) and gain.ts (math, ADR 0020).
 
 create table if not exists concepts (
   id   text primary key check (id ~ '^[A-Za-z0-9_-]{1,64}$'),
@@ -123,7 +123,7 @@ create policy activity_keys_staff on activity_keys for all using (is_staff()) wi
 -- then open the content half to students. Staff-only until then (safe default).
 create policy assessment_items_staff on assessment_items for all using (is_staff()) with check (is_staff());
 
--- Learning gain per student per module. Matches gain.ts / ADR 0019:
+-- Learning gain per student per module. Matches gain.ts / ADR 0020:
 -- missing pre or post gives NULL gain columns, never 0.
 -- ASSUMES assessment_results.score_pct is already computed on paired items.
 create or replace view v_learning_gain as
@@ -143,6 +143,6 @@ left join assessments a_post on a_post.module_id = a_pre.module_id and a_post.ki
 left join assessment_results post
   on post.student_id = pre.student_id and post.class_id = pre.class_id and post.assessment_id = a_post.id;
 -- Students who took a post but no pre are not listed. TODO lane A: full outer join
--- so they show as incomplete too, and add the class and concept rollups per ADR 0019.
+-- so they show as incomplete too, and add the class and concept rollups per ADR 0020.
 -- security_invoker so the view obeys the caller's RLS instead of bypassing it.
 alter view v_learning_gain set (security_invoker = true);

@@ -1,6 +1,6 @@
-# 0020. Lane C pure logic lives in its own folder until the app exists
+# 0021. Lane C pure logic lives in its own folder until the app exists
 
-Status: Accepted
+Status: Superseded (the scaffold landed in PR #5; the code now lives in `shared/authoring/`)
 Date: 2026-11-14
 
 ## Context

@@ -85,6 +85,27 @@ describe('computePairedScores', () => {
     expect(computePairedScores(pre, post).overall.pre).toBe(25);
   });
 
+  it('a duplicate pair_key is excluded from the math and reported (Jad review on PR #3)', () => {
+    // Two pre items share q1, one post item has q1. Old code counted both pre items.
+    const pre = [item('q1', 'vars', 0), item('q1', 'vars', 0), item('q2', 'vars', 1)];
+    const post = [item('q1', 'vars', 1), item('q2', 'vars', 1)];
+    const r = computePairedScores(pre, post);
+    expect(r.duplicatePre).toEqual(['q1']);
+    expect(r.duplicatePost).toEqual([]);
+    // Only q2 is scored, on both tests.
+    expect(r.overall.pre).toBe(100);
+    expect(r.overall.post).toBe(100);
+    expect(r.unpairedPost).toEqual([]);
+  });
+
+  it('a duplicate on the post test is also excluded from the pre side', () => {
+    const pre = [item('q1', 'vars', 0), item('q2', 'vars', 1)];
+    const post = [item('q1', 'vars', 1), item('q1', 'vars', 1), item('q2', 'vars', 1)];
+    const r = computePairedScores(pre, post);
+    expect(r.duplicatePost).toEqual(['q1']);
+    expect(r.overall.pre).toBe(100);
+  });
+
   it('an untaken post test is incomplete', () => {
     const r = computePairedScores([item('q1', 'vars', 1)], []);
     expect(r.overall.status).toBe('incomplete');

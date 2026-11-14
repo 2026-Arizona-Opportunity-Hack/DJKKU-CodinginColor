@@ -61,10 +61,11 @@ also change how the system works. A dash means the ADR file is not written yet.
 | 16 | Answer keys in a separate table no student or reviewer policy can read (open question 2) | Accepted | – |
 | 17 | Reviewer login: Google sign-in limited to invited emails, replacing magic links (open question 9) | Accepted | – |
 | 18 | Free-only: $0 a month, no credit card on any account (open question 11) | Accepted | – |
-| 19 | Learning gain: post minus pre, normalized gain, incomplete never zero, matched by pair_key (lane C) | Accepted | [0019](adr/0019-learning-gain-definition.md) |
-| 20 | Lane C pure logic in `lane-c-logic/` until the app scaffold lands (lane C) | Accepted | [0020](adr/0020-lane-c-logic-folder.md) |
-| 21 | Authored questions split into student content and answer key; keys never in student payloads (lane C) | Accepted | [0021](adr/0021-keys-split-from-content.md) |
-| 22 | Module versions are rows; published versions immutable (lane C proposal) | Proposed | [0022](adr/0022-immutable-module-versions.md) |
+| 19 | Repo structure: one folder per feature in `src/features/`, registered in one list (`src/app/features.ts`); one npm package with `functions/` and `shared/` beside `src/` (lane E) | Accepted | – |
+| 20 | Learning gain: post minus pre, normalized gain, incomplete never zero, matched by pair_key (lane C) | Accepted | [0020](adr/0020-learning-gain-definition.md) |
+| 21 | Lane C pure logic in `lane-c-logic/` until the app scaffold lands (lane C) | Accepted | [0021](adr/0021-lane-c-logic-folder.md) |
+| 22 | Authored questions split into student content and answer key; keys never in student payloads (lane C) | Accepted | [0022](adr/0022-keys-split-from-content.md) |
+| 23 | Module versions are rows; published versions immutable (lane C proposal) | Proposed | [0023](adr/0023-immutable-module-versions.md) |
 
 Changed in the Nov 14 revision: reviewer magic links → Google sign-in (17); the
 read API and hint proxy moved from Supabase Edge Functions to Cloudflare Pages
