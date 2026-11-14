@@ -26,6 +26,8 @@ pricing page before the README quotes them.
 | Scope | AI and concept mastery only after P0 works | Earlier AI demo | Hints must never block the core flow |
 | Learning gain | Class numbers use only students with both pre and post | Showing every enrolled student in the class average | Screen shows "N of M students" so the gap is visible ([ADR 0020](adr/0020-learning-gain-definition.md)) |
 | Lane C code layout | Pure logic in `shared/authoring/` (not `src/features/authoring/`) | Keeping all of lane C in one folder | `shared/` is the scaffold rule for code the browser and functions both use; gain math will be reused by the read API (ADR 0021) |
+| Answer keys in authoring | Content and key are separate shapes the editor must handle | A simpler single question object | Strict schemas plus a payload leak test ([ADR 0022](adr/0022-keys-split-from-content.md)) |
+| Module versions | Every version is its own row | Smallest database | Old versions stay for classes that use them ([ADR 0023](adr/0023-immutable-module-versions.md)) |
 
 ## Known risks
 

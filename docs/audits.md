@@ -58,6 +58,24 @@ Commit: see PR `lane-c/gain-math` · Run by: Umang (with Claude Code) · Command
 Findings:
 - None open. Not yet covered: SQL views matching this logic (needs lane A schema).
 
+### 2026-11-14 Lane C authoring schemas and key isolation (app side)
+Commit: see PR `lane-c/authoring-schemas` · Run by: Umang (with Claude Code) · Command: `npm test` and `npx tsc --noEmit` in `lane-c-logic/`
+
+| Check | Result | Notes |
+|---|---|---|
+| Unit tests (Vitest) | 52 passed, 0 failed (20 gain, 32 schemas) | |
+| Type check (tsc strict) | Pass | |
+| No answer keys in student payload | Pass | planted secret strings and key field names are absent from `splitModule(...).student` JSON |
+| Smuggled answer field in content | Rejected | content schemas are strict |
+| Input validation | Pass | bad YouTube hosts, http links, javascript: URLs, unknown fields, empty titles, duplicate ids, bad fill-blank counts, non-permutation ordering all rejected |
+| Ordering never ships solved order | Pass | |
+| SQL RLS (`lane_c_proposal.sql`) | NOT RUN | never executed against Postgres. Needs lane A helpers (`is_staff`, `is_admin`) and a local Supabase. Treat as unverified |
+
+Findings:
+- [open, medium] RLS policies in `lane_c_proposal.sql` are untested. Needs per-role SQL tests: student cannot select `activity_keys`, reviewer cannot write, draft invisible to students. Tracked in the next slice.
+- [open, low] `assessment_items` stores key and content together, so it is staff-only for now. Lane A should split it (see handoff).
+
+
 ### 2026-11-14 Lane C gain math after scaffold merge and review fix
 Commit: see PR #3 · Run by: Umang (with Claude Code) · Command: root `npm run lint && npm run typecheck && npm test`
 
@@ -70,3 +88,38 @@ Commit: see PR #3 · Run by: Umang (with Claude Code) · Command: root `npm run 
 
 Findings:
 - [fixed, medium] Duplicate `pairKey` in one test counted twice on that side and once on the other, skewing gain. Fixed in PR #3.
+
+### 2026-11-14 Lane C schemas after scaffold merge
+Commit: see PR #4 · Run by: Umang (with Claude Code) · Command: root `npm run lint && npm run typecheck && npm test && npm run build`
+
+| Check | Result | Notes |
+|---|---|---|
+| Lint, type check (TS 7 strict), build | Pass | |
+| Tests | 66 passed across 4 files | 54 lane C (gain, CSV, schemas), rest from other lanes |
+| Key leak test, input validation | Still pass after the move to `shared/authoring/` | |
+
+Findings:
+- [open] SQL proposal still unverified against Postgres (see earlier entry).
+
+### 2026-11-14 Lane C RLS per-role tests (review of PR #4)
+Commit: see PR #4 · Run by: Umang (with Claude Code) · Command: `npm test` (file `supabase/tests/lane_c_rls.test.ts`, PGlite = real Postgres in WASM)
+
+| Check | Result | Notes |
+|---|---|---|
+| Student cannot read `activity_keys` or `assessment_items` | Pass | |
+| Reviewer cannot read keys; cannot insert; update/delete change nothing | Pass | |
+| Students see published content only (modules, lessons, activities, assessments) | Pass | |
+| Author sees own draft; other instructor does not; admin sees all | Pass | review fix: first draft let any staff read every draft |
+| Student cannot create modules; instructor can only insert own drafts, never `published` | Pass | review fix: `created_by = auth.uid()` now required on insert |
+| Instructor can submit but not publish; admin can | Pass | |
+| Published module frozen: no lesson edits even by admin | Pass | |
+| `v_learning_gain`: complete, pre 100 (normalized null), missing post (incomplete, null gain) | Pass | matches ADR 0020 |
+| Mutation check: removed RLS on `activity_keys` and opened module reads | 5 tests failed as expected | tests do catch regressions; SQL restored after |
+
+Findings:
+- [fixed, medium] Draft modules were readable by every instructor. Now own drafts and admin only.
+- [fixed, low] Insert policy did not force `created_by = auth.uid()`.
+- [open, medium] `is_admin()`, `is_staff()` and `auth.uid()` are stubs in the test. Re-run against lane A's real helpers on Supabase before relying on this.
+- [open, low] `concepts` has read policy only, so nobody can write concepts until lane A seeds them.
+- [open, low] `assessment_items` stores key beside content, so it is staff-only until lane A splits it.
+

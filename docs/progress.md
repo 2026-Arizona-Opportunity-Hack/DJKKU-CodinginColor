@@ -37,6 +37,18 @@ instead of repeating them.
   validation, assessment pairs), then `lane_c_proposal.sql` to sync with Koen.
 - Blocked: nothing. Waiting on a Vite scaffold and lane A schema before any UI.
 
+### 2026-11-14: Umang (lane C)
+- Done: opened PR #3 (gain math, CSV). Added zod authoring schemas in
+  `lane-c-logic/src/schemas.ts`: question types, answer-key split, YouTube
+  validation, modules, assessments and pair warnings. 52 tests pass. Wrote
+  `supabase/migrations/lane_c_proposal.sql` (tables, RLS, `v_learning_gain`),
+  clearly marked as an untested proposal. ADRs 0021 and 0022, tradeoffs, audit
+  entry and lane A handoff updated.
+- Next: get Koen to review the SQL proposal; SQL role tests once the Supabase
+  CLI runs locally; studio UI as soon as a Vite scaffold is on main.
+- Blocked: no app scaffold or lane A schema on main yet. SQL is unverified.
+
+
 ### 2026-11-14: Krishna (lane E)
 - Done: scaffolded the app (Vite, React, TypeScript, Tailwind, React Router) with
   one folder per feature in `src/features/`, registered in `src/app/features.ts`;
@@ -62,3 +74,24 @@ instead of repeating them.
 - Next: rebase PR #4 the same way (schemas move to `shared/authoring/`, add
   `zod`), then merge order #5, #3, #4.
 - Blocked: PR #5 must merge first.
+
+### 2026-11-14: Umang (lane C, correction)
+- Done: merged the scaffold and PR #3 into PR #4's branch. ADR numbers moved
+  again: keys split is now [0022](adr/0022-keys-split-from-content.md) and
+  module versions is [0023](adr/0023-immutable-module-versions.md); earlier
+  entries above that cite 0021/0022 mean these. Schemas moved to
+  `shared/authoring/schemas.ts`; added `zod` as a root dependency (already in the
+  decided stack).
+- Next: merge order #5, #3, #4. SQL role tests once Koen reviews the proposal.
+- Blocked: nothing.
+
+### 2026-11-14: Umang (lane C, PR #4 review)
+- Done: reviewed PR #4 (no teammate comments). Found and fixed two SQL issues:
+  any instructor could read every draft, and inserts did not force
+  `created_by`. Added `supabase/tests/lane_c_rls.test.ts` (12 per-role tests on
+  PGlite, devDependency `@electric-sql/pglite`); a mutation check confirmed the
+  tests fail when RLS is broken. Merged `main` into the branch.
+- Next: koen to review the SQL; re-run the tests against lane A's real helpers;
+  studio UI in `src/features/authoring/`.
+- Blocked: nothing.
+

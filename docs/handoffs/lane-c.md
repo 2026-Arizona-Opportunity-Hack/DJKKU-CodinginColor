@@ -33,3 +33,28 @@ Reuse it for any export that includes student names.
   `assessments`, `assessment_items`, `concepts`. Until it lands, lane C will
   ship `supabase/migrations/lane_c_proposal.sql` as a proposal.
 - Staff login and role plumbing so the studio can gate on instructor or admin.
+
+## To lane A (Koen): please review `supabase/migrations/lane_c_proposal.sql`
+
+Added 2026-11-14. Untested proposal, free to rewrite. Things I need from you:
+
+- `is_staff()` (instructor or admin) and `is_admin()`; my policies assume them.
+- Split `assessment_items` into content and key tables like `activities` and
+  `activity_keys`. I left it staff-only so nothing leaks meanwhile.
+- A `publish_module(id)` function (admin only) that flips submitted to published,
+  and a `new_module_version(id)` that copies a published module into a draft
+  version + 1. I have not written either.
+- Make `v_learning_gain` a full outer join and add class and concept rollups
+  per ADR 0020. Mine is per student only.
+- Grading (`submit_answer`) should read `activity_keys.key`. Key shapes are in
+  `shared/authoring/schemas.ts` (`questionKey`): mcq `correctChoiceId`,
+  short answer `accepted[]`, fill blank `blanks[][]`, ordering `correctOrder[]`;
+  `caseSensitive` flags on text types.
+
+## To lane A (Koen): RLS tests you can reuse
+
+`supabase/tests/lane_c_rls.test.ts` runs per-role tests on PGlite (no Docker).
+It stubs `is_admin()`, `is_staff()` and `auth.uid()` from two session settings.
+When your migrations land, load them instead of the stubs and keep the tests as
+the regression suite; add your own roles (mentor, student claim) the same way.
+
