@@ -17,6 +17,10 @@
 //    blow up the number.
 //  - Items are matched by pair_key. A pre item with no post twin is ignored for
 //    gain, so a lopsided test cannot distort the result.
+//  - A pair_key must appear at most once per test. If one appears twice, the
+//    match is ambiguous, so that key is left out of the math entirely and
+//    reported in duplicatePre / duplicatePost (review comment from Jad on PR #3).
+//    The database enforces this with unique (assessment_id, pair_key).
 
 export type Score = number | null | undefined;
 
@@ -69,6 +73,16 @@ export interface PairedScores {
   /** pair_keys present on one test but not the other. The builder warns on these. */
   unpairedPre: string[];
   unpairedPost: string[];
+  /** pair_keys used more than once on one test. Excluded from all scores. */
+  duplicatePre: string[];
+  duplicatePost: string[];
+}
+
+function duplicateKeys(items: { pairKey: string }[]): string[] {
+  const seen = new Set<string>();
+  const dup = new Set<string>();
+  for (const i of items) (seen.has(i.pairKey) ? dup : seen).add(i.pairKey);
+  return [...dup];
 }
 
 function pct(items: ScoredItem[]): number | null {
@@ -84,6 +98,12 @@ function pct(items: ScoredItem[]): number | null {
  * will be "incomplete".
  */
 export function computePairedScores(pre: ScoredItem[], post: ScoredItem[]): PairedScores {
+  const duplicatePre = duplicateKeys(pre);
+  const duplicatePost = duplicateKeys(post);
+  const bad = new Set([...duplicatePre, ...duplicatePost]);
+  // Drop ambiguous keys on BOTH tests so a duplicate can never skew gain.
+  pre = pre.filter((i) => !bad.has(i.pairKey));
+  post = post.filter((i) => !bad.has(i.pairKey));
   const postKeys = new Set(post.map((i) => i.pairKey));
   const preKeys = new Set(pre.map((i) => i.pairKey));
   const pairedPre = pre.filter((i) => postKeys.has(i.pairKey));
@@ -102,6 +122,8 @@ export function computePairedScores(pre: ScoredItem[], post: ScoredItem[]): Pair
     overall: computeGain(pct(pairedPre), pct(pairedPost)),
     unpairedPre: [...preKeys].filter((k) => !postKeys.has(k)),
     unpairedPost: [...postKeys].filter((k) => !preKeys.has(k)),
+    duplicatePre,
+    duplicatePost,
   };
 }
 

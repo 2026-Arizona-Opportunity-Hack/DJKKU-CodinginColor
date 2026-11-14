@@ -57,3 +57,16 @@ Commit: see PR `lane-c/gain-math` · Run by: Umang (with Claude Code) · Command
 
 Findings:
 - None open. Not yet covered: SQL views matching this logic (needs lane A schema).
+
+### 2026-11-14 Lane C gain math after scaffold merge and review fix
+Commit: see PR #3 · Run by: Umang (with Claude Code) · Command: root `npm run lint && npm run typecheck && npm test`
+
+| Check | Result | Notes |
+|---|---|---|
+| Lint (oxlint) | Pass | |
+| Type check (`tsc -b`, TS 7, strict, `erasableSyntaxOnly`) | Pass | |
+| Tests (Vitest) | 34 passed across 3 files | 22 lane C gain/CSV, rest from lane D and the feature registry |
+| Duplicate pair_key (Jad's review) | Fixed, 2 new tests | key excluded from both tests and reported |
+
+Findings:
+- [fixed, medium] Duplicate `pairKey` in one test counted twice on that side and once on the other, skewing gain. Fixed in PR #3.

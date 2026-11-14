@@ -2,7 +2,8 @@
 
 How the system fits together. Status: **design**. Nothing here is built yet;
 update this file as the code lands so it stays true. Why each piece was chosen
-is in [decisions](decisions.md); what it costs us is in [tradeoffs](tradeoffs.md).
+is in [decisions](decisions.md); what it costs us is in [tradeoffs](tradeoffs.md); how to run and extend it is
+in the "Stack, commands and layout" section of [AGENTS.md](../AGENTS.md).
 
 ## Overview
 
@@ -106,6 +107,26 @@ visible to CIC admin, and outbound notes are drafted by the system and sent by a
 | D | Jad | Roster import, instructor dashboard, admin console, stuck lists |
 | E | Krishna | Read API and docs, reviewer view, hints function, deploy, README |
 
+## Extending the system
+
+The structure is built so new work is added, not threaded through shared code. The
+step-by-step recipes are in [AGENTS.md](../AGENTS.md); the design is:
+
+- **Features are folders.** Each `src/features/<name>/` exports a `FeatureModule`
+  (`src/lib/feature.ts`: id, nav label, path, routes). `src/app/features.ts` lists
+  them, and the router and nav bar are built from that list. Adding a feature is a new
+  folder plus one line; no change to the router or layout. A test fails if ids or
+  paths clash. Features never import each other; shared code lives in `src/lib/`,
+  `src/components/` or `shared/`.
+- **Endpoints are files.** `functions/api/<name>.ts` is served at `/api/<name>`;
+  helpers live in `functions/_lib/`, and `functions/` is type-checked on its own
+  against the Workers runtime.
+- **One contract for both sides.** `shared/` holds what the browser and the functions
+  must agree on: the six roles now, zod schemas as forms and endpoints are added.
+- **The database has its own home.** `supabase/` holds migrations, RLS, seed and the
+  per-role tests, so lane A works without touching app code.
+- **Ownership follows folders**, one lane per folder (table in AGENTS.md).
+
 ## Assumptions that are ours, not in the team plan
 
 Lane E's reading of the plan. Confirm with Koen (lane A) and fix here if wrong.
@@ -122,8 +143,19 @@ Lane E's reading of the plan. Confirm with Koen (lane A) and fix here if wrong.
 ## Repo layout (planned; update as it is created)
 
 ```
-docs/            requirements, architecture, decisions, tradeoffs, audits, progress
-supabase/        migrations, RLS policies, functions, seed (lane A)
-functions/api/   Cloudflare Pages Functions: read API, hint proxy (lane E)
-src/             React app
+docs/                   requirements, architecture, decisions, tradeoffs, audits, progress
+docs/design/            copy of the team design plan
+src/app/                app shell: router, layout, the feature list (features.ts)
+src/features/<name>/    one folder per feature, mapped to the lanes:
+  player/               lane B (M4)         authoring/  lane C (M3, M5)
+  instructor/ admin/    lane D (M7; M2, M8) reviewer/   lane E (M9)
+  auth/                 M1 sign-in
+src/components/         shared UI (shadcn/ui goes in src/components/ui)
+src/lib/                shared helpers: feature contract, Supabase client
+shared/                 code used by both browser and functions: roles, zod schemas
+functions/api/          Pages Functions, one file per endpoint (health now; read API, hints next)
+functions/_lib/         helpers for the functions (env bindings)
+supabase/               migrations, RLS, seed, per-role tests (lane A; layout in its README)
+lane-d-logic/           Jad's stuck-student heap and roster checker; move into
+                        src/features/instructor and admin when wired in (ask Jad)
 ```

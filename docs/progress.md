@@ -36,3 +36,29 @@ instead of repeating them.
 - Next: zod authoring schemas (question types, answer-key split, YouTube
   validation, assessment pairs), then `lane_c_proposal.sql` to sync with Koen.
 - Blocked: nothing. Waiting on a Vite scaffold and lane A schema before any UI.
+
+### 2026-11-14: Krishna (lane E)
+- Done: scaffolded the app (Vite, React, TypeScript, Tailwind, React Router) with
+  one folder per feature in `src/features/`, registered in `src/app/features.ts`;
+  `functions/` with a health check and typed env; `shared/` and the `supabase/`
+  layout; Vitest with first tests (Jad's stuck logic, a feature-registry guard); a
+  CI workflow draft (lint, typecheck, test, build, gitleaks); and a fuller
+  "Stack, commands and layout" section in `AGENTS.md` (lane ownership, recipes,
+  conventions). Not pushed yet.
+- Next: push in small PRs; connect Cloudflare Pages and verify `/api/health`; run
+  CI on GitHub; add Lighthouse CI; write the OpenAPI contract with Koen.
+- Blocked: Cloudflare access to the org repo is unconfirmed. Local Node must be
+  22.12 or newer.
+
+### 2026-11-14: Umang (lane C, correction)
+- Done: merged Krishna's scaffold (PR #5) into `lane-c/gain-math` and fixed the
+  overlaps. Corrections to my entry above: the learning gain ADR is now
+  [0020](adr/0020-learning-gain-definition.md) (Krishna took 0019 for repo
+  structure) and the folder ADR is [0021](adr/0021-lane-c-logic-folder.md),
+  now superseded. Code moved from `lane-c-logic/` to `shared/authoring/`, as
+  the scaffold rules require. Fixed Jad's review comment on PR #3: duplicate
+  `pairKey` values are now excluded from gain and reported. Root `npm run lint`,
+  `typecheck` and `test` pass (34 tests).
+- Next: rebase PR #4 the same way (schemas move to `shared/authoring/`, add
+  `zod`), then merge order #5, #3, #4.
+- Blocked: PR #5 must merge first.

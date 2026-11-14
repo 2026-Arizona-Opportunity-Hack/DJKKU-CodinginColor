@@ -1,4 +1,4 @@
-# 0019. Learning gain definition
+# 0020. Learning gain definition
 
 Status: Accepted
 Date: 2026-11-14
@@ -18,7 +18,9 @@ show a fake zero when a test is missing. Lane A needs an exact spec for
   method), not the mean of per-student ratios.
 - Pre and post items match by `pair_key`; items with no twin are ignored for
   gain and flagged in the test builder.
-- The reference implementation is `lane-c-logic/src/gain.ts` with tests. The SQL
+- A pair_key must be unique per test. A duplicate makes the match ambiguous, so
+  it is excluded from all scores and reported (raised in review by Jad, PR #3).
+- The reference implementation is `shared/authoring/gain.ts` with tests. The SQL
   views must match it.
 
 ## Alternatives considered
