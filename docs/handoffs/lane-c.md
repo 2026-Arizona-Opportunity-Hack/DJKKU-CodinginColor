@@ -58,3 +58,24 @@ It stubs `is_admin()`, `is_staff()` and `auth.uid()` from two session settings.
 When your migrations land, load them instead of the stubs and keep the tests as
 the regression suite; add your own roles (mentor, student claim) the same way.
 
+## 2026-11-14 update: lane A is now built (supersedes the asks above)
+
+The old proposal file and PGlite test are gone; lane A's schema is in `supabase/migrations/`
+and `supabase/tests/db.test.ts` runs against a real local Supabase. Everything asked of Koen
+above (helpers, key split, publish and version functions, full learning gain view) is done.
+
+- **Studio (lane C) calls** `save_module_draft`, `submit_module`, `get_activity_keys`,
+  `get_assessment_keys`, `upsert_concept`. Payload in `docs/contracts/database-api.md`.
+  Admin console calls `publish_module`, `return_module_to_draft`.
+- **Lane B (player):** every RPC name in `api.supabase.ts` exists with the shape in
+  `types.ts`, except these differences to adapt: `claim_login_code` and `list_join_roster`
+  work as proposed; `complete_activity` is gone (videos and readings send `{viewed: true}` to
+  `submit_answer`); `submit_answer` and `submit_assessment` take an optional `p_class_id`;
+  `next_activity` returns null while a pre-test or post-test is the next step (check the
+  outline's `pretest` and `posttest` status); guests can only view, they cannot submit.
+- **Lane D:** `import_roster` replaces one-by-one code creation; `create_class`,
+  `create_join_code`, `reset_login_code`, `assign_module` and the views `v_class_progress`,
+  `v_not_started`, `v_stuck`, `v_concept_mastery`, `v_reteach`, `v_learning_gain` are ready.
+- **Lane E:** `validate_api_key` (service_role), `api_class_gain`, `api_class_progress`,
+  and write access to `hint_events` and `hint_cache` as service_role.
+
