@@ -109,3 +109,16 @@ instead of repeating them.
 - Next: lane B, D and E wire to the RPCs in the contract; studio UI calls `save_module_draft`.
 - Blocked: nothing. Koen should review the rebuild against the original drafts.
 
+### 2026-11-14: Krishna (lane E)
+- Done: merged PRs #3, #4 and #5; `main` passes lint, typecheck and 78 tests. Read
+  the organizers' CIC brief and recorded what it adds: the read API's consumer (CIC's
+  existing dashboard), camps with no student accounts, slides as curriculum, prior art
+  (NMTSA LMS), the P1/P2 menu, and logo/palette link. Proposals for the API shape and a
+  `slides` activity kind are marked as ours, in `docs/requirements.md` and
+  `docs/architecture.md`. Also recorded the mentors' Slack answers (guidance, not
+  CIC's decision) in `docs/requirements.md`.
+- Next: follow up with CIC on the dashboard (the tool was asked on Slack; header vs URL
+  key, JSON vs CSV, totals and frequency were not); draft `docs/openapi.yaml` with Koen's
+  view names; Cloudflare Pages deploy.
+- Blocked: CIC's answers on the dashboard; Cloudflare access to the org repo.
+

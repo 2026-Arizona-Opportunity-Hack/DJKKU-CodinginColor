@@ -58,7 +58,9 @@ Six roles, one `role` column on `profiles`: student, independent student
 (read-only). The full capability matrix is in the team plan; in short:
 
 - Browsing published lessons needs no account; guest progress stays on the device
-  until the learner self-registers.
+  until the learner self-registers. CIC's camps use locked-down lab machines with
+  no student accounts, so this no-login path is a real requirement. If those
+  machines clear browser storage between sessions, guest progress is lost (unconfirmed).
 - Instructors and CIC staff draft modules; only CIC admin publishes. Publishing
   creates an immutable version; a class stays on the version it started with.
 - Only CIC admin manages API keys, invites reviewers and approves mentors.
@@ -139,6 +141,17 @@ Lane E's reading of the plan. Confirm with Koen (lane A) and fix here if wrong.
   a hash and compares in constant time.
 - Pages Functions are a Cloudflare product that Cloudflare has been steering
   toward Workers; check current status before relying on it.
+- **Slides.** CIC's curriculum is mostly slides, but the planned activity kinds are
+  video, reading, check, worksheet and exit. Proposal: add a `slides` kind (an embed of
+  Google Slides or Docs, with a link fallback). Needs agreement from Koen (schema)
+  and Umang (authoring).
+- **Read API shape.** Flat JSON (and optional CSV) under `/api/v1/`, with an "as of"
+  timestamp, cohort/class/concept breakdowns and `from`/`to` filters, key in a header.
+  The aggregation lives in dedicated `api_*` views. Details and reasons are in
+  [requirements](requirements.md#read-api-what-the-brief-says-and-what-we-propose);
+  the dashboard's real needs are still unknown.
+- A second consumer is possible (the brief's Problem 2 funder packet pulling outcomes),
+  so the API should be usable by code other than CIC's dashboard.
 
 ## Repo layout (planned; update as it is created)
 
