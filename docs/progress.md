@@ -26,6 +26,17 @@ instead of repeating them.
   decision entries; draft the read API contract with Koen (lane A).
 - Blocked: `gh` CLI not installed locally; Cloudflare Pages access to the org repo not yet confirmed.
 
+### 2026-11-14: Umang (lane C)
+- Done: checked GitHub for a scaffold or schema (none yet). Started lane C with
+  pure logic in `lane-c-logic/`: learning gain math, paired-item scoring,
+  group summary, CSV export with formula-injection guard, 20 passing Vitest
+  tests. Decisions: [ADR 0019](adr/0019-learning-gain-definition.md),
+  [ADR 0020](adr/0020-lane-c-logic-folder.md). Audit entry added. Handoff
+  notes for lane A in `docs/handoffs/lane-c.md`.
+- Next: zod authoring schemas (question types, answer-key split, YouTube
+  validation, assessment pairs), then `lane_c_proposal.sql` to sync with Koen.
+- Blocked: nothing. Waiting on a Vite scaffold and lane A schema before any UI.
+
 ### 2026-11-14: Krishna (lane E)
 - Done: scaffolded the app (Vite, React, TypeScript, Tailwind, React Router) with
   one folder per feature in `src/features/`, registered in `src/app/features.ts`;
@@ -38,3 +49,16 @@ instead of repeating them.
   CI on GitHub; add Lighthouse CI; write the OpenAPI contract with Koen.
 - Blocked: Cloudflare access to the org repo is unconfirmed. Local Node must be
   22.12 or newer.
+
+### 2026-11-14: Umang (lane C, correction)
+- Done: merged Krishna's scaffold (PR #5) into `lane-c/gain-math` and fixed the
+  overlaps. Corrections to my entry above: the learning gain ADR is now
+  [0020](adr/0020-learning-gain-definition.md) (Krishna took 0019 for repo
+  structure) and the folder ADR is [0021](adr/0021-lane-c-logic-folder.md),
+  now superseded. Code moved from `lane-c-logic/` to `shared/authoring/`, as
+  the scaffold rules require. Fixed Jad's review comment on PR #3: duplicate
+  `pairKey` values are now excluded from gain and reported. Root `npm run lint`,
+  `typecheck` and `test` pass (34 tests).
+- Next: rebase PR #4 the same way (schemas move to `shared/authoring/`, add
+  `zod`), then merge order #5, #3, #4.
+- Blocked: PR #5 must merge first.

@@ -24,6 +24,8 @@ pricing page before the README quotes them.
 | Independent students | Progress kept on-device until registering | Cross-device continuity for guests | Merged via `import_guest_progress` at sign-up |
 | Repo shape | One npm package: frontend, `functions/` and `shared/` together; features as folders in one registry | Separate deploys, versioning and dependency sets per part | One install, one deploy, shared types. "Features never import each other" is a convention, not enforced by tooling |
 | Scope | AI and concept mastery only after P0 works | Earlier AI demo | Hints must never block the core flow |
+| Learning gain | Class numbers use only students with both pre and post | Showing every enrolled student in the class average | Screen shows "N of M students" so the gap is visible ([ADR 0020](adr/0020-learning-gain-definition.md)) |
+| Lane C code layout | Pure logic in `shared/authoring/` (not `src/features/authoring/`) | Keeping all of lane C in one folder | `shared/` is the scaffold rule for code the browser and functions both use; gain math will be reused by the read API (ADR 0021) |
 
 ## Known risks
 
