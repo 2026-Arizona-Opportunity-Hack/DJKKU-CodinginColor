@@ -22,6 +22,7 @@ pricing page before the README quotes them.
 | Read API | Aggregates only, groups under 5 suppressed | Per-student export for CIC's dashboard | Meets the minors' privacy limit; revisit with CIC |
 | Reviewer login | Google sign-in only | Reviewers without Google accounts | Rare in districts; revisit if CIC objects |
 | Independent students | Progress kept on-device until registering | Cross-device continuity for guests | Merged via `import_guest_progress` at sign-up |
+| Repo shape | One npm package: frontend, `functions/` and `shared/` together; features as folders in one registry | Separate deploys, versioning and dependency sets per part | One install, one deploy, shared types. "Features never import each other" is a convention, not enforced by tooling |
 | Scope | AI and concept mastery only after P0 works | Earlier AI demo | Hints must never block the core flow |
 
 ## Known risks

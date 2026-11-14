@@ -61,6 +61,7 @@ also change how the system works. A dash means the ADR file is not written yet.
 | 16 | Answer keys in a separate table no student or reviewer policy can read (open question 2) | Accepted | – |
 | 17 | Reviewer login: Google sign-in limited to invited emails, replacing magic links (open question 9) | Accepted | – |
 | 18 | Free-only: $0 a month, no credit card on any account (open question 11) | Accepted | – |
+| 19 | Repo structure: one folder per feature in `src/features/`, registered in one list (`src/app/features.ts`); one npm package with `functions/` and `shared/` beside `src/` (lane E) | Accepted | – |
 
 Changed in the Nov 14 revision: reviewer magic links → Google sign-in (17); the
 read API and hint proxy moved from Supabase Edge Functions to Cloudflare Pages

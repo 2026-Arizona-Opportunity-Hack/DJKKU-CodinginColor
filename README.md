@@ -53,10 +53,10 @@ Judges score **Scope, Documentation, Polish and Security**, plus a separate **Ac
 
 ## Tech stack
 
-- Frontend:
-- Backend:
-- Database:
-- APIs / services:
+- Frontend: React, TypeScript, Vite, Tailwind CSS
+- Backend: Cloudflare Pages Functions (read API, AI hints)
+- Database: Supabase (Postgres, Auth, row-level security)
+- APIs / services: Cloudflare Pages (hosting), GitHub Actions (CI), Gemini free tier (hints, planned)
 
 ## Run it locally
 
@@ -64,8 +64,14 @@ Judges score **Scope, Documentation, Polish and Security**, plus a separate **Ac
 git clone https://github.com/2026-Arizona-Opportunity-Hack/DJKKU-CodinginColor.git
 cd DJKKU-CodinginColor
 cp .env.example .env   # fill in your own values — never commit .env
-# install + start commands here
+npm install        # needs Node 22.12 or newer (see .nvmrc)
+npm run dev        # http://localhost:5173
 ```
+
+Other commands: `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`
+(production build into `dist/`). Environment variables are explained in
+`.env.example`. Contributing, lane ownership and how to add a feature or endpoint:
+the "Stack, commands and layout" section of [AGENTS.md](AGENTS.md).
 
 ## Links
 
