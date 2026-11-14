@@ -199,10 +199,12 @@ function LiveDashboard({
           ) / students.length,
         )
 
-  const classGain =
-    data.learningGain.find(
-      (row) => row.scope === 'class' && row.concept_id === null,
-    ) ?? null
+  const overallGainRows = data.learningGain.filter(
+  (row) => row.scope === 'class' && row.concept_id === null,
+)
+
+const classGain =
+  overallGainRows.length === 1 ? overallGainRows[0] : null
 
   const progressByStudent = new Map(
     data.progress
@@ -262,10 +264,12 @@ function LiveDashboard({
           label="Learning gain"
           value={formatGain(classGain?.gain_points ?? null)}
           detail={
-            classGain
-              ? `${classGain.complete_count} measured · ${classGain.incomplete_count} incomplete`
-              : 'No complete pre/post results yet'
-          }
+  classGain
+    ? `${classGain.complete_count} measured · ${classGain.incomplete_count} incomplete`
+    : overallGainRows.length > 1
+      ? 'Select a module to view learning gain'
+      : 'No complete pre/post results yet'
+}
         />
       </div>
 
