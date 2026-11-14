@@ -30,7 +30,7 @@ describe('B15 mock data source', () => {
   })
 
   it('requires a signed-in student for class data', async () => {
-    await expect(mockApi().getMyClasses()).rejects.toMatchObject({ code: 'unauthenticated' })
+    await expect(mockApi({ me: null }).getMyClasses()).rejects.toMatchObject({ code: 'unauthenticated' })
   })
 
   it('never sends answer keys to the client', async () => {
@@ -63,9 +63,10 @@ describe('B15 mock data source', () => {
 
   it('persists demo state across reloads when given storage', async () => {
     const first = createMockApi({ storage: window.localStorage })
-    await first.claimLoginCode('BLUE-FOX-27')
-    expect(window.localStorage.getItem(MOCK_STORAGE_KEY)).toContain('Maya R.')
-    expect(await createMockApi({ storage: window.localStorage }).getMe()).toMatchObject({ display_name: 'Maya R.' })
+    expect(await first.getMe()).toMatchObject({ display_name: 'Maya R.' }) // starts signed in as the demo student
+    await first.signOut()
+    expect(window.localStorage.getItem(MOCK_STORAGE_KEY)).toContain('"me":null')
+    expect(await createMockApi({ storage: window.localStorage }).getMe()).toBeNull()
   })
 })
 

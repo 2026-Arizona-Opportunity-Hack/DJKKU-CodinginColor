@@ -31,7 +31,7 @@ export function ExplorePage() {
             <Link to={paths.save}>Save my progress</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to={paths.start}>I have a login code</Link>
+            <Link to={paths.signIn}>I have a login code</Link>
           </Button>
         </CardContent>
       </Card>

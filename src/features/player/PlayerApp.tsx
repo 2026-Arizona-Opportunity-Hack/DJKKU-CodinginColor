@@ -16,12 +16,10 @@ import { AssessmentPage } from './pages/AssessmentPage'
 import { ClassPathPage } from './pages/ClassPathPage'
 import { ExplorePage } from './pages/ExplorePage'
 import { GuestActivityPage } from './pages/GuestActivityPage'
-import { JoinPage } from './pages/JoinPage'
 import { LearnHomePage } from './pages/LearnHomePage'
 import { LearnLayout } from './pages/LearnLayout'
 import { ProgressPage } from './pages/ProgressPage'
 import { SaveProgressPage } from './pages/SaveProgressPage'
-import { StartPage } from './pages/StartPage'
 import { createQueryClient } from './queryClient'
 
 // One data source and one query cache for the player, created once per page load.
@@ -54,9 +52,6 @@ function PlayerRoutes({ apiPromise }: { apiPromise: Promise<StudentApi> }) {
   return (
     <StudentApiProvider value={api}>
       <Routes>
-        <Route path="start" element={<StartPage />} />
-        <Route path="c/:code" element={<StartPage />} />
-        <Route path="join/:joinCode" element={<JoinPage />} />
         <Route path="explore" element={<ExplorePage />} />
         <Route path="explore/save" element={<SaveProgressPage />} />
         <Route path="explore/a/:activityId" element={<GuestActivityPage />} />

@@ -6,9 +6,6 @@
 import { newRequestId, shortRef } from '@/lib/requestId'
 
 export const ERROR_CODES = [
-  'invalid_code',
-  'already_claimed_elsewhere',
-  'seat_taken',
   'locked',
   'invalid_response',
   'already_taken',
@@ -24,16 +21,13 @@ export const ERROR_CODES = [
 export type ErrorCode = (typeof ERROR_CODES)[number]
 
 const MESSAGES: Record<ErrorCode, string> = {
-  invalid_code: "That code didn't work. Check it with your instructor and try again.",
-  already_claimed_elsewhere: 'That code is already in use on another account. Ask your instructor for help.',
-  seat_taken: 'Someone already picked that name. Choose your own name, or ask your instructor.',
   locked: "This isn't open yet. Finish the earlier steps first.",
   invalid_response: "That answer couldn't be read. Check it and try again.",
   already_taken: "You've already taken this test.",
   invalid_name: 'Use 1 to 40 letters, with no email address or link.',
   rate_limited: 'Too many tries right now. Wait a minute and try again.',
   unavailable: "That service isn't available right now. Try again in a minute.",
-  unauthenticated: 'You are signed out. Enter your login code to continue.',
+  unauthenticated: 'You are signed out. Sign in to continue.',
   not_found: "We couldn't find that. It may have been moved.",
   offline: "You're offline; your answer wasn't sent. Reconnect and try again.",
   bad_response: 'The server sent something unexpected. Try again, and tell your instructor if it keeps happening.',

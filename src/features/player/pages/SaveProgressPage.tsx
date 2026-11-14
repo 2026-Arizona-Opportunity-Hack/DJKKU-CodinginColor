@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from 'react-router'
 import { z } from 'zod'
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -13,7 +12,7 @@ import { StudentLayout } from '@/features/player/components/StudentLayout'
 import { InlineError } from '@/features/player/components/InlineError'
 import { describeError } from '@/features/player/errors'
 import { paths } from '@/features/player/outline'
-import { useSaveGuestProgress, type IssuedCode, type SavedAccount } from '@/features/player/queries'
+import { useSaveGuestProgress, type IssuedCode } from '@/features/player/queries'
 import { DisplayNameSchema } from '@/features/player/validation'
 
 const FormSchema = z.object({ display_name: DisplayNameSchema })
@@ -29,17 +28,7 @@ export function SaveProgressPage() {
     formState: { errors },
   } = useForm<FormValues>({ resolver: zodResolver(FormSchema), defaultValues: { display_name: '' } })
 
-  if (save.data) return <CodeReveal account={save.data} />
-  if (issued) {
-    return (
-      <IssuedCodePending
-        issued={issued}
-        pending={save.isPending}
-        error={save.isError ? describeError(save.error) : null}
-        onRetry={() => save.mutate(issued.display_name)}
-      />
-    )
-  }
+  if (issued) return <CodeReveal issued={issued} />
 
   const serverError = save.isError ? describeError(save.error) : null
   const fieldError = errors.display_name?.message ?? (serverError?.code === 'invalid_name' ? serverError.message : undefined)
@@ -91,7 +80,8 @@ export function SaveProgressPage() {
   )
 }
 
-function CodeReveal({ account }: { account: SavedAccount }) {
+/** Shows the new personal login code; signing in with it happens on the auth feature's page. */
+function CodeReveal({ issued }: { issued: IssuedCode }) {
   const heading = useRef<HTMLHeadingElement>(null)
   // Move focus to the result so screen readers hear the code right away.
   useEffect(() => heading.current?.focus(), [])
@@ -99,75 +89,28 @@ function CodeReveal({ account }: { account: SavedAccount }) {
   return (
     <StudentLayout>
       <h1 ref={heading} tabIndex={-1} className="text-2xl font-bold outline-none">
-        Your progress is saved
+        Your account is ready
       </h1>
       <Card className="border-2 border-primary">
         <CardHeader>
           <CardTitle>Your personal login code</CardTitle>
-          <CardDescription>Write this down or print it. We only show it once.</CardDescription>
+          <CardDescription>Write this down or print it. You need it to sign in.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <p className="rounded-md bg-secondary p-4 text-center font-mono text-3xl font-bold tracking-widest break-all text-secondary-foreground">
-            {account.login_code}
+            {issued.login_code}
           </p>
           <div className="flex flex-wrap gap-2 print:hidden">
             <Button variant="outline" onClick={() => window.print()}>
               Print my code
             </Button>
             <Button asChild>
-              <Link to={paths.home}>Keep learning</Link>
+              <Link to={paths.signIn}>Sign in with this code</Link>
             </Button>
           </div>
-        </CardContent>
-      </Card>
-      {account.importFailed ? (
-        <Alert variant="warning">
-          <AlertTitle>Your account is ready, but your guest progress didn't copy over</AlertTitle>
-          <AlertDescription>
-            <p>It's still on this device. Ask your instructor to help move it.</p>
-          </AlertDescription>
-        </Alert>
-      ) : (
-        account.imported > 0 && (
-          <p>
-            We copied {account.imported} finished {account.imported === 1 ? 'activity' : 'activities'} to your account.
+          <p className="text-sm text-muted-foreground">
+            After you sign in, the lessons you finished as a guest on this device are copied to your account.
           </p>
-        )
-      )}
-    </StudentLayout>
-  )
-}
-
-/** The account exists but this device isn't signed in yet: show the code now, retry with the same code. */
-function IssuedCodePending({
-  issued,
-  pending,
-  error,
-  onRetry,
-}: {
-  issued: IssuedCode
-  pending: boolean
-  error: ReturnType<typeof describeError> | null
-  onRetry: () => void
-}) {
-  return (
-    <StudentLayout>
-      <h1 className="text-2xl font-bold">Your account is ready</h1>
-      <Card className="border-2 border-primary">
-        <CardHeader>
-          <CardTitle>Your personal login code</CardTitle>
-          <CardDescription>Write this down or print it before you continue.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <p className="rounded-md bg-secondary p-4 text-center font-mono text-3xl font-bold tracking-widest break-all text-secondary-foreground">
-            {issued.login_code}
-          </p>
-          <div aria-live="polite">
-            {pending ? <p>Signing you in…</p> : error && <InlineError error={error} />}
-          </div>
-          <Button size="lg" disabled={pending} onClick={onRetry}>
-            {error ? 'Try signing in again' : 'Sign in with this code'}
-          </Button>
         </CardContent>
       </Card>
     </StudentLayout>

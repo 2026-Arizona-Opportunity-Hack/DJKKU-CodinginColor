@@ -37,11 +37,10 @@ export const KIND_LABEL: Record<OutlineActivity['kind'], string> = {
 
 export const paths = {
   home: '/learn',
-  start: '/learn/start',
+  /** Sign-in lives in the auth feature (src/features/auth), not in the player. */
+  signIn: '/sign-in',
   explore: '/learn/explore',
   save: '/learn/explore/save',
-  loginLink: (code: string) => `/learn/c/${code}`,
-  joinLink: (joinCode: string) => `/learn/join/${joinCode}`,
   path: (classId: string) => `/learn/${classId}`,
   activity: (classId: string, activityId: string) => `/learn/${classId}/a/${activityId}`,
   test: (classId: string, assessmentId: string) => `/learn/${classId}/test/${assessmentId}`,

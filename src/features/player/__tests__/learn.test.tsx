@@ -39,8 +39,8 @@ describe('B5 Start here', () => {
   })
 
   it('redirects a signed-out device to /start', async () => {
-    renderRoute(<LearnLayout />, { path: '/learn', url: '/learn', api: mockApi() })
-    expect(await screen.findByTestId('location')).toHaveTextContent('/learn/start')
+    renderRoute(<LearnLayout />, { path: '/learn', url: '/learn', api: mockApi({ me: null }) })
+    expect(await screen.findByTestId('location')).toHaveTextContent('/sign-in')
   })
 })
 
