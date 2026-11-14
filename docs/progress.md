@@ -95,6 +95,20 @@ instead of repeating them.
   studio UI in `src/features/authoring/`.
 - Blocked: nothing.
 
+### 2026-11-14: Umang (lane C, covering lane A)
+- Done: reviewed the lane A draft files and rebuilt them as one consolidated, tested
+  database: 5 migrations, a seed, and 35 per-role tests against a real local Supabase
+  (Docker). Shaped to lane C's content types and to the RPC names lane B's adapter calls.
+  Adds the unlock engine, grading in SQL, one-shot tests, the authoring and publishing
+  flow (`save_module_draft`, `submit_module`, `publish_module`, `new_module_version`),
+  roster import, join and login codes, admin functions, staff invites, and views for the
+  dashboards and the read API. Full list of findings in `docs/audits.md`. Docs:
+  [ADR 0024](adr/0024-lane-a-database-design.md),
+  [docs/contracts/database-api.md](contracts/database-api.md), `supabase/README.md`.
+  New CI file `.github/workflows/db-tests.yml` (lane E: please check it).
+- Next: lane B, D and E wire to the RPCs in the contract; studio UI calls `save_module_draft`.
+- Blocked: nothing. Koen should review the rebuild against the original drafts.
+
 ### 2026-11-14: Krishna (lane E)
 - Done: merged PRs #3, #4 and #5; `main` passes lint, typecheck and 78 tests. Read
   the organizers' CIC brief and recorded what it adds: the read API's consumer (CIC's

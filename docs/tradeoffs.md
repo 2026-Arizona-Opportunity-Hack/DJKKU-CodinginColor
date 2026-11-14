@@ -29,6 +29,10 @@ pricing page before the README quotes them.
 | Lane C code layout | Pure logic in `shared/authoring/` (not `src/features/authoring/`) | Keeping all of lane C in one folder | `shared/` is the scaffold rule for code the browser and functions both use; gain math will be reused by the read API (ADR 0021) |
 | Answer keys in authoring | Content and key are separate shapes the editor must handle | A simpler single question object | Strict schemas plus a payload leak test ([ADR 0022](adr/0022-keys-split-from-content.md)) |
 | Module versions | Every version is its own row | Smallest database | Old versions stay for classes that use them ([ADR 0023](adr/0023-immutable-module-versions.md)) |
+| Database writes | Every write is a function, not a table policy | Quick direct inserts from the UI | One audited path, one test per function ([ADR 0024](adr/0024-lane-a-database-design.md)) |
+| Test takers | Pre and post tests are one shot | Letting a student retake | An instructor can reset a test; stops gaming the learning gain |
+| Student sign-in | 64-bit random login code, no per-session lockout | A short code that is easy to type | Dashes and case are ignored; Supabase rate limits anonymous sign-ins per IP |
+| Staff sign-in | Google only; email provider disabled | Staff without a Google account | Matches the plan (decision 17); avoids anyone claiming an invited address |
 
 ## Known risks
 

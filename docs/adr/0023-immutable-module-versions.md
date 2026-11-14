@@ -1,6 +1,6 @@
 # 0023. Module versions are rows; published versions are immutable
 
-Status: Proposed (needs lane A agreement)
+Status: Accepted (implemented in the lane A migrations; see ADR 0024)
 Date: 2026-11-14
 
 ## Context

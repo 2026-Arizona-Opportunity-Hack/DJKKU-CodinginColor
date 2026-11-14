@@ -123,3 +123,42 @@ Findings:
 - [open, low] `concepts` has read policy only, so nobody can write concepts until lane A seeds them.
 - [open, low] `assessment_items` stores key beside content, so it is staff-only until lane A splits it.
 
+### 2026-11-14 Lane A database review and per-role tests (against real Supabase)
+Commit: see PR `lane-a/schema-review` · Run by: Umang (with Claude Code) · Command: `npx supabase db reset` then `npx vitest run supabase` (Postgres 17, local Supabase in Docker)
+
+| Check | Result | Notes |
+|---|---|---|
+| All 5 migrations + seed apply from scratch | Pass | |
+| Per-role tests (`supabase/tests/db.test.ts`) | 35 passed, 0 failed | student, guest, reviewer, mentor, instructor, author, admin, service_role |
+| Keys, login codes, join codes, API key hashes unreadable by any client role | Pass | RLS on, no policy, no grant |
+| Student content carries no key fields (all seeded activities and test items) | Pass | plus a CHECK constraint refuses them on write |
+| Unlock engine: pre-test first, strict order, post-test last, module chaining | Pass | enforced in `submit_answer`, `get_activity`, `heartbeat`, `submit_assessment` |
+| Learning gain: complete, incomplete, pre 100, class mean | Pass | matches ADR 0020; student path gives 40 -> 100 = 60, normalized 1.0 |
+| Published modules frozen (modules, lessons, activities, keys, tests) | Pass | |
+| Staff-invite role grant needs verified Google email | Pass | unverified and non-Google sign-ups stay students |
+| Mutation check: exposed key tables to clients | 2 tests failed as expected | restored afterward |
+
+Findings from reviewing the first lane A drafts (all fixed in this PR):
+- [high] The two migrations created the same tables with different shapes; `db reset` would fail on the second. The seed matched neither.
+- [high] An author could publish by updating `status`: the update policy's WITH CHECK only required `is_author()`.
+- [high] Any author could read and edit any other author's drafts (`can_read_module` allowed every author to see every draft).
+- [high] No answer-key shape matched lane C (one key per activity, but worksheets have many questions); the player's response shapes could not be graded.
+- [medium] Pre and post tests could be retaken (upsert), letting a student game learning gain. Now one shot, instructor can reset.
+- [medium] The pre-test did not gate the module, and `next_activity` used an O(n^2) "no earlier incomplete activity" check that is redundant for ordered work.
+- [medium] Class gain rows were hidden when a class had under 5 students, which hides small CIC classes from their own instructor. Suppression now applies only to the read API views.
+- [medium] `v_stuck` and `v_learning_gain` used security-barrier views over RLS tables that needed role helpers; learning gain did not follow ADR 0020 (no incomplete state, no pair_key matching).
+- [medium] Hash columns on `classes`, `class_members`, `api_keys` behind column grants made `select *` fail for staff.
+- [medium] `get_activity_key` let every author read every key. Now owner, admin, instructor of a class using the module, or mentor of a student in it.
+- [low] `archived` status could never be reached (the published trigger blocked it).
+- [low] `self_register` was callable directly, so the Pages Function rate limit could be bypassed. Mitigated by Supabase's anonymous sign-in rate limit; documented.
+
+Bugs the new tests caught during this work (fixed before merge):
+- `grade_question` returned NULL for a malformed ordering or mcq response, which would have crashed the insert.
+- The "solved order" safety check read items in sorted order, so it would have blocked publishing any module with an ordering question.
+- `v_stuck` was not callable by instructors because a helper had no grant.
+
+Open:
+- [open, medium] No per-session lockout on `claim_login_code` guesses. Codes are 64-bit random, so guessing is not practical, and anonymous sign-ins are rate limited per IP, but a lockout would be stronger.
+- [open, low] Unlock overrides ("instructor can unlock one student") are not built (plan decision 7, stretch).
+- [open, low] Guests cannot submit answers; only view credit for videos and readings is imported at registration.
+
