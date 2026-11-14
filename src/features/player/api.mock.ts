@@ -22,6 +22,7 @@ import {
   type SeedModule,
 } from './mockSeed'
 import type { Activity, ClaimResult, ClassOutline, ItemStatus, OutlineModule, SubmitResult } from './types'
+import { getStore, safeGet, safeParse, safeSet } from './safeStorage'
 import { DisplayNameSchema } from './validation'
 
 export type MockState = {
@@ -119,21 +120,16 @@ function toPublicActivity(a: SeedActivity, status: ItemStatus, prev?: string, ne
 }
 
 export function createMockApi(opts: Options = {}): StudentApi & { readonly state: MockState } {
-  const storage = opts.storage === undefined ? (typeof window !== 'undefined' ? window.localStorage : null) : opts.storage
+  const storage = opts.storage === undefined ? getStore() : opts.storage
   const latency = opts.latencyMs ?? 0
   let state: MockState = { ...initialMockState(), ...load(), ...opts.state }
 
   function load(): Partial<MockState> {
-    if (!storage) return {}
-    try {
-      const raw = storage.getItem(MOCK_STORAGE_KEY)
-      return raw ? (JSON.parse(raw) as Partial<MockState>) : {}
-    } catch {
-      return {}
-    }
+    const saved = safeParse(safeGet(MOCK_STORAGE_KEY, storage))
+    return saved && typeof saved === 'object' ? (saved as Partial<MockState>) : {}
   }
   function save() {
-    storage?.setItem(MOCK_STORAGE_KEY, JSON.stringify(state))
+    safeSet(MOCK_STORAGE_KEY, JSON.stringify(state), storage)
   }
   function update(fn: (s: MockState) => MockState) {
     state = fn(state)

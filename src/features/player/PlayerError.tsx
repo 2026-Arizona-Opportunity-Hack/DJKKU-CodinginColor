@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { log } from '@/lib/log'
 
 import { ErrorState } from './components/states'
+import { paths } from './outline'
 
 /** Route error boundary for /learn/*: logs once, offers a way out. Renders inside the app's <main>. */
 export function PlayerError() {
@@ -17,7 +18,7 @@ export function PlayerError() {
       onRetry={() => window.location.reload()}
     >
       <Button asChild variant="secondary">
-        <Link to="/learn">Go to Start here</Link>
+        <Link to={paths.home}>Go to Start here</Link>
       </Button>
     </ErrorState>
   )

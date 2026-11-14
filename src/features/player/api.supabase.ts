@@ -11,6 +11,8 @@ import { log } from '@/lib/log'
 import { newRequestId } from '@/lib/requestId'
 import { getSupabase } from '@/lib/supabase'
 
+import { safeGet, safeParse, safeRemove, safeSet } from './safeStorage'
+
 import type { Me, StudentApi } from './api'
 import { ApiError, fromHttpStatus, fromRpcError, isOnline } from './errors'
 import {
@@ -100,8 +102,9 @@ export function createSupabaseApi(sb: SupabaseClient = getSupabase()): StudentAp
     if (error) throw fromRpcError(error, newRequestId())
   }
 
+  /** Cache who signed in. A failed write only loses the "Signed in as" label; it never fails the claim. */
   function remember(me: Me): Me {
-    window.localStorage.setItem(ME_KEY, JSON.stringify(me))
+    safeSet(ME_KEY, JSON.stringify(me))
     return me
   }
 
@@ -111,14 +114,12 @@ export function createSupabaseApi(sb: SupabaseClient = getSupabase()): StudentAp
     async getMe() {
       const { data } = await sb.auth.getSession()
       if (!data.session) return null
-      const raw = window.localStorage.getItem(ME_KEY)
-      if (!raw) return null
-      const parsed = ClaimResult.safeParse(JSON.parse(raw))
+      const parsed = ClaimResult.safeParse(safeParse(safeGet(ME_KEY)))
       return parsed.success ? parsed.data : null
     },
 
     async signOut() {
-      window.localStorage.removeItem(ME_KEY)
+      safeRemove(ME_KEY)
       const { error } = await sb.auth.signOut()
       if (error) throw fromRpcError(error, newRequestId())
     },

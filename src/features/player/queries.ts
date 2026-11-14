@@ -2,7 +2,9 @@
  * TanStack Query hooks for the student app: one place for cache keys, invalidation
  * and the B14 log events for mutations (each failure logged once, here).
  */
+import { useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { z } from 'zod'
 
 import { log } from '@/lib/log'
 import type { ActivityResponse, QuestionResponse } from '@/features/player/content'
@@ -10,6 +12,7 @@ import type { ActivityResponse, QuestionResponse } from '@/features/player/conte
 import { useStudentApi } from './apiContext'
 import { isApiError } from './errors'
 import { clearGuestProgress, readGuestProgress } from './guestProgress'
+import { getStore, safeGet, safeParse, safeRemove, safeSet } from './safeStorage'
 
 export const keys = {
   me: ['me'] as const,
@@ -169,19 +172,48 @@ export function useRequestHint(activityId: string) {
 
 export type SavedAccount = { login_code: string; display_name: string; imported: number; importFailed: boolean }
 
+/** A code the server issued but this device hasn't finished signing in with yet. */
+export type IssuedCode = { login_code: string; display_name: string }
+const ISSUED_KEY = 'cic.issued-code.v1'
+const IssuedCodeSchema = z.object({ login_code: z.string().min(1), display_name: z.string() })
+
+function readIssued(): IssuedCode | null {
+  const parsed = IssuedCodeSchema.safeParse(safeParse(safeGet(ISSUED_KEY, getStore('session'))))
+  return parsed.success ? parsed.data : null
+}
+
 /**
  * B4: guest → account. Register, sign this device in with the new code, then merge device
- * progress exactly once. If only the merge fails, the account still exists: we show the code
- * and keep the device progress so nothing is lost.
+ * progress exactly once.
+ * - The code is kept (state + sessionStorage) the moment selfRegister returns, and shown
+ *   even if signing in fails. A retry signs in with that code; it never registers twice.
+ * - If only the merge fails, the account still exists: show the code, keep device progress.
  */
 export function useSaveGuestProgress() {
   const api = useStudentApi()
   const qc = useQueryClient()
-  return useMutation({
+  const [issued, setIssuedState] = useState<IssuedCode | null>(readIssued)
+  const issuedRef = useRef(issued)
+  const setIssued = (next: IssuedCode | null) => {
+    issuedRef.current = next
+    setIssuedState(next)
+    const session = getStore('session')
+    if (next) safeSet(ISSUED_KEY, JSON.stringify(next), session)
+    else safeRemove(ISSUED_KEY, session)
+  }
+
+  const save = useMutation({
     mutationFn: async (displayName: string): Promise<SavedAccount> => {
-      const { login_code } = await api.selfRegister(displayName)
-      const me = await api.claimLoginCode(login_code)
+      let code = issuedRef.current
+      if (!code) {
+        const { login_code } = await api.selfRegister(displayName)
+        code = { login_code, display_name: displayName }
+        setIssued(code)
+      }
+      const me = await api.claimLoginCode(code.login_code)
       log.info('student.claim.ok', { via: 'self_register' })
+      setIssued(null)
+      const { login_code } = code
       const payload = readGuestProgress()
       if (Object.keys(payload.completed).length === 0) {
         return { login_code, display_name: me.display_name, imported: 0, importFailed: false }
@@ -199,4 +231,5 @@ export function useSaveGuestProgress() {
     onSuccess: () => qc.removeQueries(),
     onError: (e) => logFailure('student.register.fail', e),
   })
+  return { save, issued }
 }

@@ -13,7 +13,7 @@ import { StudentLayout } from '@/features/player/components/StudentLayout'
 import { InlineError } from '@/features/player/components/InlineError'
 import { describeError } from '@/features/player/errors'
 import { paths } from '@/features/player/outline'
-import { useSaveGuestProgress, type SavedAccount } from '@/features/player/queries'
+import { useSaveGuestProgress, type IssuedCode, type SavedAccount } from '@/features/player/queries'
 import { DisplayNameSchema } from '@/features/player/validation'
 
 const FormSchema = z.object({ display_name: DisplayNameSchema })
@@ -21,7 +21,7 @@ type FormValues = z.input<typeof FormSchema>
 
 /** B4: guest → account with a display name only; shows the personal login code once. */
 export function SaveProgressPage() {
-  const save = useSaveGuestProgress()
+  const { save, issued } = useSaveGuestProgress()
   const id = useId()
   const {
     register,
@@ -30,6 +30,16 @@ export function SaveProgressPage() {
   } = useForm<FormValues>({ resolver: zodResolver(FormSchema), defaultValues: { display_name: '' } })
 
   if (save.data) return <CodeReveal account={save.data} />
+  if (issued) {
+    return (
+      <IssuedCodePending
+        issued={issued}
+        pending={save.isPending}
+        error={save.isError ? describeError(save.error) : null}
+        onRetry={() => save.mutate(issued.display_name)}
+      />
+    )
+  }
 
   const serverError = save.isError ? describeError(save.error) : null
   const fieldError = errors.display_name?.message ?? (serverError?.code === 'invalid_name' ? serverError.message : undefined)
@@ -124,6 +134,42 @@ function CodeReveal({ account }: { account: SavedAccount }) {
           </p>
         )
       )}
+    </StudentLayout>
+  )
+}
+
+/** The account exists but this device isn't signed in yet: show the code now, retry with the same code. */
+function IssuedCodePending({
+  issued,
+  pending,
+  error,
+  onRetry,
+}: {
+  issued: IssuedCode
+  pending: boolean
+  error: ReturnType<typeof describeError> | null
+  onRetry: () => void
+}) {
+  return (
+    <StudentLayout>
+      <h1 className="text-2xl font-bold">Your account is ready</h1>
+      <Card className="border-2 border-primary">
+        <CardHeader>
+          <CardTitle>Your personal login code</CardTitle>
+          <CardDescription>Write this down or print it before you continue.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <p className="rounded-md bg-secondary p-4 text-center font-mono text-3xl font-bold tracking-widest break-all text-secondary-foreground">
+            {issued.login_code}
+          </p>
+          <div aria-live="polite">
+            {pending ? <p>Signing you in…</p> : error && <InlineError error={error} />}
+          </div>
+          <Button size="lg" disabled={pending} onClick={onRetry}>
+            {error ? 'Try signing in again' : 'Sign in with this code'}
+          </Button>
+        </CardContent>
+      </Card>
     </StudentLayout>
   )
 }

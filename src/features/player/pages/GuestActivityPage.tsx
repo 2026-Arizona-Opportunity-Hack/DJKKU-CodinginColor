@@ -42,7 +42,7 @@ export function GuestActivityPage() {
               actions={
                 done && (
                   <Button asChild size="lg" variant={a.next_id ? 'default' : 'outline'}>
-                    <Link to={a.next_id ? paths.guestActivity(a.next_id) : '/explore'}>
+                    <Link to={a.next_id ? paths.guestActivity(a.next_id) : paths.explore}>
                       {a.next_id ? 'Next' : 'All open lessons'} <ArrowRight aria-hidden="true" />
                     </Link>
                   </Button>

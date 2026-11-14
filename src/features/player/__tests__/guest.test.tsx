@@ -112,3 +112,47 @@ describe('B4 self-register', () => {
     expect(logged).toHaveBeenCalledWith('student.guest.import.fail', expect.objectContaining({ requestId: 'imp-1' }))
   })
 })
+
+describe('review fixes', () => {
+  it('the last guest activity links back to /learn/explore, not a dead /explore', async () => {
+    markGuestCompleted('act-basics-exit')
+    renderRoute(<GuestActivityPage />, { path: '/learn/explore/a/:activityId', url: '/learn/explore/a/act-basics-exit' })
+    expect(await screen.findByRole('link', { name: /All open lessons/, description: '' })).toHaveAttribute('href', '/learn/explore')
+    for (const link of screen.getAllByRole('link')) expect(link.getAttribute('href')).toMatch(/^\/learn\//)
+  })
+
+  it('keeps and shows the new code when sign-in fails, and a retry re-uses it (no second account)', async () => {
+    vi.spyOn(log, 'error').mockImplementation(() => {})
+    const api = mockApi()
+    const register = vi.spyOn(api, 'selfRegister')
+    const claim = vi.spyOn(api, 'claimLoginCode').mockRejectedValueOnce(new ApiError('unavailable', { requestId: 'claim-1' }))
+    renderRoute(<SaveProgressPage />, { path: '/learn/explore/save', url: '/learn/explore/save', api })
+    await userEvent.type(screen.getByLabelText('Display name'), 'Sam P.')
+    await userEvent.click(screen.getByRole('button', { name: 'Save my progress' }))
+    expect(await screen.findByText('GREEN-OWL-41')).toBeInTheDocument()
+    expect(await screen.findByText(/isn't available right now/)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Try signing in again' }))
+    expect(await screen.findByText('Your progress is saved')).toBeInTheDocument()
+    expect(register).toHaveBeenCalledTimes(1)
+    expect(claim).toHaveBeenCalledTimes(2)
+    expect(claim).toHaveBeenLastCalledWith('GREEN-OWL-41')
+  })
+
+  it('blocked storage never crashes: reads return empty, writes are no-ops, one warn', () => {
+    const warn = vi.spyOn(log, 'warn').mockImplementation(() => {})
+    const original = Object.getOwnPropertyDescriptor(window, 'localStorage')!
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      get() {
+        throw new DOMException('denied', 'SecurityError')
+      },
+    })
+    try {
+      expect(readGuestProgress()).toEqual({ version: 1, completed: {} })
+      expect(() => markGuestCompleted('act-vars-video')).not.toThrow()
+      expect(warn.mock.calls.filter(([e]) => e === 'storage.unavailable')).toHaveLength(1)
+    } finally {
+      Object.defineProperty(window, 'localStorage', original)
+    }
+  })
+})
