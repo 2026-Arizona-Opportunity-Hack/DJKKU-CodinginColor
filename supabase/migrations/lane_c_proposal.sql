@@ -1,6 +1,7 @@
 -- lane_c_proposal.sql
--- PROPOSAL from lane C (authoring and assessments). NOT final and NOT tested
--- against a running database yet. Lane A (Koen) owns the real schema: rename,
+-- PROPOSAL from lane C (authoring and assessments). NOT final. Tested only on
+-- PGlite with STUBBED helpers (supabase/tests/lane_c_rls.test.ts), not yet on
+-- Supabase with lane A's real is_admin()/is_staff(). Lane A (Koen) owns the real schema: rename,
 -- merge or drop anything here. Keep the ideas, not necessarily the SQL.
 --
 -- Assumes lane A provides these helpers (names from the design plan):
@@ -87,20 +88,25 @@ alter table activity_keys    enable row level security;
 alter table assessments      enable row level security;
 alter table assessment_items enable row level security;
 
--- Anyone signed in (or a guest) can read PUBLISHED curriculum content.
+-- Anyone signed in (or a guest) can read PUBLISHED curriculum content. Authors
+-- also see their OWN unpublished modules; admins see every draft (plan: only
+-- admin sees all drafts). The child tables below just ask "can I see the parent
+-- module?": the subselect on modules runs under modules' own RLS, so the
+-- visibility rule lives in one place.
 create policy concepts_read on concepts for select using (true);
-create policy modules_read_published on modules for select using (status = 'published' or is_staff());
+create policy modules_read on modules for select
+  using (status = 'published' or is_admin() or created_by = auth.uid());
 create policy lessons_read on lessons for select
-  using (exists (select 1 from modules m where m.id = module_id and (m.status = 'published' or is_staff())));
+  using (exists (select 1 from modules m where m.id = module_id));
 create policy activities_read on activities for select
-  using (exists (select 1 from lessons l join modules m on m.id = l.module_id
-                 where l.id = lesson_id and (m.status = 'published' or is_staff())));
+  using (exists (select 1 from lessons l where l.id = lesson_id)); -- lessons RLS applies
 create policy assessments_read on assessments for select
-  using (exists (select 1 from modules m where m.id = module_id and (m.status = 'published' or is_staff())));
+  using (exists (select 1 from modules m where m.id = module_id));
 
 -- Authors (instructors and admins) may write only while the module is NOT published.
 -- Published versions are immutable; to change one, create version + 1.
-create policy modules_author_insert on modules for insert with check (is_staff() and status = 'draft');
+create policy modules_author_insert on modules for insert
+  with check (is_staff() and status = 'draft' and created_by = auth.uid());
 create policy modules_author_update on modules for update
   using (is_staff() and status in ('draft','submitted'))
   -- authors may draft or submit; only an admin may set published

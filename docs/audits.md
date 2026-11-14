@@ -101,3 +101,25 @@ Commit: see PR #4 · Run by: Umang (with Claude Code) · Command: root `npm run 
 Findings:
 - [open] SQL proposal still unverified against Postgres (see earlier entry).
 
+### 2026-11-14 Lane C RLS per-role tests (review of PR #4)
+Commit: see PR #4 · Run by: Umang (with Claude Code) · Command: `npm test` (file `supabase/tests/lane_c_rls.test.ts`, PGlite = real Postgres in WASM)
+
+| Check | Result | Notes |
+|---|---|---|
+| Student cannot read `activity_keys` or `assessment_items` | Pass | |
+| Reviewer cannot read keys; cannot insert; update/delete change nothing | Pass | |
+| Students see published content only (modules, lessons, activities, assessments) | Pass | |
+| Author sees own draft; other instructor does not; admin sees all | Pass | review fix: first draft let any staff read every draft |
+| Student cannot create modules; instructor can only insert own drafts, never `published` | Pass | review fix: `created_by = auth.uid()` now required on insert |
+| Instructor can submit but not publish; admin can | Pass | |
+| Published module frozen: no lesson edits even by admin | Pass | |
+| `v_learning_gain`: complete, pre 100 (normalized null), missing post (incomplete, null gain) | Pass | matches ADR 0020 |
+| Mutation check: removed RLS on `activity_keys` and opened module reads | 5 tests failed as expected | tests do catch regressions; SQL restored after |
+
+Findings:
+- [fixed, medium] Draft modules were readable by every instructor. Now own drafts and admin only.
+- [fixed, low] Insert policy did not force `created_by = auth.uid()`.
+- [open, medium] `is_admin()`, `is_staff()` and `auth.uid()` are stubs in the test. Re-run against lane A's real helpers on Supabase before relying on this.
+- [open, low] `concepts` has read policy only, so nobody can write concepts until lane A seeds them.
+- [open, low] `assessment_items` stores key beside content, so it is staff-only until lane A splits it.
+

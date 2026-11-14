@@ -51,3 +51,10 @@ Added 2026-11-14. Untested proposal, free to rewrite. Things I need from you:
   short answer `accepted[]`, fill blank `blanks[][]`, ordering `correctOrder[]`;
   `caseSensitive` flags on text types.
 
+## To lane A (Koen): RLS tests you can reuse
+
+`supabase/tests/lane_c_rls.test.ts` runs per-role tests on PGlite (no Docker).
+It stubs `is_admin()`, `is_staff()` and `auth.uid()` from two session settings.
+When your migrations land, load them instead of the stubs and keep the tests as
+the regression suite; add your own roles (mentor, student claim) the same way.
+

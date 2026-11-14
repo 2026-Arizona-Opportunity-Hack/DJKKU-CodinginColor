@@ -84,3 +84,14 @@ instead of repeating them.
   decided stack).
 - Next: merge order #5, #3, #4. SQL role tests once Koen reviews the proposal.
 - Blocked: nothing.
+
+### 2026-11-14: Umang (lane C, PR #4 review)
+- Done: reviewed PR #4 (no teammate comments). Found and fixed two SQL issues:
+  any instructor could read every draft, and inserts did not force
+  `created_by`. Added `supabase/tests/lane_c_rls.test.ts` (12 per-role tests on
+  PGlite, devDependency `@electric-sql/pglite`); a mutation check confirmed the
+  tests fail when RLS is broken. Merged `main` into the branch.
+- Next: koen to review the SQL; re-run the tests against lane A's real helpers;
+  studio UI in `src/features/authoring/`.
+- Blocked: nothing.
+
