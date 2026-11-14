@@ -61,6 +61,8 @@ also change how the system works. A dash means the ADR file is not written yet.
 | 16 | Answer keys in a separate table no student or reviewer policy can read (open question 2) | Accepted | – |
 | 17 | Reviewer login: Google sign-in limited to invited emails, replacing magic links (open question 9) | Accepted | – |
 | 18 | Free-only: $0 a month, no credit card on any account (open question 11) | Accepted | – |
+| 19 | Learning gain: post minus pre, normalized gain, incomplete never zero, matched by pair_key (lane C) | Accepted | [0019](adr/0019-learning-gain-definition.md) |
+| 20 | Lane C pure logic in `lane-c-logic/` until the app scaffold lands (lane C) | Accepted | [0020](adr/0020-lane-c-logic-folder.md) |
 
 Changed in the Nov 14 revision: reviewer magic links → Google sign-in (17); the
 read API and hint proxy moved from Supabase Edge Functions to Cloudflare Pages

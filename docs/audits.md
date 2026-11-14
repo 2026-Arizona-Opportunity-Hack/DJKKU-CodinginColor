@@ -46,4 +46,14 @@ Findings:
 
 ## Reports
 
-*None yet.*
+### 2026-11-14 Lane C learning gain math and CSV export
+Commit: see PR `lane-c/gain-math` · Run by: Umang (with Claude Code) · Command: `npm test` and `npx tsc --noEmit` in `lane-c-logic/`
+
+| Check | Result | Notes |
+|---|---|---|
+| Unit tests (Vitest) | 20 passed, 0 failed | pre 100, negative gain, all-correct, missing scores, out-of-range, unpaired items, point weighting, group summary |
+| Type check (tsc strict) | Pass | |
+| CSV formula injection | Pass | cells starting with = + - @ are prefixed with a quote; real negative numbers untouched |
+
+Findings:
+- None open. Not yet covered: SQL views matching this logic (needs lane A schema).

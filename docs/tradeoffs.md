@@ -23,6 +23,8 @@ pricing page before the README quotes them.
 | Reviewer login | Google sign-in only | Reviewers without Google accounts | Rare in districts; revisit if CIC objects |
 | Independent students | Progress kept on-device until registering | Cross-device continuity for guests | Merged via `import_guest_progress` at sign-up |
 | Scope | AI and concept mastery only after P0 works | Earlier AI demo | Hints must never block the core flow |
+| Learning gain | Class numbers use only students with both pre and post | Showing every enrolled student in the class average | Screen shows "N of M students" so the gap is visible ([ADR 0019](adr/0019-learning-gain-definition.md)) |
+| Lane C code layout | Separate `lane-c-logic/` package for now | One clean root package | Move to `src/lib/` once the app exists ([ADR 0020](adr/0020-lane-c-logic-folder.md)) |
 
 ## Known risks
 
