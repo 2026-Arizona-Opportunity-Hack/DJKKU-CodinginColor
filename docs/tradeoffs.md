@@ -25,6 +25,8 @@ pricing page before the README quotes them.
 | Scope | AI and concept mastery only after P0 works | Earlier AI demo | Hints must never block the core flow |
 | Learning gain | Class numbers use only students with both pre and post | Showing every enrolled student in the class average | Screen shows "N of M students" so the gap is visible ([ADR 0019](adr/0019-learning-gain-definition.md)) |
 | Lane C code layout | Separate `lane-c-logic/` package for now | One clean root package | Move to `src/lib/` once the app exists ([ADR 0020](adr/0020-lane-c-logic-folder.md)) |
+| Answer keys in authoring | Content and key are separate shapes the editor must handle | A simpler single question object | Strict schemas plus a payload leak test ([ADR 0021](adr/0021-keys-split-from-content.md)) |
+| Module versions | Every version is its own row | Smallest database | Old versions stay for classes that use them ([ADR 0022](adr/0022-immutable-module-versions.md)) |
 
 ## Known risks
 

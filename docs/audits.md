@@ -57,3 +57,21 @@ Commit: see PR `lane-c/gain-math` · Run by: Umang (with Claude Code) · Command
 
 Findings:
 - None open. Not yet covered: SQL views matching this logic (needs lane A schema).
+
+### 2026-11-14 Lane C authoring schemas and key isolation (app side)
+Commit: see PR `lane-c/authoring-schemas` · Run by: Umang (with Claude Code) · Command: `npm test` and `npx tsc --noEmit` in `lane-c-logic/`
+
+| Check | Result | Notes |
+|---|---|---|
+| Unit tests (Vitest) | 52 passed, 0 failed (20 gain, 32 schemas) | |
+| Type check (tsc strict) | Pass | |
+| No answer keys in student payload | Pass | planted secret strings and key field names are absent from `splitModule(...).student` JSON |
+| Smuggled answer field in content | Rejected | content schemas are strict |
+| Input validation | Pass | bad YouTube hosts, http links, javascript: URLs, unknown fields, empty titles, duplicate ids, bad fill-blank counts, non-permutation ordering all rejected |
+| Ordering never ships solved order | Pass | |
+| SQL RLS (`lane_c_proposal.sql`) | NOT RUN | never executed against Postgres. Needs lane A helpers (`is_staff`, `is_admin`) and a local Supabase. Treat as unverified |
+
+Findings:
+- [open, medium] RLS policies in `lane_c_proposal.sql` are untested. Needs per-role SQL tests: student cannot select `activity_keys`, reviewer cannot write, draft invisible to students. Tracked in the next slice.
+- [open, low] `assessment_items` stores key and content together, so it is staff-only for now. Lane A should split it (see handoff).
+

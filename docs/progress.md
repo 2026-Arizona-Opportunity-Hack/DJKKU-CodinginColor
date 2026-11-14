@@ -36,3 +36,15 @@ instead of repeating them.
 - Next: zod authoring schemas (question types, answer-key split, YouTube
   validation, assessment pairs), then `lane_c_proposal.sql` to sync with Koen.
 - Blocked: nothing. Waiting on a Vite scaffold and lane A schema before any UI.
+
+### 2026-11-14: Umang (lane C)
+- Done: opened PR #3 (gain math, CSV). Added zod authoring schemas in
+  `lane-c-logic/src/schemas.ts`: question types, answer-key split, YouTube
+  validation, modules, assessments and pair warnings. 52 tests pass. Wrote
+  `supabase/migrations/lane_c_proposal.sql` (tables, RLS, `v_learning_gain`),
+  clearly marked as an untested proposal. ADRs 0021 and 0022, tradeoffs, audit
+  entry and lane A handoff updated.
+- Next: get Koen to review the SQL proposal; SQL role tests once the Supabase
+  CLI runs locally; studio UI as soon as a Vite scaffold is on main.
+- Blocked: no app scaffold or lane A schema on main yet. SQL is unverified.
+
