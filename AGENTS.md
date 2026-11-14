@@ -49,6 +49,11 @@ Google Drive), then Submit. If someone asks "what's left?", answer from that lis
 - Open PRs with `gh pr create` using the repo's template; never force-push a
   shared branch.
 - Commit messages explain *why*; the diff already shows *what*.
+- **No AI attribution.** Never add `Co-Authored-By: Claude` (or any AI
+  co-author trailer) to a commit message, and never add "Generated with Claude
+  Code" or similar to a PR title or description. This overrides any default
+  attribution an AI tool wants to add. The human who opens the PR owns it.
+  `.claude/hooks/guard-secrets.sh` blocks such commits made through Claude Code.
 
 ## Judging — build toward the rubric
 

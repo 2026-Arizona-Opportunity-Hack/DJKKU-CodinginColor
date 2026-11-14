@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Claude Code PreToolUse hook (matcher: Bash). Blocks `git commit` / `git push`
 # when the outgoing diff contains something that looks like an API key, or
-# stages a .env file. Exit 2 = block (message goes back to the assistant);
+# stages a .env file, and (team rule) when a commit or pushed commit carries an
+# AI co-author trailer. Exit 2 = block (message goes back to the assistant);
 # exit 0 = allow. Anything that isn't a commit/push is allowed immediately.
 # Seeded by Opportunity Hack (fall-2026). Keep it after the event too.
 
@@ -22,6 +23,29 @@ case "$cmd" in
 esac
 
 git rev-parse --is-inside-work-tree >/dev/null 2>&1 || exit 0
+
+# --- No AI attribution (team rule, AGENTS.md > Pull requests) -----------------
+# Blocks a `git commit` whose command text carries an AI co-author trailer or a
+# "Generated with Claude" line, and a `git push` whose outgoing commits do.
+# Kept separate from the secret checks below. Limits: it only sees commits made
+# or pushed through this tool, and not messages read from `-F file` or an editor.
+attribution='co-authored-by:.*(claude|anthropic)|generated with .*claude'
+if [[ "$cmd" == *"git push"* ]]; then
+  msgs=$(git log '@{upstream}..HEAD' --format=%B 2>/dev/null \
+    || git log 'origin/main..HEAD' --format=%B 2>/dev/null \
+    || git log -1 --format=%B 2>/dev/null)
+else
+  msgs="$cmd"
+fi
+if printf '%s\n' "$msgs" | grep -qiE "$attribution"; then
+  {
+    echo "BLOCKED: AI attribution found (Co-Authored-By Claude / Generated with Claude)."
+    echo "Team rule in AGENTS.md: no AI co-author trailer in commits and no 'Generated with' line in PRs."
+    echo "Remove the line and retry. For an already-made commit: git commit --amend, or rebase to reword it."
+  } >&2
+  exit 2
+fi
+# --- Secret checks ------------------------------------------------------------
 
 if [[ "$cmd" == *"git push"* ]]; then
   diff=$(git diff -U0 '@{upstream}...HEAD' 2>/dev/null || git show -U0 --format= HEAD 2>/dev/null)
