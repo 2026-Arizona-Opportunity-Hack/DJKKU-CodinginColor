@@ -18,7 +18,7 @@ Roles: **guest** (not signed in), **student** (incl. a signed-in anonymous sessi
 | Function | Who | Returns |
 |---|---|---|
 | `get_me()` | any signed-in user (anonymous student sessions too) | `{profile_id, role, can_author, display_name, class_id, class_name}`, or `null` when there is no user. `display_name` is the roster name when the student holds a seat. `class_id` and `class_name` are the most recently claimed student seat, and `null` for staff and for a student who has not claimed a seat yet (role is `student`). |
-| `claim_login_code(p_code)` | student | `{class_id, class_name, display_name}`. Binds this device to the roster seat. A code works once. |
+| `claim_login_code(p_code)` | student | `{class_id, class_name, display_name}`. Binds this device to the roster seat. The code is reusable: on another device it moves the seat and everything the student has (progress, answers, tests, hints, notes, mentor) there; one device holds the seat at a time. `reset_login_code` replaces it, so the old code stops working. |
 | `list_join_roster(p_join_code)` | guest, student | `[{member_id, label}]` of UNCLAIMED seats |
 | `claim_roster_seat(p_join_code, p_member_id)` | student | `{class_id, class_name, display_name}` |
 | `self_register(p_display_name)` | student | `{class_id, login_code}`. Name only, no email. Joins CIC Open. |
