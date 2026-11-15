@@ -734,3 +734,10 @@ instead of repeating them.
   remove the seed data or reset those codes before real students use the hosted project.
 - Next: `npx supabase db push --remote`, then redeploy.
 - Blocked: nothing.
+### 2026-11-15: Krishna (lane E, documentation pass for judging)
+- Done: README matches what is built: AI helpers, transcripts and notes, misconception summaries and
+  reusable login codes listed; the missing API key screen stated honestly; counts updated (29 tables,
+  71 database tests); "planned" removed from AI; how the live site is deployed. Deploy guide: direct
+  upload with wrangler, and the API key SQL that works in the SQL editor (begin/commit) plus revoke.
+  Architecture: all 11 endpoints and their privacy rules. Decisions 25 to 29 recorded.
+- Blocked: nothing.
