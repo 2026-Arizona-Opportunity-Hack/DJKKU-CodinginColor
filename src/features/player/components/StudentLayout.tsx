@@ -20,7 +20,13 @@ export function StudentLayout({ me, children }: { me?: Me | null; children: Reac
       {me && (
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-secondary px-3 py-2 text-sm text-secondary-foreground">
           <span>
-            Signed in as <strong>{me.display_name}</strong>
+            {me.display_name ? (
+              <>
+                Signed in as <strong>{me.display_name}</strong>
+              </>
+            ) : (
+              'Signed in'
+            )}
           </span>
           <Button
             variant="outline"

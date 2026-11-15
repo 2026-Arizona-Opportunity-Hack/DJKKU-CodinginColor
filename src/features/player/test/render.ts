@@ -8,11 +8,12 @@ import { expect } from 'vitest'
 import type { StudentApi } from '@/features/player/api'
 import { createMockApi, type MockState } from '@/features/player/api.mock'
 import { StudentApiProvider } from '@/features/player/apiContext'
-import { SEED_CLASS } from '@/features/player/mockSeed'
+import { SEED_CLASS, SEED_STUDENT } from '@/features/player/mockSeed'
+import type { Me } from '@/lib/session'
 
 import { Where } from './Where'
 
-export const MAYA = { display_name: 'Maya R.', class_id: SEED_CLASS.class_id, class_name: SEED_CLASS.class_name }
+export const MAYA: Me = { ...SEED_STUDENT }
 export const CLASS_ID = SEED_CLASS.class_id
 
 /** Maya, pretest taken, first lesson done: the next step is the loops worksheet. */

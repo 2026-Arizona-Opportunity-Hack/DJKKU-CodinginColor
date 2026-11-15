@@ -5,6 +5,7 @@
  * See docs/adr/0001-student-api-interface.md.
  */
 import type { ActivityResponse, QuestionResponse } from '@/features/player/content'
+import type { Me } from '@/lib/session'
 
 import type { GuestProgress } from './guestProgress'
 import type {
@@ -22,8 +23,8 @@ import type {
   SubmitResult,
 } from './types'
 
-/** Who is signed in on this device, cached from the last claim (no personal data beyond the label). */
-export type Me = { display_name: string; class_id: string; class_name: string }
+/** Who is signed in (the shape of get_me). Defined once in src/lib/session.ts. */
+export type { Me }
 
 export interface StudentApi {
   readonly source: 'mock' | 'supabase'

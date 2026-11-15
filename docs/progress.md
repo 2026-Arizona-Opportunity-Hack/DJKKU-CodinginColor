@@ -145,3 +145,18 @@ instead of repeating them.
 - Next: the player adapter reads `get_me` (its schema needs `class_id` and `class_name` to be nullable);
   the hosted project needs the Cloudflare Pages URL under Auth > URL Configuration.
 - Blocked: nothing.
+
+### 2026-11-14: Umang (lane A, covering the player)
+- Done: made the student player work against the real database. The player now reads the
+  real `get_me` shape (staff and students without a class get a plain message instead of an
+  error). "Start here" no longer tells a new student they are finished: `next_activity` is null when
+  a pre-test or post-test is next, so a new `nextStep` helper reads the outline and shows "Start:
+  <module> pre-test", "Continue: <activity>" or "Finish: <module> post-test". The mock now
+  matches the database on this (and on a module only counting as finished after its post-test).
+  Self-register uses an anonymous session plus the `self_register` function (the `/api/self-register`
+  endpoint never existed), copies device progress right away and shows the login code once.
+  Progress numbers are rounded for display and a missing gain reads "Not yet". Checked on a
+  local Supabase: a student who claims `DEMO-0000-0000-0001` is sent to the pre-test, and the first
+  activity opens once it is taken. Only `src/features/player/` changed.
+- Next: lane E's `/api/hint` stays behind `VITE_FEATURE_HINTS`; a browser pass over `/learn` on the hosted project.
+- Blocked: nothing.

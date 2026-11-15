@@ -146,17 +146,30 @@ function readIssued(): IssuedCode | null {
 }
 
 /**
- * B4: guest → account. Registers a display name and keeps the returned login code
- * (state + sessionStorage) so it survives a reload and a second click can't create a
- * second account. Signing in with the code is the auth feature's job (/sign-in);
- * device progress is merged after that by useImportGuestProgressOnce.
+ * B4: guest → account. Registers a display name (this device is signed in as the new student),
+ * merges the device's guest progress, and keeps the returned login code (state + sessionStorage)
+ * so it survives a reload and a second click can't create a second account. The code is for
+ * signing in on another device (/sign-in is the auth feature's page).
  */
 export function useSaveGuestProgress() {
   const api = useStudentApi()
+  const qc = useQueryClient()
   const [issued, setIssued] = useState<IssuedCode | null>(readIssued)
   const save = useMutation({
     mutationFn: async (displayName: string): Promise<IssuedCode> => {
       const { login_code } = await api.selfRegister(displayName)
+      // This device is now signed in as the new student, so copy its guest progress over right away.
+      // A failure must not hide the login code; the device copy stays and /learn retries the merge.
+      const payload = readGuestProgress()
+      if (Object.keys(payload.completed).length > 0) {
+        try {
+          await api.importGuestProgress(payload)
+          clearGuestProgress()
+        } catch (e) {
+          logFailure('student.guest.import.fail', e)
+        }
+      }
+      await Promise.all([qc.invalidateQueries({ queryKey: keys.me }), qc.invalidateQueries({ queryKey: keys.classes })])
       return { login_code, display_name: displayName }
     },
     onSuccess: (code) => {

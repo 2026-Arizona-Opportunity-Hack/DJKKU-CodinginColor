@@ -91,13 +91,23 @@ export function createSupabaseApi(sb: SupabaseClient = getSupabase()): StudentAp
     return parse(schema, json, serverId, path)
   }
 
+  /** A guest registering has no session yet: make an anonymous one first (the database function needs a user). */
+  async function ensureAnonymousSession(): Promise<void> {
+    const requestId = newRequestId()
+    const { data } = await sb.auth.getSession()
+    if (data.session) return
+    const { error } = await sb.auth.signInAnonymously()
+    if (!error) return
+    const limited = (error as { status?: number }).status === 429 || String(error.code).includes('rate_limit')
+    throw limited ? new ApiError('rate_limited', { requestId, status: 429, cause: error }) : fromRpcError(error, requestId)
+  }
+
   return {
     source: 'supabase',
 
     async getMe() {
       const { data } = await sb.auth.getSession()
       if (!data.session) return null
-      // PROPOSED lane A RPC get_me() -> {display_name, class_id, class_name}.
       return rpc('get_me', {}, MeSchema.nullable())
     },
 
@@ -122,8 +132,10 @@ export function createSupabaseApi(sb: SupabaseClient = getSupabase()): StudentAp
 
     listOpenModules: () => rpc('list_open_modules', {}, OpenModule.array()),
     getOpenActivity: (activityId) => rpc('get_activity', { p_activity_id: activityId }, Activity),
-    selfRegister: (displayName) =>
-      postFunction('/api/self-register', { display_name: displayName }, SelfRegisterResult, false),
+    async selfRegister(displayName) {
+      await ensureAnonymousSession()
+      return rpc('self_register', { p_display_name: displayName }, SelfRegisterResult)
+    },
     importGuestProgress: (payload) => rpc('import_guest_progress', { p_payload: payload }, ImportResult),
 
     requestHint: (activityId, response) =>

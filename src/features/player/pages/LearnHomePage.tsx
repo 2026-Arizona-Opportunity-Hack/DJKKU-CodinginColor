@@ -5,7 +5,7 @@ import { EmptyState } from '@/features/player/components/states'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { QueryView } from '@/features/player/components/QueryView'
-import { locate, needsPretest, paths } from '@/features/player/outline'
+import { nextStep, paths } from '@/features/player/outline'
 import { useMyClasses, useNextActivity, useOutline } from '@/features/player/queries'
 import type { MyClass } from '@/features/player/types'
 
@@ -46,18 +46,23 @@ function ClassCard({ cls }: { cls: MyClass }) {
           {(n) => (
             <QueryView query={outline} label="Finding your next step">
               {(o) => {
-                const found = n ? locate(o, n.activity_id) : null
-                if (!n || !found) {
+                const step = nextStep(o, n)
+                if (step.kind === 'done') {
                   return <p className="text-lg font-medium">You've finished everything in this class. Nice work.</p>
                 }
-                const gate = needsPretest(found.module) && found.module.pretest
-                const to = gate ? paths.test(cls.class_id, gate.assessment_id) : paths.activity(cls.class_id, n.activity_id)
-                const label = gate ? `Start: ${found.module.title} pretest` : `Continue: ${found.activity.title}`
+                const { to, label, where } =
+                  step.kind === 'pretest'
+                    ? { to: paths.test(cls.class_id, step.assessment_id), label: `Start: ${step.module.title} pre-test`, where: step.module.title }
+                    : step.kind === 'posttest'
+                      ? { to: paths.test(cls.class_id, step.assessment_id), label: `Finish: ${step.module.title} post-test`, where: step.module.title }
+                      : {
+                          to: paths.activity(cls.class_id, step.activity.activity_id),
+                          label: `Continue: ${step.activity.title}`,
+                          where: `${step.module.title} · ${step.lesson.title}`,
+                        }
                 return (
                   <div className="flex flex-col gap-2">
-                    <p className="text-sm text-muted-foreground">
-                      {found.module.title} · {found.lesson.title}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{where}</p>
                     <Button asChild size="lg" className="w-full justify-between whitespace-normal sm:w-auto">
                       <Link to={to}>
                         {label} <ArrowRight aria-hidden="true" />

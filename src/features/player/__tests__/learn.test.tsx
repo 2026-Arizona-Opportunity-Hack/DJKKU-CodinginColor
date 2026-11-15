@@ -25,8 +25,25 @@ describe('B5 Start here', () => {
 
   it('sends a brand-new student to the pretest first', async () => {
     renderRoute(<LearnHomePage />, { path: '/learn', url: '/learn', api: mockApi({ me: MAYA }) })
-    const card = await screen.findByRole('link', { name: /Start: Python basics pretest/ })
+    const card = await screen.findByRole('link', { name: /Start: Python basics pre-test/ })
     expect(card).toHaveAttribute('href', `/learn/${CLASS_ID}/test/pre-basics`)
+    expect(screen.queryByText(/finished everything/)).toBeNull() // the old bug: null next meant "done"
+  })
+
+  it('sends a student who finished every activity to the post-test, not to "done"', async () => {
+    const all = ['act-vars-video', 'act-vars-read', 'act-vars-check', 'act-loops-sheet', 'act-loops-check', 'act-basics-exit']
+    const api = mockApi({ me: MAYA, done: all, assessments: { 'pre-basics': { score_pct: 33 } } })
+    expect(await api.nextActivity(CLASS_ID)).toBeNull()
+    renderRoute(<LearnHomePage />, { path: '/learn', url: '/learn', api })
+    const card = await screen.findByRole('link', { name: /Finish: Python basics post-test/ })
+    expect(card).toHaveAttribute('href', `/learn/${CLASS_ID}/test/post-basics`)
+  })
+
+  it('says done only when nothing is left', async () => {
+    const all = ['act-vars-video', 'act-vars-read', 'act-vars-check', 'act-loops-sheet', 'act-loops-check', 'act-basics-exit', 'act-fn-video', 'act-fn-check', 'act-fn-exit']
+    const assessments = { 'pre-basics': { score_pct: 33 }, 'post-basics': { score_pct: 100 }, 'pre-functions': { score_pct: 0 }, 'post-functions': { score_pct: 100 } }
+    renderRoute(<LearnHomePage />, { path: '/learn', url: '/learn', api: mockApi({ me: MAYA, done: all, assessments }) })
+    expect(await screen.findByText(/You've finished everything in this class/)).toBeInTheDocument()
   })
 
   it('shows the error state with a reference and Retry', async () => {
@@ -38,9 +55,25 @@ describe('B5 Start here', () => {
     expect(screen.getByRole('button', { name: /Try again/ })).toBeInTheDocument()
   })
 
-  it('redirects a signed-out device to /start', async () => {
+  it('redirects a signed-out device to /sign-in', async () => {
     renderRoute(<LearnLayout />, { path: '/learn', url: '/learn', api: mockApi({ me: null }) })
     expect(await screen.findByTestId('location')).toHaveTextContent('/sign-in')
+  })
+
+  it('tells staff this area is for students, with a way home, and no error', async () => {
+    const api = mockApi({ me: { ...MAYA, role: 'instructor', class_id: null, class_name: null } })
+    renderRoute(<LearnLayout />, { path: '/learn', url: '/learn', api })
+    expect(await screen.findByText('This area is for students')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go to your home page' })).toHaveAttribute('href', '/')
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('tells a student with no class to use their code or link', async () => {
+    const api = mockApi({ me: { ...MAYA, display_name: '', class_id: null, class_name: null } })
+    renderRoute(<LearnLayout />, { path: '/learn', url: '/learn', api })
+    expect(await screen.findByText("You're not in a class yet")).toBeInTheDocument()
+    expect(screen.getByText('Use your login code or class link.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go to sign in' })).toHaveAttribute('href', '/sign-in')
   })
 })
 
@@ -129,5 +162,24 @@ describe('B10 own progress', () => {
     expect(screen.getByText('+67 points')).toBeInTheDocument()
     expect(screen.getAllByText('Not taken')).toHaveLength(2) // module 2 pre and post
     await expectNoSeriousA11yViolations(container)
+  })
+
+  it('rounds the long decimals the database sends, and shows a missing gain as "Not yet", never 0', async () => {
+    const api = mockApi(MID_MODULE)
+    vi.spyOn(api, 'getMyProgress').mockResolvedValue({
+      completed: 3,
+      total: 9,
+      modules: [
+        { title: 'Python basics', pct: 33.333333333333336, pre_pct: 33.33333333333333, post_pct: 100.000000000000000000000, gain: 66.66666666666667 },
+        { title: 'Functions', pct: 0, pre_pct: 50, post_pct: null, gain: null },
+      ],
+    })
+    renderRoute(<ProgressPage />, { path: '/learn/:classId/progress', url: `/learn/${CLASS_ID}/progress`, api })
+    expect(await screen.findByText('33% of activities done')).toBeInTheDocument()
+    expect(screen.getByText('33%')).toBeInTheDocument() // pre
+    expect(screen.getByText('100%')).toBeInTheDocument() // post
+    expect(screen.getByText('+67 points')).toBeInTheDocument()
+    expect(screen.getByText('Not yet')).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(/\d\.\d{3}|0 points/)
   })
 })
