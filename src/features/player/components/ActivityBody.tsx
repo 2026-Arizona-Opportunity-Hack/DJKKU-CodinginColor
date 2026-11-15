@@ -6,6 +6,7 @@ import type { ActivityResponse } from '../content'
 import type { Activity } from '../types'
 import { Reading, VideoEmbed } from '@/components/learning/ActivityContent'
 import { CodeActivity } from './CodeActivity'
+import { GradeExplainer } from './GradeExplainer'
 import { QuestionForm } from './QuestionForm'
 
 type Props = {
@@ -27,6 +28,7 @@ export function ActivityBody({ activity, onSubmit, pending, actions }: Props) {
         ) : (
           <Reading markdown={activity.content.body} />
         )}
+        <GradeExplainer key={activity.activity_id} activityId={activity.activity_id} />
         <div className="flex flex-wrap items-center gap-3">
           {!done && (
             <Button size="lg" disabled={pending} onClick={() => onSubmit({ viewed: true })}>

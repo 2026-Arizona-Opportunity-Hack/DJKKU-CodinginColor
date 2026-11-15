@@ -24,6 +24,7 @@ import {
   MeSchema,
   ClassOutline,
   HintResult,
+  SimplifyResult,
   ImportResult,
   MyClass,
   MyProgress,
@@ -61,14 +62,15 @@ export function createSupabaseApi(sb: SupabaseClient = getSupabase()): StudentAp
     return parse(schema, result.data, requestId, fn)
   }
 
-  async function postFunction<S extends z.ZodTypeAny>(path: string, body: unknown, schema: S, auth: boolean): Promise<z.infer<S>> {
+  async function postFunction<S extends z.ZodTypeAny>(path: string, body: unknown, schema: S, auth: boolean | 'optional'): Promise<z.infer<S>> {
     const requestId = newRequestId()
     if (!isOnline()) throw new ApiError('offline', { requestId })
     const headers: Record<string, string> = { 'content-type': 'application/json', 'x-request-id': requestId }
     if (auth) {
+      // 'optional': a guest has no session and the function answers for open lessons only.
       const { data } = await sb.auth.getSession()
-      if (!data.session) throw new ApiError('unauthenticated', { requestId })
-      headers.authorization = `Bearer ${data.session.access_token}`
+      if (!data.session && auth === true) throw new ApiError('unauthenticated', { requestId })
+      if (data.session) headers.authorization = `Bearer ${data.session.access_token}`
     }
     const started = performance.now()
     let res: Response
@@ -146,5 +148,6 @@ export function createSupabaseApi(sb: SupabaseClient = getSupabase()): StudentAp
 
     requestHint: (activityId, response) =>
       postFunction('/api/hint', { activity_id: activityId, response }, HintResult, true),
+    simplify: (activityId, grade) => postFunction('/api/simplify', { activity_id: activityId, grade }, SimplifyResult, 'optional'),
   }
 }
