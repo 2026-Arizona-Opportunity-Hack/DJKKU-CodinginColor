@@ -49,7 +49,9 @@ export function CicMark({ className, withIn = true }: { className?: string; with
 export function CicLogo({ className }: { className?: string }) {
   return (
     <span className={cn('inline-flex items-center gap-2.5', className)}>
-      <CicMark className="h-8" />
+      {/* No "IN" at this size: it is unreadable at 32 px, and as text inside the home link it would
+          not match the link's accessible name (axe rule label-content-name-mismatch, CI smoke test). */}
+      <CicMark className="h-8" withIn={false} />
       <span className="font-display text-[0.9375rem] font-bold tracking-[0.14em] text-secondary-foreground uppercase sm:text-base">
         Coding in Color
       </span>
