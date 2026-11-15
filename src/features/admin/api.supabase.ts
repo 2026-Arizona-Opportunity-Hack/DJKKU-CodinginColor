@@ -50,6 +50,21 @@ export async function listProfiles(): Promise<AdminProfile[]> {
   return Profile.array().parse(data)
 }
 
+const ClassInstructor = z.object({ class_id: z.string().uuid(), profile_id: z.string().uuid() })
+export type ClassInstructor = z.infer<typeof ClassInstructor>
+
+/** Who teaches which class (instructor seats). Names come from the profiles list. */
+export async function listClassInstructors(): Promise<ClassInstructor[]> {
+  const { data, error } = await getSupabase()
+    .from('class_members')
+    .select('class_id, profile_id')
+    .eq('member_role', 'instructor')
+
+  if (error) throw adminError(error)
+
+  return ClassInstructor.array().parse(data)
+}
+
 export async function listClasses(): Promise<AdminClass[]> {
   const { data, error } = await getSupabase()
     .from('classes')

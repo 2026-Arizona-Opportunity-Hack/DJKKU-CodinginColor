@@ -6,11 +6,13 @@ import {
   addClassInstructor,
   inviteStaff,
   listClasses,
+  listClassInstructors,
   listProfiles,
   listSchools,
   type AdminClass,
   type AdminProfile,
   type AdminSchool,
+  type ClassInstructor,
 } from './api.supabase'
 
 type StaffRole = 'mentor' | 'instructor' | 'cic_admin' | 'reviewer'
@@ -22,6 +24,7 @@ export function OverviewTab() {
   const [profiles, setProfiles] = useState<AdminProfile[]>([])
   const [classes, setClasses] = useState<AdminClass[]>([])
   const [schools, setSchools] = useState<AdminSchool[]>([])
+  const [teaching, setTeaching] = useState<ClassInstructor[]>([])
 
   const [loading, setLoading] = useState(!demoMode)
   const [loadError, setLoadError] = useState('')
@@ -33,10 +36,11 @@ export function OverviewTab() {
 
     async function loadAdminData() {
       try {
-        const [profileRows, classRows, schoolRows] = await Promise.all([
+        const [profileRows, classRows, schoolRows, teachingRows] = await Promise.all([
           listProfiles(),
           listClasses(),
           listSchools(),
+          listClassInstructors(),
         ])
 
         if (cancelled) return
@@ -44,6 +48,7 @@ export function OverviewTab() {
         setProfiles(profileRows)
         setClasses(classRows)
         setSchools(schoolRows)
+        setTeaching(teachingRows)
       } catch (cause) {
         if (cancelled) return
 
@@ -101,6 +106,7 @@ export function OverviewTab() {
             schools={schools}
             classes={classes}
             profiles={profiles}
+            teaching={teaching}
           />
 
           <InviteStaffForm />
@@ -108,6 +114,13 @@ export function OverviewTab() {
           <ClassStaffing
             classes={classes}
             instructors={instructors}
+            onAdded={(classId, profileId) =>
+              setTeaching((rows) =>
+                rows.some((r) => r.class_id === classId && r.profile_id === profileId)
+                  ? rows
+                  : [...rows, { class_id: classId, profile_id: profileId }],
+              )
+            }
           />
         </>
       )}
@@ -119,16 +132,25 @@ function OrganizationOverview({
   schools,
   classes,
   profiles,
+  teaching,
 }: {
   schools: AdminSchool[]
   classes: AdminClass[]
   profiles: AdminProfile[]
+  teaching: ClassInstructor[]
 }) {
   const staffCount = profiles.filter(
     (profile) =>
       profile.role !== 'student' &&
       profile.role !== 'independent_student',
   ).length
+  const nameOf = new Map(profiles.map((p) => [p.id, p.display_name || '(no name yet)']))
+  const instructorNames = (classId: string) =>
+    teaching
+      .filter((t) => t.class_id === classId)
+      .map((t) => nameOf.get(t.profile_id) ?? 'Unknown')
+      .sort((a, b) => a.localeCompare(b))
+      .join(', ')
 
   return (
     <section aria-labelledby="overview-heading" className="space-y-4">
@@ -150,6 +172,7 @@ function OrganizationOverview({
       {classes.length > 0 && (
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full border-collapse text-left">
+            <caption className="sr-only">Classes, their school, term and instructors</caption>
             <thead>
               <tr className="border-b">
                 <th scope="col" className="p-3">
@@ -160,6 +183,9 @@ function OrganizationOverview({
                 </th>
                 <th scope="col" className="p-3">
                   Term
+                </th>
+                <th scope="col" className="p-3">
+                  Instructors
                 </th>
               </tr>
             </thead>
@@ -175,6 +201,7 @@ function OrganizationOverview({
                     <td className="p-3 font-medium">{classItem.name}</td>
                     <td className="p-3">{school?.name ?? '—'}</td>
                     <td className="p-3">{classItem.term ?? '—'}</td>
+                    <td className="p-3">{instructorNames(classItem.id) || <span className="font-medium text-destructive">No instructor</span>}</td>
                   </tr>
                 )
               })}
@@ -307,9 +334,12 @@ function InviteStaffForm() {
 function ClassStaffing({
   classes,
   instructors,
+  onAdded,
 }: {
   classes: AdminClass[]
   instructors: AdminProfile[]
+  /** Updates the Instructors column in the overview without a reload. */
+  onAdded?: (classId: string, profileId: string) => void
 }) {
   const [classId, setClassId] = useState(classes[0]?.id ?? '')
   const [profileId, setProfileId] = useState(instructors[0]?.id ?? '')
@@ -332,6 +362,7 @@ function ClassStaffing({
 
     try {
       await addClassInstructor(classId, profileId)
+      onAdded?.(classId, profileId)
 
       const classItem = classes.find((item) => item.id === classId)
       const instructor = instructors.find((item) => item.id === profileId)

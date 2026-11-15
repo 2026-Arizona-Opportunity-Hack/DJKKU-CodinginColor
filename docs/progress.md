@@ -686,3 +686,8 @@ instead of repeating them.
 - Checked in a browser with a real video on a local Wrangler run: 9/9 (line moves with speech, box
   scrolls, page does not, pause and resume). Tests: player hook (message checks, handshake), transcript
   component, grouping and active-line search.
+### 2026-11-15: Krishna (lane E, in lane D's folder; Jad to review)
+- Done: the admin Overview class table has an Instructors column (who teaches each class, read from
+  instructor seats) and flags a class with no instructor, for example after Remove access. Assigning an
+  instructor under Class staffing updates it without a reload. No database change.
+- Blocked: nothing.
