@@ -652,3 +652,10 @@ instead of repeating them.
   serving the exact policy in Playwright: video, Python and every main route ran with zero CSP violations.
 - Next: re-run the header scan on the live URL after deploy.
 - Blocked: nothing.
+### 2026-11-15: Krishna (lane E, in lane D's folder; Jad to review)
+- Done: a student who has not joined yet ("Seat not claimed") now links to their student page, so an
+  instructor can give them a login code (Reset login code works for unclaimed seats; there was just no
+  way to reach it). The roster view has no seat id, so the dashboard also reads the class's seats and
+  links unclaimed ones by seat id (the page accepts either); two unclaimed students with the same name
+  get one seat each. No database change.
+- Blocked: nothing.
