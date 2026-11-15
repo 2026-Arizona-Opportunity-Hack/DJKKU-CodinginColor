@@ -310,3 +310,15 @@ instead of repeating them.
   (no key); its shape is tested against a mocked fetch.
 - Next: 9b polish; set `GEMINI_API_KEY` on Pages and try one real hint.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane C, funder impact report)
+- Done: `/instructor/:classId/report`, a one-page learning-gain report a funder can read, linked as "Impact
+  report for funders" from the class page. A headline sentence written from the numbers ("7 students in Demo
+  Period 1 went from 46% on the pre-test to 80% on the post-test (+34 points). The biggest gain was in Loops:
+  +38 points." on the seed data), pre and post averages, gain and normalized gain, per-concept bars with the
+  same numbers in a table, students measured and missing a test, a note on method, Print or save as PDF, and a
+  CSV per module. Class totals only: no student name or score appears, so it is safe to share. A student
+  missing a test is counted as missing, never as zero (ADR 0020); groups under 5 are shown with a warning.
+  Checked on a local Supabase as a real instructor; a class you do not teach says so plainly.
+- Next: Parsons problems.
+- Blocked: nothing.
