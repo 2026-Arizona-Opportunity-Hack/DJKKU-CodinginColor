@@ -56,7 +56,7 @@ async function readBody<T>(request: Request, schema: z.ZodType<T, z.ZodTypeDef, 
 }
 
 /** 'ok', or the status to answer with: 401 (no or bad token), 403 (not an author), 503 (not set up or down). */
-async function authorize(request: Request, env: SourcesEnv, f: typeof fetch): Promise<'ok' | 401 | 403 | 503> {
+export async function authorize(request: Request, env: SourcesEnv, f: typeof fetch): Promise<'ok' | 401 | 403 | 503> {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) return 503
   const base = env.SUPABASE_URL.replace(/\/$/, '')
   const token = /^Bearer (.+)$/i.exec(request.headers.get('authorization') ?? '')?.[1]
