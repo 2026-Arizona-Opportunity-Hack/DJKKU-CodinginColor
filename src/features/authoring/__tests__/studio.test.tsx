@@ -151,7 +151,7 @@ describe('the editor', () => {
     })
     await waitFor(() => expect(router.state.location.pathname).toBe(`/author/${ID}`))
     expect(await screen.findByLabelText('Module title')).toHaveValue('My Module') // reopened from the saved copy
-  }, 20_000) // types a whole module key by key; the 5 s default fails under a full-suite load
+  }, 20000)
 
   it('validates before saving: it shows what is wrong and never calls the database', async () => {
     open('/author/new')
