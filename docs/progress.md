@@ -626,6 +626,14 @@ instead of repeating them.
   replaced, so the live site repairs itself with no manual clean-up. Same video now: English, 61 timed
   paragraphs over 24 minutes. 3 new tests (20 in the handler).
 
+### 2026-11-15: Umang (lanes D and E files, privacy page and SECURITY.md, S-61, S-62, S-71)
+
+- Done: a plain-language `/privacy` page (what we keep about students, who sees it, services used, retention and
+  deletion, contact), linked from a new site footer with a Security link. SECURITY.md gains a table of every service
+  that sees data and what it sees, a proposed retention rule (12 months after a class ends, CIC to confirm), "If
+  something leaks" steps, and an accurate AI hints entry (it said "planned, not built").
+- Next: security audit report.
+- Blocked: CIC to confirm the retention period and a security contact.
 ### 2026-11-15: Umang (lane E files, security headers S-50, S-51, S-59)
 
 - Done: `public/_headers` sets a Content-Security-Policy (only the origins the app uses: Supabase, jsDelivr for
