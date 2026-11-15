@@ -1,5 +1,7 @@
 import type { FeatureModule } from '@/lib/feature'
-import { ReviewerPage } from './ReviewerPage'
+import { lazyPage } from '@/lib/lazyPage'
+
+const ReviewerPage = lazyPage(() => import('./ReviewerPage'), 'ReviewerPage')
 
 // Lane E (M9): read-only curriculum browser for external reviewers. No answer keys, no student data.
 export const reviewer: FeatureModule = {
