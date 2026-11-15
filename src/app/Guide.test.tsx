@@ -48,7 +48,8 @@ describe('Guide', () => {
     expect(screen.getByRole('heading', { name: 'My notebook' })).toBeInTheDocument()
     expect(screen.getAllByText(/You need the Student role for this/).length).toBeGreaterThan(0)
     await userEvent.keyboard('{End}')
-    expect(screen.getByRole('tab', { name: /Mentor/ })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: /Reviewer/ })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.queryByRole('tab', { name: /Mentor/ })).not.toBeInTheDocument()
   })
 
   it('searches every role at once and says when nothing matches', async () => {

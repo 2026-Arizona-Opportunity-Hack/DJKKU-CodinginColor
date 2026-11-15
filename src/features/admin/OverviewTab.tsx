@@ -15,7 +15,7 @@ import {
   type ClassInstructor,
 } from './api.supabase'
 
-type StaffRole = 'mentor' | 'instructor' | 'cic_admin' | 'reviewer'
+type StaffRole = 'instructor' | 'cic_admin' | 'reviewer'
 
 /** Jad's organization overview, invite form and class staffing. One tab of the admin console. */
 export function OverviewTab() {
@@ -291,7 +291,6 @@ function InviteStaffForm() {
           >
             <option value="instructor">Instructor</option>
             <option value="reviewer">External reviewer</option>
-            <option value="mentor">Mentor</option>
             <option value="cic_admin">CIC admin</option>
           </select>
         </div>

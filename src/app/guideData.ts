@@ -4,7 +4,7 @@ import type { Me } from '@/lib/session'
 // The Guide page's data: every feature's own guide entries, plus a few for the app shell itself.
 // Pure functions, so the page stays simple and this can be tested on its own.
 
-export const ROLE_ORDER: GuideRole[] = ['visitor', 'student', 'instructor', 'author', 'cic_admin', 'reviewer', 'mentor']
+export const ROLE_ORDER: GuideRole[] = ['visitor', 'student', 'instructor', 'author', 'cic_admin', 'reviewer']
 
 export const ROLE_INFO: Record<GuideRole, { label: string; intro: string }> = {
   visitor: { label: 'Visitor', intro: 'No account needed: try lessons, then sign in with the code or link from your teacher.' },
@@ -13,12 +13,11 @@ export const ROLE_INFO: Record<GuideRole, { label: string; intro: string }> = {
   author: { label: 'Author', intro: 'Build modules from your own material or YouTube and GitHub, with tests drafted by AI.' },
   cic_admin: { label: 'CIC admin', intro: 'Publish curriculum, invite staff and see every program. You can also use everything in the Instructor, Author and Reviewer tabs.' },
   reviewer: { label: 'Reviewer', intro: 'Read every published module as students see it. Read-only: no student data and no answers.' },
-  mentor: { label: 'Mentor', intro: 'Follow the students an admin assigned to you.' },
 }
 
 export const SHELL_GUIDE: GuideEntry[] = [
   { id: 'home', title: 'Home', summary: 'What Coding in Color Learn is, and the three ways in.', to: '/', roles: ['visitor'], group: 'Get in', step: 1 },
-  { id: 'privacy', title: 'Privacy', summary: 'What we keep about students, who sees it, and how to delete it.', to: '/privacy', roles: ['visitor', 'student', 'instructor', 'author', 'cic_admin', 'reviewer', 'mentor'], group: 'About this site' },
+  { id: 'privacy', title: 'Privacy', summary: 'What we keep about students, who sees it, and how to delete it.', to: '/privacy', roles: ['visitor', 'student', 'instructor', 'author', 'cic_admin', 'reviewer'], group: 'About this site' },
 ]
 
 const GENERAL_GROUPS = ['Get in', 'About this site']
@@ -40,8 +39,7 @@ export function rolesOf(me: Me | null): GuideRole[] {
       return ['cic_admin', 'instructor', 'author', 'reviewer']
     case 'reviewer':
       return ['reviewer']
-    case 'mentor':
-      return ['mentor']
+    // Mentors exist in the database but have no screens yet (next version), so they get the visitor guide.
     default:
       return ['visitor']
   }
