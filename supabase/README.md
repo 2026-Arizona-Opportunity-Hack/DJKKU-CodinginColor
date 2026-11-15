@@ -42,28 +42,43 @@ invites staff, assigns mentors and makes API keys. The per-role proof is in `tes
 
 ## First-time setup of a hosted project
 
+The click-by-click version, with the Cloudflare side, is [docs/deploy.md](../docs/deploy.md).
+In short:
+
 1. Create a free Supabase project. Run the migrations in order (`supabase link` then
    `supabase db push`, or paste each file into the SQL editor). Do **not** run `seed.sql` on a
-   project that holds real students; load it only into a separate demo project.
+   project that holds real students; load it only into a separate demo project, and only once.
 2. Authentication > Providers: turn **Google** on (client id and secret from Google Cloud
-   Console), turn **Anonymous sign-ins** on, turn **Email** off. Under Rate Limits keep the
-   anonymous sign-in limit low (30 per hour per IP is the default).
-3. Create the first admin by hand: sign in once with Google, then in the SQL editor run
+   Console), turn **Anonymous sign-ins** on, turn **Email** off. Under Rate Limits raise the
+   anonymous sign-in limit from 30 to 500 per hour per IP: a whole classroom shares one school
+   address, and at 30 the 31st student is locked out.
+3. Create the first admin by hand: sign in once with Google, find your id with
+   `select id, email from auth.users where email = '<your email>';`, then in the SQL editor run
    `update public.profiles set role = 'cic_admin' where id = '<your user id>';`.
-   After that the admin console invites everyone else with `invite_staff`.
-4. Create the "CIC Open" class once: `insert into public.classes (name, kind) values ('CIC Open', 'open');`
-   then assign modules to it with `assign_module`.
+4. A real (non-demo) project needs the "CIC Open" class once:
+   `insert into public.classes (name, kind) values ('CIC Open', 'open');`, then assign modules to
+   it with `assign_module`. The demo seed already creates it, so skip this on a seeded project.
 5. Keep the project awake and backed up (lane E's GitHub Actions: daily keepalive, nightly
    encrypted dump). A free project pauses after a week idle.
 
 ## Demo staff setup (hosted demo project only)
 
 The seeded demo classes have no instructor, and a class made by an admin has the admin as its
-only instructor, so a real instructor sees nothing until an admin adds them:
+only instructor, so a real instructor sees nothing until an admin adds them.
 
-1. The admin invites teammates: `select public.invite_staff('<email>', 'instructor', true);`
-2. They sign in once with Google.
-3. The admin adds them to a class (profile id: `select id, role from public.profiles where role <> 'student';`):
+The SQL editor runs as the database owner, not as a signed-in person, and these admin functions
+check who is signed in. So say who you are first, in the same run (`<admin id>` is the id of a
+profile with role `cic_admin`):
+
+```sql
+select set_config('request.jwt.claims', json_build_object('sub', '<admin id>', 'role', 'authenticated')::text, false);
+select public.invite_staff('<email>', 'instructor', true);
+```
+
+1. The admin invites teammates with the two lines above.
+2. They sign in once with Google, using that email.
+3. The admin adds them to a class (profile id: `select id, email from auth.users where email = '<email>';`),
+   again starting with the `set_config` line:
    `select public.add_class_instructor('11000000-0000-4000-8000-000000000001', '<their profile id>');`
 
 `remove_class_instructor` undoes it. A school class always keeps at least one instructor.
