@@ -195,7 +195,7 @@ export function splitQuestion(input: AuthoredQuestion): { content: QuestionConte
 
 // ---------- activities, lessons, modules ----------
 
-export const activityKind = z.enum(['video', 'reading', 'check', 'worksheet', 'exit']);
+export const activityKind = z.enum(['video', 'reading', 'check', 'worksheet', 'exit', 'code']);
 export type ActivityKind = z.infer<typeof activityKind>;
 
 // conceptId tags the activity for learning gain per concept and "reteach tomorrow" (activities.concept_id).
@@ -216,6 +216,18 @@ export const authoredActivity = z.discriminatedUnion('kind', [
   z.object({ ...activityBase, kind: z.literal('check'), questions: z.array(authoredQuestion).min(1).max(3) }).strict(),
   z.object({ ...activityBase, kind: z.literal('worksheet'), questions: z.array(authoredQuestion).min(1).max(30) }).strict(),
   z.object({ ...activityBase, kind: z.literal('exit'), questions: z.array(authoredQuestion).min(1).max(3) }).strict(),
+  // Python in the browser, PRIMM style (Sentance et al. 2019): predict, run, then modify the starter code
+  // until the checks pass. The checks are visible on purpose; they are the goal, not a secret key.
+  z
+    .object({
+      ...activityBase,
+      kind: z.literal('code'),
+      prompt: text(5000),
+      starter: z.string().max(10000),
+      predict: z.string().trim().max(500).optional(),
+      tests: z.array(text(500)).max(10),
+    })
+    .strict(),
 ]);
 export type AuthoredActivity = z.infer<typeof authoredActivity>;
 
@@ -252,6 +264,7 @@ export function splitModule(input: AuthoredModule) {
       activities: l.activities.map((a, ai) => {
         if (a.kind === 'video') return { kind: a.kind, title: a.title, required: a.required, embedUrl: youtubeEmbedUrl(parseYouTubeId(a.youtubeUrl)!), transcript: a.transcript };
         if (a.kind === 'reading') return { kind: a.kind, title: a.title, required: a.required, body: a.body };
+        if (a.kind === 'code') return { kind: a.kind, title: a.title, required: a.required, prompt: a.prompt, starter: a.starter, predict: a.predict, tests: a.tests };
         return {
           kind: a.kind,
           title: a.title,
@@ -381,6 +394,9 @@ export function toDraftPayload(input: {
           return { ...base, content: { embedUrl, ...(a.transcript ? { transcript: a.transcript } : {}) }, keys: [] };
         }
         if (a.kind === 'reading') return { ...base, content: { body: a.body }, keys: [] };
+        if (a.kind === 'code') {
+          return { ...base, content: { prompt: a.prompt, starter: a.starter, ...(a.predict ? { predict: a.predict } : {}), tests: a.tests }, keys: [] };
+        }
         const split = a.questions.map((q) => splitQuestion(q));
         return {
           ...base,
@@ -438,6 +454,11 @@ export function fromDraftRows(rows: DraftRows): { module: AuthoredModule; pre: A
           return { ...base, kind: 'video', youtubeUrl: id ? `https://www.youtube.com/watch?v=${id}` : '', ...transcript };
         }
         if (a.kind === 'reading') return { ...base, kind: 'reading', body: String(content.body ?? '') };
+        if (a.kind === 'code') {
+          const predict = typeof content.predict === 'string' && content.predict ? { predict: content.predict } : {};
+          const tests = Array.isArray(content.tests) ? content.tests.map(String) : [];
+          return { ...base, kind: 'code', prompt: String(content.prompt ?? ''), starter: String(content.starter ?? ''), ...predict, tests };
+        }
         const questions = ((content.questions ?? []) as QuestionContent[]).map((q) => authoredFrom(q, rows.activityKeys[a.id]));
         return { ...base, kind: a.kind, questions };
       }),

@@ -111,7 +111,7 @@ const authoredOf = (a: SeedActivity): AuthoredQuestion[] => ('questions' in a ? 
 /** What leaves the "server": lane C's student-safe content only (splitQuestion drops keys and shuffles ordering items). */
 function toPublicActivity(a: SeedActivity, status: ItemStatus, prev?: string, next?: string): Activity {
   const base = { activity_id: a.activity_id, title: a.title, status, prev_id: prev ?? null, next_id: next ?? null }
-  if (a.kind === 'video' || a.kind === 'reading') return clone({ ...base, kind: a.kind, content: a.content } as Activity)
+  if (a.kind === 'video' || a.kind === 'reading' || a.kind === 'code') return clone({ ...base, kind: a.kind, content: a.content } as Activity)
   return clone({ ...base, kind: a.kind, content: { questions: a.questions.map((q) => splitQuestion(q).content) } } as Activity)
 }
 
@@ -433,6 +433,20 @@ function gradeActivity(
   if (a.kind === 'video' || a.kind === 'reading') {
     if (!('viewed' in response) || response.viewed !== true) throw new ApiError('invalid_response')
     return { is_correct: null, score: 1, completed: true }
+  }
+  if (a.kind === 'code') {
+    // Same rules as submit_answer: the totals must match this activity's checks.
+    if (!('code' in response) || response.total !== a.content.tests.length || response.passed < 0 || response.passed > response.total) {
+      throw new ApiError('invalid_response')
+    }
+    const all = response.passed === response.total
+    return {
+      is_correct: all,
+      score: response.total === 0 ? 1 : response.passed / response.total,
+      completed: all,
+      feedback: all ? 'Every check passes. Nice work.' : `${response.passed} of ${response.total} checks pass. Read the first failing check and run your code again.`,
+      explanation: null,
+    }
   }
   const answers: Record<string, unknown> = 'answers' in response ? response.answers : {}
   const authored = authoredOf(a)

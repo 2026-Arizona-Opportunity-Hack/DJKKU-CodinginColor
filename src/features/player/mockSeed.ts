@@ -16,6 +16,7 @@ export type SeedActivity = Base &
     | { kind: 'video'; content: { embedUrl: string; transcript?: string } }
     | { kind: 'reading'; content: { body: string } }
     | { kind: 'check' | 'worksheet' | 'exit'; questions: AuthoredQuestion[] }
+    | { kind: 'code'; content: { prompt: string; starter: string; predict?: string; tests: string[] } }
   )
 
 export type SeedLesson = { lesson_id: string; title: string; activities: SeedActivity[] }
@@ -154,6 +155,18 @@ export const SEED_MODULES: SeedModule[] = [
                 key: { type: 'fill_blank', blanks: [['while']], caseSensitive: false, hints },
               },
             ],
+          },
+          {
+            activity_id: 'act-loops-code',
+            title: 'Try it: count with a loop',
+            required: false,
+            kind: 'code',
+            content: {
+              prompt: 'This loop adds up the numbers 1, 2 and 3. Change it so `total` is the sum of 1 to **10**.',
+              starter: 'total = 0\nfor n in range(1, 4):\n    total = total + n\nprint(total)\n',
+              predict: 'What will this program print before you change it?',
+              tests: ['assert total == 55, "total should be 55 (1 + 2 + ... + 10)"'],
+            },
           },
           {
             activity_id: 'act-basics-exit',

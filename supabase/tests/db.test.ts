@@ -852,6 +852,58 @@ describe.skipIf(!up)('get_me and class staffing', () => {
   })
 })
 
+describe.skipIf(!up)('code activities', () => {
+  // A published module with one code activity, assigned to a fresh class with one student.
+  async function setup() {
+    const admin = await mkUser('cic_admin')
+    await as(admin)
+    const draft = {
+      slug: `code-${randomUUID().slice(0, 8)}`, title: 'Code module', summary: '',
+      lessons: [{ title: 'L', activities: [{ kind: 'code', title: 'Make it count', required: true, concept_id: 'loops',
+        content: { prompt: 'Print 1 to 3', starter: 'print(1)', tests: ['assert True', 'assert 1 == 1'] }, keys: [] }] }],
+      assessments: [],
+    }
+    const moduleId = await one<string>('select public.save_module_draft($1::jsonb) as r', [JSON.stringify(draft)])
+    await q('select public.publish_module($1)', [moduleId])
+    const { class_id } = await one<{ class_id: string }>(`select public.create_class('Demo High School', 'Code class') as r`)
+    await q('select public.assign_module($1, $2)', [class_id, moduleId])
+    const roster = await one<{ login_code: string }[]>(`select public.import_roster($1, '["Kai C."]'::jsonb) as r`, [class_id])
+    const student = await mkUser()
+    await as(student)
+    await q('select public.claim_login_code($1)', [roster[0]!.login_code])
+    await asSuper()
+    const act = (await q<{ id: string }>(`select a.id from activities a join lessons l on l.id = a.lesson_id where l.module_id = $1`, [moduleId]))[0]!.id
+    await as(student)
+    return { act, class_id }
+  }
+  const submit = (act: string, r: object) => one<{ completed: boolean; score: number; is_correct: boolean; feedback: string | null }>('select public.submit_answer($1, $2::jsonb) as r', [act, JSON.stringify(r)])
+
+  it('completes only when every check passes, and says how many pass otherwise', async () => {
+    const { act } = await setup()
+    const partial = await submit(act, { code: 'print(2)', passed: 1, total: 2, prediction: 'It prints 1' })
+    expect(partial).toMatchObject({ completed: false, is_correct: false, score: 50, feedback: '1 of 2 checks pass. Read the first failing check and run your code again.' })
+    expect(await submit(act, { code: 'print(1)\nprint(2)', passed: 2, total: 2 })).toMatchObject({ completed: true, is_correct: true, score: 100 })
+  })
+
+  it('refuses counts that do not match the activity, code over 10 KB, and a missing code field', async () => {
+    const { act } = await setup()
+    await fails('select public.submit_answer($1, $2::jsonb)', [act, JSON.stringify({ code: 'x', passed: 5, total: 5 })], /do not match/)
+    await fails('select public.submit_answer($1, $2::jsonb)', [act, JSON.stringify({ code: 'x', passed: 3, total: 2 })], /do not match/)
+    await fails('select public.submit_answer($1, $2::jsonb)', [act, JSON.stringify({ code: 'x'.repeat(10001), passed: 2, total: 2 })], /Send your code/)
+    await fails('select public.submit_answer($1, $2::jsonb)', [act, JSON.stringify({ passed: 2, total: 2 })], /Send your code/)
+  })
+
+  it('the database refuses a code activity without starter code or with too many checks', async () => {
+    const author = await mkUser('instructor', { author: true })
+    await as(author)
+    const bad = (content: object) => JSON.stringify({ slug: `b-${randomUUID().slice(0, 8)}`, title: 'B', summary: '', lessons: [{ title: 'L', activities: [{ kind: 'code', title: 'C', required: true, content, keys: [] }] }], assessments: [] })
+    await fails('select public.save_module_draft($1::jsonb)', [bad({ prompt: 'p', tests: [] })], /activities_content_shape/)
+    await fails('select public.save_module_draft($1::jsonb)', [bad({ prompt: 'p', starter: '', tests: Array(11).fill('assert True') })], /activities_content_shape/)
+    const video = JSON.stringify({ slug: `v-${randomUUID().slice(0, 8)}`, title: 'V', summary: '', lessons: [{ title: 'L', activities: [{ kind: 'video', title: 'V', required: true, content: { transcript: 'no link' }, keys: [] }] }], assessments: [] })
+    await fails('select public.save_module_draft($1::jsonb)', [video], /activities_content_shape/) // the old check let this through
+  })
+})
+
 describe.skipIf(!up)('catch-up plan', () => {
   type Plan = { steps_left: number; minutes_left: number; behind_by: number; steps: { kind: string; title: string; minutes: number }[] }
 
