@@ -83,3 +83,10 @@
     outline-offset: 2px;
   }
 }
+
+/* Printed login sheets: half-inch margins so 2 x 4 cards fit a Letter page. */
+@media print {
+  @page {
+    margin: 0.5in;
+  }
+}

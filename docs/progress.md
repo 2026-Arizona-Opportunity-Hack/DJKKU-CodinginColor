@@ -160,3 +160,17 @@ instead of repeating them.
   activity opens once it is taken. Only `src/features/player/` changed.
 - Next: lane E's `/api/hint` stays behind `VITE_FEATURE_HINTS`; a browser pass over `/learn` on the hosted project.
 - Blocked: nothing.
+
+### 2026-11-14: Umang (lane A, covering instructor, 4a class setup)
+- Done: instructor home at `/instructor` with the class in the URL (`/instructor/:classId`).
+  New in `src/features/instructor/`: class picker, create-class form (zod in `shared/classes.ts`),
+  class link card (`create_join_code`, shown once, copy buttons and a QR code), roster import
+  now wired to the selected class (its own class dropdown is gone) with a "Print login sheet" button,
+  a printable 2 x 4 login sheet (codes kept in memory only, QR drawn locally with the MIT `qrcode`
+  library), and module assignment (`assign_module`). Every section has loading, empty and error
+  states. Checked each call against a local Supabase as a real instructor (create, join code,
+  roster, published modules, assign). The old dashboard is unchanged below the setup sections; 4b
+  replaces it with real views. Jad built class creation and module assignment under `/admin`; these
+  are separate instructor-side copies because features may not import each other.
+- Next: 4b, the dashboard on real views.
+- Blocked: nothing.
