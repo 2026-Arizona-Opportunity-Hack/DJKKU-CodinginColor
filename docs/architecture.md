@@ -14,6 +14,7 @@ flowchart LR
   B -->|HTTPS| F[Cloudflare Pages Functions]
   F -->|service role, server-side only| S
   F -->|opaque id, question + answer only| G[Gemini Flash-Lite free tier]
+  F -->|the author's search topic only| Y[YouTube Data API, GitHub API]
   C[CIC dashboard owner] -->|Bearer API key| F
   A[GitHub Actions] -->|daily keepalive, nightly encrypted backup| S
 ```
@@ -26,8 +27,9 @@ flowchart LR
   sign-in for staff, reviewers and mentors.
 - **Core logic in Postgres functions:** grading, unlock, login-code claim, next
   activity. They run next to the data and cannot be skipped by the browser.
-- **HTTP endpoints:** Cloudflare Pages Functions for the read API and the AI hint
-  proxy. Secrets live in Cloudflare env vars, never in the browser or git.
+- **HTTP endpoints:** Cloudflare Pages Functions for the read API, the AI hint
+  proxy and Find material (YouTube and GitHub search for authors). Secrets live in
+  Cloudflare env vars, never in the browser or git.
 - **Ops:** GitHub Actions for lint, type check, tests, Lighthouse CI, gitleaks,
   the daily keepalive ping and the nightly encrypted backup.
 
@@ -88,6 +90,14 @@ visible to CIC admin, and outbound notes are drafted by the system and sent by a
 - **AI:** receives only the item text and the student's answer under an opaque
   id. No names or school. Capped at 3 hints per activity. Falls back to
   instructor-written hints on any failure.
+- **Find material** (`/api/sources/search`, `/api/sources/readme`): authors only,
+  checked with the caller's own token against `is_author()`; no service role. Only
+  the typed topic leaves the site. Videos are strict SafeSearch, embeddable only, and
+  embedded through youtube-nocookie. README text is copied only from repositories
+  under an open license (checked again on import), with images, badges and HTML
+  removed and the source and license on the first line. Results are cached by query
+  for a day, never by person. Everything added lands in a draft that a CIC admin
+  reviews before students see it.
 
 ## Unlock and "stuck" defaults
 
@@ -174,9 +184,11 @@ src/components/         shared UI (shadcn/ui in ui/), learning/ (student-view pi
                         player, the studio preview and the reviewer view), Dialog, QueryStatus
 src/lib/                shared helpers: feature contract, Supabase client, session (who is signed in)
 shared/                 code used by both browser and functions: roles, class and login-code rules,
-                        authoring/ (zod schemas, learning gain, CSV), api/ (read API handlers and types)
-functions/api/          Pages Functions, one file per endpoint (health, v1/completion, v1/learning-gain)
-functions/_lib/         helpers for the functions (env bindings, dependencies)
+                        authoring/ (zod schemas, learning gain, CSV), api/ (read API handlers and types),
+                        hint/ (the hint handler), sources/ (Find material: catalog, YouTube, GitHub, handler)
+functions/api/          Pages Functions, one file per endpoint (health, hint, sources/search,
+                        sources/readme, v1/completion, v1/learning-gain)
+functions/_lib/         helpers for the functions (env bindings, dependencies, the search cache)
 public/api/docs/        the static API reference page served at /api/docs
 supabase/               migrations, seed, config and the per-role tests (layout in its README)
 lane-d-logic/           Jad's early stuck-student and roster logic, kept for reference
