@@ -626,6 +626,14 @@ instead of repeating them.
   replaced, so the live site repairs itself with no manual clean-up. Same video now: English, 61 timed
   paragraphs over 24 minutes. 3 new tests (20 in the handler).
 
+### 2026-11-15: Umang (security and QA pass, gates G-01 and G-02)
+
+- Done: ran SECURITY_QA_CHECKLIST against main. Full suite 699 tests and e2e pass. Results by ID in
+  `docs/security-audit.md` and `docs/qa-report.md`. New `scripts/security-probe.mjs` probes the REST API as a
+  stranger, an unclaimed anonymous session and a claimed student (54/54 pass locally, 17/17 on production).
+  Fixes opened: #59 (headers), #60 (privacy page, SECURITY.md), #61 (login code in URL, hint body cap).
+- Next: owner runs `npx supabase db push` on the hosted project (S-92), then re-run the probe on production.
+- Blocked: S-92 and the dashboard-only rows (OWNER in the audit).
 ### 2026-11-15: Umang (lanes D and E files, privacy page and SECURITY.md, S-61, S-62, S-71)
 
 - Done: a plain-language `/privacy` page (what we keep about students, who sees it, services used, retention and
@@ -655,3 +663,26 @@ instead of repeating them.
   now says it will show no learning gain. Studio test builds a test by hand and checks the saved payload.
 - Next: AI drafting of both tests from the module's material.
 - Blocked: nothing.
+### 2026-11-15: Krishna (lane E, in lane D's folder; Jad to review)
+- Done: a student who has not joined yet ("Seat not claimed") now links to their student page, so an
+  instructor can give them a login code (Reset login code works for unclaimed seats; there was just no
+  way to reach it). The roster view has no seat id, so the dashboard also reads the class's seats and
+  links unclaimed ones by seat id (the page accepts either); two unclaimed students with the same name
+  get one seat each. No database change.
+- Blocked: nothing.
+
+### 2026-11-15: Daxx (transcript follows the video; page-length fix)
+- Fixed: opening "Read the transcript" made the page about 21,000 px tall on a phone. The hidden "At"
+  labels before each timestamp are absolutely positioned and escaped the scroll box, which was not
+  `relative`. The box is now the positioning context and has no such labels; the page grows only by
+  the box itself (844 -> 1150 px).
+- Done: the transcript follows the video. The embed uses `enablejsapi=1` and the player reports its time
+  by postMessage (no YouTube JS loaded; only messages from our own frame and a YouTube origin are read;
+  the handshake repeats until the player answers). Caption lines are kept as YouTube timed them (old
+  400-character cache rows refetch once), grouped into paragraphs of about 320 characters or 30 s. The
+  line being spoken is highlighted (`aria-current`) and kept in view by scrolling the box, never the
+  page. Scrolling the transcript pauses following; "Back to the current line" resumes. Timestamps play
+  the video from that moment (embed now allows `autoplay`).
+- Checked in a browser with a real video on a local Wrangler run: 9/9 (line moves with speech, box
+  scrolls, page does not, pause and resume). Tests: player hook (message checks, handshake), transcript
+  component, grouping and active-line search.

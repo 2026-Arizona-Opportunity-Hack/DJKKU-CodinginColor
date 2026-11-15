@@ -18,7 +18,10 @@ export const SUPADATA_URL = 'https://api.supadata.ai/v1/transcript'
 const TIMEOUT_MS = 10_000
 const RETRY_UNAVAILABLE_MS = 7 * 24 * 60 * 60 * 1000
 const MAX_TOTAL_CHARS = 200_000 // about 4 hours of speech; longer is cut, never an error
-const CHUNK_CHARS = 400 // Supadata merges captions into readable paragraphs of about this size
+// Caption lines are kept as YouTube timed them (no chunkSize), so the player can highlight the line
+// being spoken; the client groups them into paragraphs for reading. Rows cached in the old format
+// (400-character chunks) average far longer than a caption line and are refetched once.
+const MAX_AVG_CAPTION_CHARS = 200
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/
 // CIC teaches in English. Without `lang`, Supadata returns the FIRST caption track it finds, which can
 // be a partial translation (found locally: an English lesson came back in Arabic). Ask for English and
@@ -126,7 +129,10 @@ export async function handleTranscript(request: Request, env: TranscriptEnv, dep
     if (cached.success) {
       // A cached transcript in another language (stored before lang=en was sent) is treated as a miss and replaced.
       const english = !cached.data.lang || cached.data.lang.toLowerCase().startsWith(TRANSCRIPT_LANG)
-      if (cached.data.status === 'ok' && english) return ok({ video_id: videoId, lang: cached.data.lang, segments: cached.data.segments, source: 'cache' })
+      // Old paragraph-sized rows can't be followed line by line; they are refetched once as caption lines.
+      const segs = cached.data.segments
+      const captionLines = segs.length > 0 && segs.reduce((n, s) => n + s.text.length, 0) / segs.length <= MAX_AVG_CAPTION_CHARS
+      if (cached.data.status === 'ok' && english && captionLines) return ok({ video_id: videoId, lang: cached.data.lang, segments: cached.data.segments, source: 'cache' })
       if (cached.data.status === 'unavailable' && now() - Date.parse(cached.data.fetched_at) < RETRY_UNAVAILABLE_MS) {
         return fail(404, 'transcript_unavailable', { videoId, source: 'cache' })
       }
@@ -134,7 +140,7 @@ export async function handleTranscript(request: Request, env: TranscriptEnv, dep
 
     // 4. Supadata.
     if (!env.SUPADATA_API_KEY) return fail(503, 'unavailable', { videoId, cause: 'missing_supadata_key' })
-    const params = new URLSearchParams({ url: `https://www.youtube.com/watch?v=${videoId}`, lang: TRANSCRIPT_LANG, mode: 'native', chunkSize: String(CHUNK_CHARS) })
+    const params = new URLSearchParams({ url: `https://www.youtube.com/watch?v=${videoId}`, lang: TRANSCRIPT_LANG, mode: 'native' })
     let res: Response
     try {
       res = await f(`${SUPADATA_URL}?${params}`, { headers: { 'x-api-key': env.SUPADATA_API_KEY }, signal: AbortSignal.timeout(TIMEOUT_MS) })

@@ -48,6 +48,16 @@ function StudentLink({ classId, studentId, name }: { classId: string; studentId:
   )
 }
 
+/**
+ * For rows without a profile (unclaimed seats): the seat id for a name, using each unclaimed seat once,
+ * so two unclaimed students with the same name still get one seat each.
+ */
+function unclaimedSeatLinks(seats: { id: string; profile_id: string | null; display_name: string }[]) {
+  const free = new Map<string, string[]>()
+  for (const s of seats) if (!s.profile_id) free.set(s.display_name, [...(free.get(s.display_name) ?? []), s.id])
+  return (name: string): string | null => free.get(name)?.shift() ?? null
+}
+
 /** `initialClassId` (from the URL) picks the class shown first; otherwise the first class. */
 export function InstructorDashboard({ initialClassId }: { initialClassId?: string } = {}) {
   const databaseConfigured =
@@ -207,6 +217,11 @@ function LiveDashboard({
   data: InstructorDashboardData
 }) {
   const students = data.progress
+  // An unclaimed seat has no profile id, so it links by seat id (the student page accepts either),
+  // which is how an instructor reaches Reset login code for a student who has not joined yet.
+  // One resolver per list, so each list can use every seat once.
+  const rosterLink = unclaimedSeatLinks(data.seats ?? [])
+  const notStartedLink = unclaimedSeatLinks(data.seats ?? [])
 
   const averageProgress =
     students.length === 0
@@ -321,7 +336,7 @@ const classGain =
                   .map((student, index) => (
                     <tr key={`${student.student_id ?? student.display_name}-${index}`}>
                       <td className="border-b px-3 py-2">
-                        <StudentLink classId={classId} studentId={student.student_id} name={student.display_name} />
+                        <StudentLink classId={classId} studentId={student.student_id ?? rosterLink(student.display_name)} name={student.display_name} />
                         {!student.joined && <span className="block text-xs text-muted-foreground">Seat not claimed</span>}
                       </td>
                       <td className="border-b px-3 py-2">{Math.round(student.completion_pct)}%</td>
@@ -410,7 +425,7 @@ const classGain =
                 className="rounded-lg border p-4"
               >
                 <p className="font-medium">
-                  <StudentLink classId={classId} studentId={student.student_id} name={student.display_name} />
+                  <StudentLink classId={classId} studentId={student.student_id ?? notStartedLink(student.display_name)} name={student.display_name} />
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {student.joined ? '0% complete' : 'Roster seat not claimed'}

@@ -35,3 +35,42 @@ export function timestamp(ms: number): string {
   const ss = String(s % 60).padStart(2, '0')
   return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`
 }
+
+export type Line = { index: number; start_ms: number; text: string }
+export type Paragraph = { start_ms: number; lines: Line[] }
+
+/**
+ * Caption lines grouped into readable paragraphs (about `maxChars` or `maxMs` of video each, broken
+ * only between lines), so the transcript reads like text while each line can still be highlighted as
+ * it is spoken, and each paragraph's timestamp stays close to every line in it.
+ */
+export function groupParagraphs(segments: { start_ms: number; text: string }[], maxChars = 320, maxMs = 30_000): Paragraph[] {
+  const out: Paragraph[] = []
+  let current: Paragraph | null = null
+  let chars = 0
+  segments.forEach((s, index) => {
+    if (!current || chars + s.text.length > maxChars || s.start_ms - current.start_ms >= maxMs) {
+      current = { start_ms: s.start_ms, lines: [] }
+      out.push(current)
+      chars = 0
+    }
+    current.lines.push({ index, start_ms: s.start_ms, text: s.text })
+    chars += s.text.length + 1
+  })
+  return out
+}
+
+/** Index of the line being spoken at `timeMs` (the last one that has started), or -1 before the first. */
+export function activeIndex(segments: { start_ms: number }[], timeMs: number): number {
+  let lo = 0
+  let hi = segments.length - 1
+  let found = -1
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1
+    if (segments[mid]!.start_ms <= timeMs) {
+      found = mid
+      lo = mid + 1
+    } else hi = mid - 1
+  }
+  return found
+}
