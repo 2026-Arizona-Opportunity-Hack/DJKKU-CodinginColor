@@ -3,7 +3,8 @@
 What the platform must do, for whom, and the limits it must stay inside. Source:
 the CIC problem brief ([CIC Problem 1](https://www.ohack.dev/project/d09466fadf1b11f18e63deadc507a848),
 and the organizers' [full brief](https://docs.google.com/document/d/1sdlQDji23jA0LFoYbzNVHCkeG0ICE9XRQSr3xh3ntMU/edit),
-an open document where questions can be left as comments)
+an open document where questions can be left as comments; our trimmed copy for this
+project, without the donor problem, is [srs.md](srs.md))
 and the team design plan (Nov 14, 2026 revision). If this file and the brief
 disagree, the brief wins; open an issue and fix this file.
 CIC's logo and colour palette: <https://photos.app.goo.gl/qsn1pLAmB2BGQkHGA>.
