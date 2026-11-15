@@ -31,6 +31,7 @@ function ClassSections({ classId, className }: { classId: string; className: str
         <h2 className="text-2xl font-semibold">{className}</h2>
         <div className="flex flex-wrap gap-2">
           <Link className="inline-flex min-h-11 items-center rounded-md border px-3 font-medium hover:bg-accent" to={`/instructor/${classId}/live`}>Live class view</Link>
+          <Link className="inline-flex min-h-11 items-center rounded-md border px-3 font-medium hover:bg-accent" to={`/instructor/${classId}/reteach`}>What to reteach</Link>
           <Link className="inline-flex min-h-11 items-center rounded-md border px-3 font-medium hover:bg-accent" to={`/instructor/${classId}/report`}>Impact report for funders</Link>
         </div>
       </div>

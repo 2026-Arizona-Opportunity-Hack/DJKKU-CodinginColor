@@ -200,3 +200,39 @@ begin
 end $$;
 
 commit;
+
+-- First tries for the misconception radar: several Demo Period 1 students first answered the variables
+-- check and the range question wrong, then fixed it. Made-up demo answers, no real student data.
+do $$
+declare
+  r record;
+  n int := 0;
+begin
+  for r in
+    select m.profile_id from public.class_members m
+    join public.progress p on p.student_id = m.profile_id and p.class_id = m.class_id
+      and p.activity_id = '50000000-0000-4000-8000-000000000005' and p.status = 'completed'
+    where m.class_id = '11000000-0000-4000-8000-000000000001' and m.member_role = 'student'
+    order by m.display_name
+  loop
+    n := n + 1;
+    if n % 4 = 0 then                     -- some got it right first time
+      insert into public.submissions (student_id, class_id, activity_id, response, is_correct, score, results, attempt_no) values
+        (r.profile_id, '11000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000003',
+         '{"answers":{"q-vars-1":{"choice_id":"b"}}}', true, 100, '{"q-vars-1":{"correct":true,"concept":"variables"}}', 1);
+      continue;
+    end if;
+    insert into public.submissions (student_id, class_id, activity_id, response, is_correct, score, results, attempt_no) values
+      (r.profile_id, '11000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000003',
+       jsonb_build_object('answers', jsonb_build_object('q-vars-1', jsonb_build_object('choice_id', case when n % 3 = 0 then 'a' else 'c' end))),
+       false, 0, '{"q-vars-1":{"correct":false,"concept":"variables"}}', 1),
+      (r.profile_id, '11000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000003',
+       '{"answers":{"q-vars-1":{"choice_id":"b"}}}', true, 100, '{"q-vars-1":{"correct":true,"concept":"variables"}}', 2);
+    if n % 2 = 1 then
+      insert into public.submissions (student_id, class_id, activity_id, response, is_correct, score, results, attempt_no) values
+        (r.profile_id, '11000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000005',
+         '{"answers":{"q-loop-1":{"text":"range"},"q-loop-2":{"blanks":["for","range"]},"q-loop-3":{"order":["l1","l2","l3","l4"]},"q-loop-4":{"choice_id":"a"}}}',
+         false, 75, '{"q-loop-1":{"correct":true,"concept":"loops"},"q-loop-2":{"correct":true,"concept":"loops"},"q-loop-3":{"correct":true,"concept":"loops"},"q-loop-4":{"correct":false,"concept":"loops"}}', 1);
+    end if;
+  end loop;
+end $$;

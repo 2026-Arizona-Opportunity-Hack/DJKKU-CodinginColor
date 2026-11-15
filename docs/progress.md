@@ -517,3 +517,15 @@ instead of repeating them.
   ladder on any failure (including when the OHack key expires after the event). Tested with a mocked
   gateway; the live call is checked on the deployed site.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lanes A and D, misconception radar)
+
+- Done: "What to reteach" at `/instructor/:classId/reteach`, linked from the class page. For each question
+  where 2 or more students were wrong on their FIRST try (what they thought before feedback; a check only
+  completes when right, so the latest try would hide it), it shows how many and the most common wrong answers
+  in words, for example "4 students chose "32"" on `x = x + 2`. New migration
+  `20261115160000_lane_a_misconceptions.sql`: `get_class_misconceptions` (class instructor or admin; no answer
+  keys returned). The seed gains first tries for Demo Period 1 so the demo shows real patterns. DB test, unit
+  tests for the answer wording.
+- Next: note home drafter, belonging wording, certificate.
+- Blocked: nothing.
