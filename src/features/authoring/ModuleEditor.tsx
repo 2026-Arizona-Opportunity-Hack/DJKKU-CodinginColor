@@ -7,14 +7,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { authoredModule, toDraftPayload, type AuthoredAssessment, type AuthoredModule } from '@shared/authoring/schemas'
+import { authoredAssessment, authoredModule, toDraftPayload, type AuthoredAssessment, type AuthoredModule } from '@shared/authoring/schemas'
 import { loadModule, newVersion, saveDraft } from './api'
 import type { ModuleFV } from './formTypes'
 import { LessonEditor } from './LessonEditor'
 import { modulesKey } from './keys'
 import { SubmitForReview } from './SubmitForReview'
+import { TestBuilder } from './TestBuilder'
 
-const EMPTY: ModuleFV = { title: '', summary: '', lessons: [{ title: '', activities: [] }] }
+const EMPTY: ModuleFV = { title: '', summary: '', lessons: [{ title: '', activities: [] }], pre: null, post: null }
+
+// The module contract plus its two tests, validated together on save.
+const editorSchema = authoredModule.extend({ pre: authoredAssessment.nullable().optional(), post: authoredAssessment.nullable().optional() })
+type EditorOutput = AuthoredModule & { pre?: AuthoredAssessment | null; post?: AuthoredAssessment | null }
 
 /** `/author/new` and `/author/:moduleId`. A saved module is loaded fresh each time it is opened. */
 export function ModuleEditor() {
@@ -25,7 +30,7 @@ export function ModuleEditor() {
     enabled: Boolean(moduleId),
     gcTime: 0, // never reuse an old copy: the form starts from whatever was loaded
   })
-  if (!moduleId) return <EditorForm moduleId={null} initial={EMPTY} pre={null} post={null} status="draft" version={1} />
+  if (!moduleId) return <EditorForm moduleId={null} initial={EMPTY} status="draft" version={1} />
   if (loaded.isPending) return <p role="status">Loading the module…</p>
   if (loaded.isError) {
     return (
@@ -36,17 +41,16 @@ export function ModuleEditor() {
     )
   }
   const m = loaded.data
-  return <EditorForm moduleId={m.id} slug={m.slug} initial={m.module as ModuleFV} pre={m.pre} post={m.post} status={m.module.status} version={m.version} keysHidden={m.keysHidden} />
+  const initial = { ...m.module, pre: m.pre, post: m.post } as ModuleFV
+  return <EditorForm moduleId={m.id} slug={m.slug} initial={initial} status={m.module.status} version={m.version} keysHidden={m.keysHidden} />
 }
 
 function EditorForm({
-  moduleId, slug, initial, pre, post, status, version, keysHidden = false,
+  moduleId, slug, initial, status, version, keysHidden = false,
 }: {
   moduleId: string | null
   slug?: string
   initial: ModuleFV
-  pre: AuthoredAssessment | null
-  post: AuthoredAssessment | null
   status: 'draft' | 'submitted' | 'published'
   version: number
   keysHidden?: boolean
@@ -61,12 +65,13 @@ function EditorForm({
     const t = (location.state as { savedAt?: number } | null)?.savedAt
     return t ? new Date(t) : null
   })
-  const form = useForm<ModuleFV>({ resolver: zodResolver(authoredModule) as unknown as Resolver<ModuleFV>, defaultValues: initial })
-  const { control, register, handleSubmit, reset, formState: { errors, isDirty, submitCount } } = form
+  const form = useForm<ModuleFV>({ resolver: zodResolver(editorSchema) as unknown as Resolver<ModuleFV>, defaultValues: initial })
+  const { control, register, handleSubmit, reset, setValue, getValues, formState: { errors, isDirty, submitCount } } = form
+  const toPayload = ({ pre, post, ...module }: EditorOutput) => toDraftPayload({ moduleId, slug, module, pre: pre ?? null, post: post ?? null })
   const lessons = useFieldArray({ control, name: 'lessons' })
 
   const save = useMutation({
-    mutationFn: (values: AuthoredModule) => saveDraft(toDraftPayload({ moduleId, slug, module: values, pre, post })),
+    mutationFn: (values: EditorOutput) => saveDraft(toPayload(values)),
     onSuccess: async (savedId, values) => {
       skipBlock.current = true
       reset(values as ModuleFV)
@@ -111,7 +116,7 @@ function EditorForm({
   const invalid = submitCount > 0 && Object.keys(errors).length > 0
 
   return (
-    <form noValidate className="flex flex-col gap-6" onSubmit={handleSubmit((values) => save.mutate(values as unknown as AuthoredModule))} aria-labelledby={`${id}-heading`}>
+    <form noValidate className="flex flex-col gap-6" onSubmit={handleSubmit((values) => save.mutate(values as unknown as EditorOutput))} aria-labelledby={`${id}-heading`}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id={`${id}-heading`} className="text-2xl font-semibold">{moduleId ? 'Edit module' : 'New module'}{version > 1 ? ` (version ${version})` : ''}</h2>
         <Link className="inline-flex min-h-11 items-center underline" to="/author">Back to my modules</Link>
@@ -175,6 +180,8 @@ function EditorForm({
         <p role="alert" className="text-sm font-medium text-destructive empty:hidden">{(errors.lessons as { message?: string; root?: { message?: string } } | undefined)?.root?.message ?? (errors.lessons as { message?: string } | undefined)?.message ? 'A module needs at least one lesson.' : undefined}</p>
         {!readOnly && <Button type="button" variant="outline" className="self-start" onClick={() => lessons.append({ title: '', activities: [] })}>Add lesson</Button>}
       </section>
+
+      {!keysHidden && <TestBuilder control={control} register={register} setValue={setValue} getValues={getValues} errors={errors} readOnly={readOnly} />}
 
       {!readOnly && (
         <div className="flex flex-wrap items-center gap-4 border-t pt-4">
