@@ -214,6 +214,39 @@ describe.skipIf(!up)('roles and direct table access', () => {
     expect(p).toEqual({ role: 'instructor', can_author: true })
   })
 
+  it('applies the invite when Google confirms the email after creating the account (the real order)', async () => {
+    const admin = await mkUser('cic_admin')
+    await as(admin)
+    await q(`select public.invite_staff('late.confirm@school.org', 'cic_admin', false)`)
+    await q(`select public.invite_staff('kept@school.org', 'instructor', false)`)
+    await asSuper()
+    const ins = `insert into auth.users (id, aud, role, email, email_confirmed_at, raw_app_meta_data) values ($1,'authenticated','authenticated',$2, null, $3)`
+    const roleOf = async (id: string) => (await q<{ role: string }>('select role from profiles where id = $1', [id]))[0]!.role
+
+    // Google: created unconfirmed (a student for now), then confirmed -> the invited role.
+    const g = randomUUID()
+    await client.query(ins, [g, 'late.confirm@school.org', JSON.stringify({ provider: 'google' })])
+    expect(await roleOf(g)).toBe('student')
+    await client.query('update auth.users set email_confirmed_at = now() where id = $1', [g])
+    expect(await roleOf(g)).toBe('cic_admin')
+    expect((await q<{ accepted: boolean }>(`select accepted_at is not null as accepted from staff_invites where email = 'late.confirm@school.org'`))[0]!.accepted).toBe(true)
+
+    // An email (not Google) account confirmed later stays a student.
+    const e = randomUUID()
+    await client.query('savepoint other')
+    await client.query(ins, [e, 'kept@school.org', JSON.stringify({ provider: 'email' })])
+    await client.query('update auth.users set email_confirmed_at = now() where id = $1', [e])
+    expect(await roleOf(e)).toBe('student')
+    await client.query('rollback to savepoint other')
+
+    // A role an admin already changed by hand is never overwritten.
+    const k = randomUUID()
+    await client.query(ins, [k, 'kept@school.org', JSON.stringify({ provider: 'google' })])
+    await client.query(`update profiles set role = 'reviewer' where id = $1`, [k])
+    await client.query('update auth.users set email_confirmed_at = now() where id = $1', [k])
+    expect(await roleOf(k)).toBe('reviewer')
+  })
+
   it('an admin cannot change their own role (no lockout)', async () => {
     const admin = await mkUser('cic_admin')
     await as(admin)
