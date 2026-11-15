@@ -39,7 +39,15 @@ export function QuestionPreview({ question, index }: { question: QuestionContent
           ))}
         </p>
       )}
-      {question.type === 'ordering' && (
+      {question.type === 'ordering' && question.display === 'code' && (
+        <>
+          <p className="mb-1 text-sm">Put the lines of code in order:</p>
+          <ol className="flex flex-col gap-1">
+            {question.items.map((item) => <li key={item.id} className="rounded-md border px-2 py-1 font-mono text-sm whitespace-pre-wrap">{item.text}</li>)}
+          </ol>
+        </>
+      )}
+      {question.type === 'ordering' && question.display !== 'code' && (
         <>
           <p className="mb-1 text-sm">Put these in order:</p>
           <ol className="list-decimal pl-6">
