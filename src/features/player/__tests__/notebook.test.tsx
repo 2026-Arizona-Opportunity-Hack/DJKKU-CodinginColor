@@ -6,9 +6,10 @@ import { describe, expect, it } from 'vitest'
 
 import { NoteBox } from '../components/NoteBox'
 import { groupNotes } from '../notebook'
+import { LearnLayout } from '../pages/LearnLayout'
 import { NotebookPage } from '../pages/NotebookPage'
 import type { Note } from '../types'
-import { CLASS_ID, expectNoSeriousA11yViolations, mockApi, renderRoute } from '../test/render'
+import { CLASS_ID, expectNoSeriousA11yViolations, MID_MODULE, mockApi, renderRoute } from '../test/render'
 
 const note = (activity_id: string, module_title: string, lesson_title: string): Note => ({
   activity_id, activity_title: activity_id, kind: 'reading', lesson_title, module_id: module_title, module_title, body: 'b', updated_at: null,
@@ -38,32 +39,39 @@ describe('mock notes API', () => {
 })
 
 describe('NoteBox', () => {
-  it('saves a note, says so, and it appears in the notebook', async () => {
+  it('saves by itself after the student stops typing, and blocks notes that are too long', async () => {
     const api = mockApi()
     const user = userEvent.setup()
-    renderRoute(<NoteBox activityId="act-vars-read" notebookHref={`/learn/${CLASS_ID}/notebook`} />, { api, path: '/', url: '/' })
-    const box = await screen.findByLabelText('Explain it in your own words')
+    renderRoute(<NoteBox activityId="act-vars-read" activityTitle="Read: naming things" />, { api, path: '/', url: '/' })
+    const box = await screen.findByLabelText('Notes on "Read: naming things"')
     await waitFor(() => expect(box).toBeEnabled())
     await user.type(box, 'A variable is a label')
-    await user.click(screen.getByRole('button', { name: 'Save note' }))
-    expect(await screen.findByText('Saved to your notebook.')).toBeInTheDocument()
+    expect(await screen.findByText('Saved', {}, { timeout: 4000 })).toBeInTheDocument()
     expect((await api.getMyNotes())[0]).toMatchObject({ activity_id: 'act-vars-read', body: 'A variable is a label' })
-  })
-
-  it('saves when the student leaves the box, and blocks notes that are too long', async () => {
-    const api = mockApi()
-    const user = userEvent.setup()
-    renderRoute(<NoteBox activityId="act-vars-read" notebookHref="/x" />, { api, path: '/', url: '/' })
-    const box = await screen.findByLabelText('Explain it in your own words')
-    await waitFor(() => expect(box).toBeEnabled())
-    await user.type(box, 'on blur')
-    await user.tab()
-    await waitFor(async () => expect((await api.getMyNotes())[0]?.body).toBe('on blur'))
     await user.clear(box)
     await user.click(box)
     await user.paste('x'.repeat(2001))
     expect(screen.getByText(/too long to save/)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Save note' })).toBeDisabled()
+  })
+})
+
+describe('notes side panel', () => {
+  it('opens from Notes in the student bar beside the activity, follows the activity, and closes', async () => {
+    const api = mockApi(MID_MODULE)
+    const user = userEvent.setup()
+    renderRoute(<LearnLayout />, {
+      api,
+      path: '/learn/:classId/a/:activityId',
+      url: `/learn/${CLASS_ID}/a/act-vars-read`,
+      extra: [],
+    })
+    const toggle = await screen.findByRole('button', { name: 'Notes' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    expect(await screen.findByRole('complementary', { name: 'My notes' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Close notes' }))
+    expect(screen.queryByRole('complementary', { name: 'My notes' })).not.toBeInTheDocument()
   })
 })
 

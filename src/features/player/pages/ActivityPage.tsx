@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, NotebookPen } from 'lucide-react'
 
 import { ErrorState } from '@/features/player/components/states'
 import { Button } from '@/components/ui/button'
 import { env } from '@/features/player/env'
 import type { ActivityResponse } from '@/features/player/content'
 import { ActivityBody } from '@/features/player/components/ActivityBody'
-import { NoteBox } from '@/features/player/components/NoteBox'
+import { useNotesPanel } from '@/features/player/notesPanel'
 import { HintPanel } from '@/features/player/components/HintPanel'
 import { QueryView } from '@/features/player/components/QueryView'
 import { ResultMessage } from '@/features/player/components/ResultMessage'
@@ -66,6 +66,7 @@ export function ActivityPage({ hintsEnabled = env.hintsEnabled }: { hintsEnabled
 
 function Player({ classId, activity, hintsEnabled }: { classId: string; activity: Activity; hintsEnabled: boolean }) {
   const submit = useSubmitAnswer(activity.activity_id)
+  const { open: notesOpen, setOpen: setNotesOpen } = useNotesPanel()
   const [lastResponse, setLastResponse] = useState<ActivityResponse | null>(null)
   // Hints stay available (with their count) across retries once an answer was wrong.
   const [wrongOnce, setWrongOnce] = useState(false)
@@ -104,7 +105,11 @@ function Player({ classId, activity, hintsEnabled }: { classId: string; activity
       {hintsEnabled && wrongOnce && !result?.completed && lastResponse && (
         <HintPanel activityId={activity.activity_id} lastResponse={lastResponse} />
       )}
-      <NoteBox key={activity.activity_id} activityId={activity.activity_id} notebookHref={paths.notebook(classId)} />
+      {!notesOpen && (
+        <Button type="button" variant="outline" className="self-start" onClick={() => setNotesOpen(true)}>
+          <NotebookPen aria-hidden="true" /> Take notes on this
+        </Button>
+      )}
     </>
   )
 }
