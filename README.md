@@ -89,7 +89,7 @@ local setup below.
 | Instructor setup | Create a class, class link with QR code, roster CSV import, printable login sheet, assign modules, class dashboard | `src/features/instructor/` |
 | Admin console | Publish queue, staff and roles, classes and instructors, schools, read API keys, mentor assignment, organization overview | `src/features/admin/` |
 | Reviewer view | Read-only walkthrough of published modules, no answer keys, no student data | `src/features/reviewer/` |
-| Learning gain and analytics | Post minus pre, normalized gain, stuck and not-started lists, concept mastery and "reteach tomorrow", all as SQL views | `shared/authoring/gain.ts`, `supabase/migrations/` |
+| Learning gain and analytics | Post minus pre, normalized gain, stuck and not-started lists, concept mastery and "reteach tomorrow", all as SQL views. A page per student (from the class roster): status, progress against the class, every activity, each pre/post question pair, mastery against the class, repeated wrong choices, activity calendar, hints, struggles and suggested next steps, with reset login code, allow a retake, CSV and a drafted note | `shared/authoring/gain.ts`, `supabase/migrations/`, `src/features/instructor/student/` |
 | Read API for CIC | `GET /api/v1/completion` and `/api/v1/learning-gain`, key and scope checked, groups under 5 hidden, JSON or CSV | `functions/api/v1/`, `shared/api/`, docs at `/api/docs` |
 | Database | 26 tables, row-level security everywhere, 46 per-role tests on a real Postgres | `supabase/` |
 
@@ -97,7 +97,7 @@ local setup below.
 
 - AI hints (the Gemini function). Instructor-written hints work; the "Get a hint" button is off.
 - Mentor view (assigning mentors works; mentors have no screen yet).
-- Instructor reset of a login code or a test from the dashboard, and the per-student learning-gain table with CSV export.
+- A class-wide learning-gain table with CSV export (each student's page has its own CSV).
 - Student PIN, `slides` and in-browser Python activity kinds, and unlocking ahead for one student.
 - Keepalive and nightly backup jobs, Lighthouse in CI.
 
