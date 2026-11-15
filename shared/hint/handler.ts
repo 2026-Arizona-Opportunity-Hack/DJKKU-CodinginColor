@@ -23,6 +23,22 @@ export interface HintEnv {
   SUPABASE_ANON_KEY?: string
   SUPABASE_SERVICE_ROLE_KEY?: string
   GEMINI_API_KEY?: string
+  /** An OpenAI-compatible gateway (e.g. https://ai.ohack.dev/v1). Used instead of Gemini when URL and key are set. */
+  AI_GATEWAY_URL?: string
+  AI_GATEWAY_KEY?: string
+  /** Defaults to gpt-oss-120b: on the OHack gateway it is the model whose prompts are not used for training. */
+  AI_MODEL?: string
+}
+
+export const GATEWAY_MODEL = 'gpt-oss-120b'
+const GATEWAY_TIMEOUT_MS = 8000 // a larger model than Flash-Lite; the player waits up to 15 s
+type Provider = { kind: 'gateway'; url: string; key: string; model: string } | { kind: 'gemini'; key: string }
+/** Gateway if set, else Gemini if it has a key, else none (the written ladder). */
+export function providerOf(env: HintEnv): Provider | null {
+  if (env.AI_GATEWAY_URL && env.AI_GATEWAY_KEY) {
+    return { kind: 'gateway', url: env.AI_GATEWAY_URL.replace(/\/$/, ''), key: env.AI_GATEWAY_KEY, model: env.AI_MODEL || GATEWAY_MODEL }
+  }
+  return env.GEMINI_API_KEY ? { kind: 'gemini', key: env.GEMINI_API_KEY } : null
 }
 export interface HintDeps {
   fetch?: typeof fetch
@@ -99,8 +115,8 @@ export async function handleHint(request: Request, env: HintEnv, deps: HintDeps 
     if (typeof cached[0]?.hint === 'string') {
       hint = cached[0].hint
       source = 'cache'
-    } else if (env.GEMINI_API_KEY) {
-      const ai = await askModel(f, env.GEMINI_API_KEY, target)
+    } else if (providerOf(env)) {
+      const ai = await askModel(f, providerOf(env)!, target)
       if (ai) {
         hint = ai
         source = 'ai'
@@ -136,29 +152,56 @@ export async function handleHint(request: Request, env: HintEnv, deps: HintDeps 
 }
 
 /** One nudge from the model, or null for any problem: timeout, rate limit, bad shape, too long, or it gave the answer away. */
-async function askModel(f: typeof fetch, apiKey: string, t: Target): Promise<string | null> {
+async function askModel(f: typeof fetch, provider: Provider, t: Target): Promise<string | null> {
   const q = t.question
   const lines = [`Question: ${q.prompt}`]
   if (q.type === 'mcq') lines.push(`Choices: ${q.choices.map((c) => c.text).join(' | ')}`)
   if (q.type === 'ordering') lines.push(`Items to put in order: ${q.items.map((i) => i.text).join(' | ')}`)
   lines.push(`The student answered: ${readableAnswer(t)}`)
   try {
-    const res = await f(GEMINI_URL(MODEL), {
-      method: 'POST',
-      headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ parts: [{ text: lines.join('\n') }] }],
-        generationConfig: { maxOutputTokens: 120, thinkingConfig: { thinkingLevel: 'minimal' } },
-      }),
-      signal: AbortSignal.timeout(AI_TIMEOUT_MS),
-    })
-    if (!res.ok) return null
-    const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] } }[] }
-    const text = (data.candidates?.[0]?.content?.parts ?? []).filter((p) => !p.thought && typeof p.text === 'string').map((p) => p.text).join(' ').replace(/\s+/g, ' ').trim()
+    const raw = provider.kind === 'gateway' ? await askGateway(f, provider, lines.join('\n')) : await askGemini(f, provider.key, lines.join('\n'))
+    const text = (raw ?? '').replace(/\s+/g, ' ').trim()
     if (!text || text.length > MAX_HINT_CHARS || revealsAnswer(text, t)) return null
     return text
   } catch {
     return null
   }
+}
+
+async function askGemini(f: typeof fetch, apiKey: string, prompt: string): Promise<string | null> {
+  const res = await f(GEMINI_URL(MODEL), {
+    method: 'POST',
+    headers: { 'x-goog-api-key': apiKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: 120, thinkingConfig: { thinkingLevel: 'minimal' } },
+    }),
+    signal: AbortSignal.timeout(AI_TIMEOUT_MS),
+  })
+  if (!res.ok) return null
+  const data = (await res.json()) as { candidates?: { content?: { parts?: { text?: string; thought?: boolean }[] } }[] }
+  return (data.candidates?.[0]?.content?.parts ?? []).filter((p) => !p.thought && typeof p.text === 'string').map((p) => p.text).join(' ')
+}
+
+/**
+ * The OpenAI-style chat completions call the OHack gateway speaks. Only standard fields are sent, so
+ * any OpenAI-compatible gateway accepts it. gpt-oss reasons before it answers, so it gets room
+ * (max_tokens 1000); only `message.content`, the final answer, is used, never the reasoning.
+ */
+async function askGateway(f: typeof fetch, p: { url: string; key: string; model: string }, prompt: string): Promise<string | null> {
+  const res = await f(`${p.url}/chat/completions`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${p.key}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: p.model,
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: prompt }],
+      max_tokens: 1000,
+    }),
+    signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
+  })
+  if (!res.ok) return null
+  const data = (await res.json()) as { choices?: { message?: { content?: string | null } }[] }
+  const content = data.choices?.[0]?.message?.content
+  return typeof content === 'string' ? content : null
 }

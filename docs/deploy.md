@@ -163,6 +163,7 @@ Open the project > **Settings** > **Variables and Secrets** > **Add**. For each,
 | `SUPABASE_ANON_KEY` | `ANON_KEY` (the hint function uses it to ask Supabase who a student's token belongs to; it is the same public key as in step 1) |
 | `SUPABASE_SERVICE_ROLE_KEY` | `SERVICE_ROLE_KEY` |
 | `GEMINI_API_KEY` | Optional. A free key from Google AI Studio (no billing). Without it every hint comes from the instructor's written ladder. |
+| `AI_GATEWAY_URL`, `AI_GATEWAY_KEY` | Optional, instead of Gemini: an OpenAI-compatible gateway for hints, such as the OHack AI gateway (`https://ai.ohack.dev/v1` and the team key). The model is `gpt-oss-120b` unless `AI_MODEL` says otherwise (on the OHack gateway, muse-spark prompts may be used for training; gpt-oss's are not, so keep gpt-oss for students' answers). The OHack keys stop working after the event; hints then fall back to the written ladder. |
 | `YOUTUBE_API_KEY` | Optional, for **Find material** in the authoring studio. Without it the YouTube, freeCodeCamp and CS50 sources say "not set up" and GitHub still works. How to get one is below. |
 | `GITHUB_TOKEN` | Optional, for Find material. A fine-grained token with **no permissions** (public repositories, read-only) raises GitHub searches from 10 to 30 a minute. Without it, searches still work. |
 

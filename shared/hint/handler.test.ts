@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { handleHint, MODEL, type HintEnv } from './handler'
+import { GATEWAY_MODEL, handleHint, MODEL, type HintEnv } from './handler'
 
 const BASE = 'https://proj.supabase.co'
 const ENV: HintEnv = { SUPABASE_URL: BASE, SUPABASE_ANON_KEY: 'anon-key', SUPABASE_SERVICE_ROLE_KEY: 'service-key', GEMINI_API_KEY: 'gemini-key' }
@@ -21,17 +21,20 @@ interface World {
   used: number
   cache: { hint: string }[]
   gemini: (init: RequestInit) => Promise<Response> | Response
+  gateway: (init: RequestInit) => Promise<Response> | Response
   seat: { class_id: string }[]
 }
 let world: World
 let calls: { url: string; init?: RequestInit }[]
 
 const geminiSays = (text: string) => () => Response.json({ candidates: [{ content: { parts: [{ text }] } }] })
+const gatewaySays = (content: string | null) => () => Response.json({ choices: [{ message: { role: 'assistant', content } }] })
 
 const fakeFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = String(input)
   calls.push({ url, init })
   if (url.startsWith('https://generativelanguage.googleapis.com')) return world.gemini(init!)
+  if (url.startsWith('https://ai.gateway.test/')) return world.gateway(init!)
   if (url === `${BASE}/auth/v1/user`) return world.authOk ? Response.json({ id: USER }) : new Response('{}', { status: 401 })
   if (url.endsWith('/rpc/get_activity')) return world.activityOk ? Response.json({ kind: world.kind, content: { questions: QUESTIONS } }) : new Response('{}', { status: 400 })
   if (url.includes('/hint_events?')) return Response.json(Array.from({ length: world.used }, (_, i) => ({ id: String(i) })))
@@ -48,7 +51,7 @@ const geminiCalls = () => calls.filter((c) => c.url.includes('generativelanguage
 const inserts = (table: string) => calls.filter((c) => c.init?.method === 'POST' && c.url.endsWith(`/rest/v1/${table}`))
 
 beforeEach(() => {
-  world = { authOk: true, activityOk: true, kind: 'check', used: 0, cache: [], gemini: geminiSays('Look at the word that means doing something again and again.'), seat: [{ class_id: CLASS }] }
+  world = { authOk: true, activityOk: true, kind: 'check', used: 0, cache: [], gemini: geminiSays('Look at the word that means doing something again and again.'), gateway: gatewaySays('What word means doing a thing over and over?'), seat: [{ class_id: CLASS }] }
   calls = []
   vi.restoreAllMocks()
 })
@@ -200,5 +203,59 @@ describe('privacy', () => {
 
   it('marks the answer as private and not cacheable by browsers', async () => {
     expect((await run()).headers.get('cache-control')).toBe('private, no-store')
+  })
+})
+
+describe('the OHack AI gateway (OpenAI-style)', () => {
+  const GW: HintEnv = { ...ENV, AI_GATEWAY_URL: 'https://ai.gateway.test/v1/', AI_GATEWAY_KEY: 'gateway-key' }
+  const gatewayCalls = () => calls.filter((c) => c.url.startsWith('https://ai.gateway.test/'))
+
+  it('is used instead of Gemini when set, with gpt-oss-120b by default', async () => {
+    const res = await run(undefined, TOKEN, GW)
+    expect(await res.json()).toEqual({ hint: 'What word means doing a thing over and over?', source: 'ai', remaining: 2 })
+    expect(geminiCalls()).toHaveLength(0)
+    const sent = gatewayCalls()[0]!
+    expect(sent.url).toBe('https://ai.gateway.test/v1/chat/completions')
+    const body = JSON.parse(String(sent.init!.body))
+    expect(body.model).toBe(GATEWAY_MODEL)
+    expect(body.model).toBe('gpt-oss-120b')
+    expect(body.messages.map((m: { role: string }) => m.role)).toEqual(['system', 'user'])
+    expect(Object.keys(body).sort()).toEqual(['max_tokens', 'messages', 'model']) // only standard fields
+    expect((sent.init!.headers as Record<string, string>).Authorization).toBe('Bearer gateway-key')
+    expect(inserts('hint_cache')).toHaveLength(1)
+  })
+
+  it('uses AI_MODEL when set', async () => {
+    await run(undefined, TOKEN, { ...GW, AI_MODEL: 'kimi-k2.7-code' })
+    expect(JSON.parse(String(gatewayCalls()[0]!.init!.body)).model).toBe('kimi-k2.7-code')
+  })
+
+  it('sends only the question and the answer: no user id, class, name, token or other keys', async () => {
+    await run(undefined, TOKEN, GW)
+    const sent = gatewayCalls()[0]!
+    const text = String(sent.init!.body) + sent.url + JSON.stringify(sent.init!.headers)
+    for (const secret of [USER, CLASS, TOKEN, 'service-key', 'anon-key', 'gemini-key', 'q1', ACT]) expect(text).not.toContain(secret)
+    expect(text).toContain('The student answered: A variable')
+    expect(text).not.toMatch(/correctChoiceId|hints/)
+  })
+
+  it.each([
+    ['gives the answer away', gatewaySays('The answer is a loop.')],
+    ['has no content (all reasoning)', gatewaySays(null)],
+    ['is a 402 (out of credit)', () => new Response('{}', { status: 402 })],
+    ['is a 401 (the key expired)', () => new Response('{}', { status: 401 })],
+    ['times out', () => { throw new DOMException('The operation timed out', 'TimeoutError') }],
+  ])('falls back to the written ladder when the gateway %s', async (_why, gateway) => {
+    world.gateway = gateway
+    const res = await run(undefined, TOKEN, GW)
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ hint: 'Think about repeating', source: 'ladder', remaining: 2 })
+    expect(inserts('hint_cache')).toHaveLength(0)
+  })
+
+  it('needs both the URL and the key; otherwise Gemini (or the ladder) as before', async () => {
+    await run(undefined, TOKEN, { ...ENV, AI_GATEWAY_URL: 'https://ai.gateway.test/v1' })
+    expect(gatewayCalls()).toHaveLength(0)
+    expect(geminiCalls()).toHaveLength(1)
   })
 })
