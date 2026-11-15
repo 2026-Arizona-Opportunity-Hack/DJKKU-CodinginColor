@@ -34,7 +34,7 @@ export function Layout() {
       >
         Skip to main content
       </a>
-      <header className="border-b">
+      <header className="border-b print:hidden">
         <nav aria-label="Main" className="mx-auto flex max-w-5xl flex-wrap items-center gap-4 p-4">
           <NavLink to="/" end className="font-bold">
             Coding in Color

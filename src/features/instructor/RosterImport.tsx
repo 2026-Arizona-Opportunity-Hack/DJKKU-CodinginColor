@@ -1,61 +1,27 @@
-import { useEffect, useState, type ChangeEvent } from 'react'
+import { useState, type ChangeEvent } from 'react'
 
-import {
-  importRoster,
-  isInstructorDatabaseConfigured,
-  listInstructorClasses,
-  type ImportedRosterMember,
-  type InstructorClass,
-} from './api.supabase'
+import { importRoster, type ImportedRosterMember } from './api.supabase'
 import { checkRoster, type RosterPreview } from './lib/roster'
 
-export function RosterImport() {
-  const databaseConfigured = isInstructorDatabaseConfigured()
-
-  const [classes, setClasses] = useState<InstructorClass[]>([])
-  const [classId, setClassId] = useState('')
-  const [classesLoading, setClassesLoading] = useState(databaseConfigured)
-  const [classesError, setClassesError] = useState('')
-
+/** Imports a roster into the class chosen at the top of the page (no class picker of its own). */
+export function RosterImport({
+  classId,
+  className,
+  onImported,
+  onPrint,
+}: {
+  classId: string
+  className: string
+  /** Called with the new login codes. They are only ever kept in memory. */
+  onImported: (members: ImportedRosterMember[]) => void
+  onPrint: () => void
+}) {
   const [fileName, setFileName] = useState('')
   const [preview, setPreview] = useState<RosterPreview | null>(null)
   const [error, setError] = useState('')
 
   const [importing, setImporting] = useState(false)
   const [imported, setImported] = useState<ImportedRosterMember[]>([])
-
-  useEffect(() => {
-    if (!databaseConfigured) return
-
-    let cancelled = false
-
-    async function loadClasses() {
-      try {
-        const result = await listInstructorClasses()
-
-        if (cancelled) return
-
-        setClasses(result)
-        setClassId(result[0]?.id ?? '')
-      } catch {
-        if (cancelled) return
-
-        setClassesError(
-          'We could not load your classes. Try again after checking your connection.',
-        )
-      } finally {
-        if (!cancelled) {
-          setClassesLoading(false)
-        }
-      }
-    }
-
-    void loadClasses()
-
-    return () => {
-      cancelled = true
-    }
-  }, [databaseConfigured])
 
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
@@ -94,6 +60,7 @@ export function RosterImport() {
     try {
       const result = await importRoster(classId, preview.valid)
       setImported(result)
+      onImported(result)
     } catch (cause) {
       setError(
         cause instanceof Error
@@ -118,47 +85,9 @@ export function RosterImport() {
       </div>
 
       <div className="rounded-lg border p-5">
-        <label htmlFor="roster-class" className="block font-medium">
-          Class
-        </label>
-
-        {!databaseConfigured ? (
-          <div className="mt-2">
-            <p className="font-medium">Intro to Python</p>
-            <p className="text-sm text-gray-600">
-              Demo mode — connect Supabase to import students into a real class.
-            </p>
-          </div>
-        ) : classesLoading ? (
-          <p className="mt-2 text-sm text-gray-600">
-            Loading classes...
-          </p>
-        ) : classesError ? (
-          <p role="alert" className="mt-2 text-sm font-medium text-red-700">
-            {classesError}
-          </p>
-        ) : classes.length === 0 ? (
-          <p className="mt-2 text-sm text-gray-600">
-            You do not have any classes yet.
-          </p>
-        ) : (
-          <select
-            id="roster-class"
-            value={classId}
-            onChange={(event) => {
-              setClassId(event.target.value)
-              setImported([])
-            }}
-            className="mt-2 block w-full rounded-md border px-3 py-2"
-          >
-            {classes.map((classItem) => (
-              <option key={classItem.id} value={classItem.id}>
-                {classItem.name}
-                {classItem.term ? ` - ${classItem.term}` : ''}
-              </option>
-            ))}
-          </select>
-        )}
+        <p className="font-medium">
+          Importing into: <span className="font-semibold">{className}</span>
+        </p>
 
         <label htmlFor="roster-file" className="mt-5 block font-medium">
           Roster CSV
@@ -261,23 +190,13 @@ export function RosterImport() {
               <button
                 type="button"
                 onClick={() => void handleImport()}
-                disabled={
-                  !classId ||
-                  importing ||
-                  preview.problems.length > 0
-                }
+                disabled={importing || preview.problems.length > 0}
                 className="rounded-md border px-4 py-2 font-medium disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {importing
                   ? 'Importing...'
                   : `Import ${preview.valid.length} students`}
               </button>
-
-              {!databaseConfigured && (
-                <p className="mt-2 text-sm text-gray-600">
-                  Real imports are available when Supabase is connected.
-                </p>
-              )}
 
               {preview.problems.length > 0 && (
                 <p className="mt-2 text-sm text-gray-600">
@@ -299,6 +218,14 @@ export function RosterImport() {
               <p className="mt-2 text-sm text-gray-600">
                 Save or print these codes now. Each code is shown only once.
               </p>
+
+              <button
+                type="button"
+                onClick={onPrint}
+                className="mt-3 rounded-md border px-4 py-2 font-medium"
+              >
+                Print login sheet
+              </button>
 
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full border-collapse text-left">
