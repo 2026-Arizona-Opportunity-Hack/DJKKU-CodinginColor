@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import type { ActivityResponse } from '../content'
 import type { Activity } from '../types'
 import { Reading, VideoEmbed } from '@/components/learning/ActivityContent'
+import { CodeActivity } from './CodeActivity'
 import { QuestionForm } from './QuestionForm'
 
 type Props = {
@@ -36,6 +37,9 @@ export function ActivityBody({ activity, onSubmit, pending, actions }: Props) {
         </div>
       </div>
     )
+  }
+  if (activity.kind === 'code') {
+    return <CodeActivity content={activity.content} done={activity.status === 'done'} pending={pending} onSubmit={onSubmit} actions={actions} />
   }
   const { questions } = activity.content
   const label = activity.kind === 'worksheet' ? 'Send worksheet' : questions.length > 1 ? 'Check my answers' : 'Check my answer'

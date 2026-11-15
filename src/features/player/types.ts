@@ -26,7 +26,7 @@ export type AssessmentRef = z.infer<typeof AssessmentRef>
 export const OutlineActivity = z.object({
   activity_id: z.string(),
   title: z.string(),
-  kind: z.enum(['video', 'reading', 'check', 'worksheet', 'exit']),
+  kind: z.enum(['video', 'reading', 'check', 'worksheet', 'exit', 'code']),
   position: z.number(),
   required: z.boolean(),
   status: ItemStatus,
