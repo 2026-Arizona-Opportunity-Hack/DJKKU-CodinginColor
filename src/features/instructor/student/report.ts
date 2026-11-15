@@ -3,7 +3,9 @@
 // Every rule here is rule-based on purpose (mentor guidance: no ML for the MVP), and every
 // threshold is a named constant so it is easy to find and change once CIC confirms them.
 
-export type ActivityKind = 'video' | 'reading' | 'check' | 'worksheet' | 'exit'
+// One list of activity kinds for the whole app (it gained `code`); a second copy here broke this page.
+export type { ActivityKind } from '@shared/authoring/schemas'
+import type { ActivityKind } from '@shared/authoring/schemas'
 
 export interface ReportActivity {
   id: string

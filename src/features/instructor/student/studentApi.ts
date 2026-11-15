@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { activityKind } from '@shared/authoring/schemas'
 import { getSupabase } from '@/lib/supabase'
 import { SessionError, toSessionError } from '@/lib/session'
 import type { ReportInput } from './report'
@@ -16,7 +17,7 @@ const MemberRow = z.object({ id: z.string(), display_name: z.string(), profile_i
 const ClassRow = z.object({ name: z.string(), term: z.string().nullable() })
 const ConceptRow = z.object({ id: z.string(), name: z.string() })
 const ActivityRow = z.object({
-  id: z.string(), position: num, kind: z.enum(['video', 'reading', 'check', 'worksheet', 'exit']), title: z.string(),
+  id: z.string(), position: num, kind: activityKind, title: z.string(),
   required: z.boolean(), concept_id: z.string().nullable(), content: z.unknown(),
 })
 const ClassModuleRow = z.object({
