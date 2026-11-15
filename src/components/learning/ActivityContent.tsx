@@ -21,8 +21,8 @@ export function VideoEmbed({ embedUrl, title, transcript }: { embedUrl: string; 
           title={`Video: ${title}`}
           loading="lazy"
           referrerPolicy="strict-origin-when-cross-origin"
+          // Fullscreen is granted by `allow`; adding allowFullScreen too makes browsers warn in the console.
           allow="encrypted-media; picture-in-picture; fullscreen"
-          allowFullScreen
         />
       </div>
       <a

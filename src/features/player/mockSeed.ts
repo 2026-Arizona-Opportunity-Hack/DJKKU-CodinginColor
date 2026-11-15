@@ -130,6 +130,7 @@ export const SEED_MODULES: SeedModule[] = [
                   id: 'q-loop-ord',
                   conceptId: 'loops',
                   type: 'ordering',
+                  display: 'code',
                   prompt: 'Put these lines in order to print 0, 1, 2.',
                   items: [
                     { id: 'l1', text: 'i = 0' },

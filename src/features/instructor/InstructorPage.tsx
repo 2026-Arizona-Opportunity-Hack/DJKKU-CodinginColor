@@ -7,15 +7,29 @@ import { ImpactReport } from './ImpactReport'
 import { LiveView } from './LiveView'
 import { InstructorDashboard } from './InstructorDashboard'
 import { useClasses } from './hooks'
+import { StudentPage } from './student/StudentPage'
 
-/** `/instructor` (pick or create a class) and `/instructor/:classId` (run it). */
+/**
+ * `/instructor` (pick or create a class), `/instructor/:classId` (run it) and
+ * `/instructor/:classId/students/:studentId` (one student, in depth).
+ */
 export function InstructorPage() {
   if (isDemoMode()) {
     return (
       <div className="flex flex-col gap-6">
         <h1 className="text-3xl font-bold">Instructor dashboard</h1>
-        <p role="status" className="text-sm">Demo mode: connect Supabase to run a real class. This is sample data.</p>
-        <InstructorDashboard />
+        <Routes>
+          <Route path=":classId/students/:studentId" element={<StudentPage />} />
+          <Route
+            path="*"
+            element={
+              <>
+                <p role="status" className="text-sm">Demo mode: connect Supabase to run a real class. This is sample data.</p>
+                <InstructorDashboard />
+              </>
+            }
+          />
+        </Routes>
       </div>
     )
   }
@@ -30,6 +44,7 @@ export function InstructorPage() {
         <Route path="new" element={<CreateClassForm />} />
         <Route path=":classId" element={<ClassHome />} />
         <Route path=":classId/live" element={<LiveView />} />
+        <Route path=":classId/students/:studentId" element={<StudentPage />} />
         <Route path=":classId/report" element={<ImpactReport />} />
       </Routes>
     </div>

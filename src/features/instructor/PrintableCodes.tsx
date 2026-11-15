@@ -16,7 +16,7 @@ export function PrintableCodes({ className, codes }: { className: string; codes:
         <h2 id="login-sheet-title" className="text-xl font-semibold">Login sheet</h2>
         <Button onClick={() => window.print()}>Print</Button>
       </div>
-      <p className="rounded-md border border-amber-500 bg-amber-50 p-3 text-sm font-medium text-amber-950 print:hidden">
+      <p className="rounded-md border border-tint-yellow-edge bg-tint-yellow p-3 text-sm font-medium text-tint-yellow-fg print:hidden">
         These codes are shown only once. Print or save them now.
       </p>
       <ul className="grid grid-cols-2 gap-4 print:gap-3">

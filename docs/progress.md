@@ -309,7 +309,69 @@ instead of repeating them.
   the 4th hint was 429, a locked activity was 403 and a bad token 401. The live Gemini call is NOT checked
   (no key); its shape is tested against a mocked fetch.
 - Next: 9b polish; set `GEMINI_API_KEY` on Pages and try one real hint.
+
+### 2026-11-14: Daxx (lane B + shared UI, design pass)
+- Done: design system in `src/styles/tokens.css` matched to CIC's official logo (originals in
+  `src/assets/brand/`): white, logo green chevrons, grey Courier wordmark. Every text pair >= 4.5:1,
+  checked by script (the logo green is 4.03:1 with white, so buttons use #027a3d); fluid type
+  scale; spacing, radius, shadow. Self-hosted Inter (body) + Courier Prime (headings, code)
+  (`public/fonts/`, OFL licences beside them). SVG trace of the `< IN >` mark
+  (`src/components/brand/CicLogo.tsx`), also the favicon. White header with the mark and
+  Courier wordmark, 44 px nav targets (`src/app/Layout.tsx`, styling only),
+  landing page hero + "How it works" (`src/app/Home.tsx`, same text and buttons), meta description,
+  theme-color and font preload in `index.html`, `public/robots.txt`. Staff screens are now
+  code-split with `src/lib/lazyPage.tsx` (one import line changed in each feature's `index.tsx`):
+  main bundle 652 KB -> 433 KB (202 -> 132 KB gzip), so students no longer download the staff app.
+- Lighthouse (mock build, `npm run build && npm run preview`): landing, sign-in, /learn and
+  /learn/explore all 100 on Accessibility, Best Practices and SEO, mobile and desktop.
+  Performance: desktop 100 everywhere; mobile 99 landing, 96 sign-in, 91 /learn, 92 explore.
+- No horizontal scroll at 320, 375, 414, 768, 1024, 1280, 1440, 1920 px (DPR 2).
+- Next: /learn mobile LCP (3.1 s simulated) waits on two data round-trips in a row (classes, then
+  next activity + outline). One `get_student_home` RPC returning all three would remove one.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane C, Parsons problems)
+- Done: an ordering question can now be a Parsons problem (lines of code to put in order), which research
+  finds gives similar learning to writing the code in less time (Ericson, Margulieux and Rick 2017; Ericson
+  et al. 2022). In the studio, a checkbox on an ordering question ("These are lines of code") turns its items into
+  monospace lines that keep their indentation. Students see the lines as code with "Your program so far" below,
+  updated as they move lines (keyboard first, as before). The preview and the reviewer view show it as code too.
+  Schema: `display: 'code'` on ordering content, and ordering items keep leading spaces (only trailing space is
+  dropped). Grading is unchanged (the order is still only in the key). The demo seed's "Loops worksheet" ordering
+  question is now a 4-line indented program.
+- Next: live class view and catch-up plan.
+### 2026-11-14: Krishna (lane E, per-student page in lane D's folder; Jad to review)
+- Done: `/instructor/:classId/students/:studentId` (seat id or profile id), linked from a new Students
+  roster on the class page and from the stuck and not-started lists. One page per student: status (not
+  joined, not started, stuck, inactive, done, on track), completion against the class median, where they
+  are now, every activity (tries, first try right or wrong, hints, minutes against the class median),
+  learning gain with each pre/post question pair (learned, already knew, slipped, missing), concept mastery
+  against the class average, the wrong choice they keep picking, active days and a 4-week calendar, hints,
+  struggles, and suggested next steps. Actions: download CSV, print, reset login code (confirm first, the
+  new code is shown once), allow a test retake (confirm first), and a drafted note the instructor copies
+  and sends themselves. No migration: it reads the existing tables and views under row-level security.
+  Analytics are pure functions (`student/report.ts`) with their own tests; demo mode shows a sample student.
+  Checked against a local Supabase with a real instructor session: by seat id and by profile id, an
+  unclaimed seat (no per-student reads), and a class the instructor does not teach (not found).
+- Next: Find material for authors (YouTube and GitHub search, add to a lesson).
+### 2026-11-14: Krishna (lane E, Find material; UI in lane C's folder, Umang to review)
+- Done: "Find material" under each lesson in the authoring studio. An author types a topic, ticks
+  sources (YouTube, freeCodeCamp, Harvard CS50, GitHub), picks the language of the material and the
+  programming language, and adds a result to the lesson in one click: a video (embedded through
+  youtube-nocookie, never copied) or a GitHub README as a reading (only under an open license, with
+  images, badges and HTML removed, relative links made absolute, the source and license on the first
+  line, cut to the 20,000 character limit with a link to the rest). Additions land in the unsaved
+  draft like any other activity. `POST /api/sources/search` and `POST /api/sources/readme` (logic in
+  `shared/sources/`): authors only (the caller's token, then `is_author()` with that token; no service
+  role), zod-checked bodies, strict SafeSearch and embeddable-only videos, each source answers or says
+  why not (not set up, out of quota, down) without failing the others, results cached by query for a
+  day. GitHub uses best match plus "beginners" first, because sorting by stars returned famous but
+  unrelated projects. New optional secrets `YOUTUBE_API_KEY` and `GITHUB_TOKEN`. The flaky studio test
+  got a 20 second timeout. Checked through `wrangler pages dev` against local Supabase and the real
+  GitHub API: 401 without a session, 403 for a non-author, YouTube "not set up" with GitHub results,
+  422 for an unlicensed repository, 404 for a missing one, a repeat search from the cache. The live
+  YouTube call is NOT checked (no key); its shape is tested against a mocked fetch and the current docs.
+- Next: set `YOUTUBE_API_KEY` on Pages and try one real video search.
 
 ### 2026-11-15: Umang (lane C, funder impact report)
 - Done: `/instructor/:classId/report`, a one-page learning-gain report a funder can read, linked as "Impact
@@ -322,6 +384,83 @@ instead of repeating them.
   Checked on a local Supabase as a real instructor; a class you do not teach says so plainly.
 - Next: Parsons problems.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lanes A and B, catch-up plan)
+- Done: a catch-up plan for students who miss class (chronic absence compounds, and attendance is uneven in
+  CIC's programs). New migration `20261115110000_lane_a_catch_up.sql`: `get_catch_up` (student) and
+  `get_class_catch_up` (class instructor or admin) return the steps still to do, in course order (pre-test,
+  activities, post-test), with minutes estimated from the median time classmates actually spent (once 3 have
+  finished; a default by kind before that), and how many steps behind the class median the student is. Only
+  aggregates leave the functions. On Start here the student sees "You are 7 steps behind the class. That
+  happens, and it is fixable: 8 steps left, about 19 minutes." (the seed's Cam R.) with the steps listed. DB tests
+  per role; contract updated. The instructor "Catch-up" column on the live view follows once #41 merges.
+- Next: Python in the browser (PRIMM).
+- Blocked: nothing.
+
+### 2026-11-14: Daxx (UI theme from the mockup)
+- Done: every page now follows Daxx's mockup: mint backdrop with colour glows, frosted sticky header with
+  a bold green Courier wordmark and right-aligned nav, gradient 3D `< IN >` mark on a frosted tile,
+  glowing green primary buttons and gradient-edged outline buttons (shared `Button`), frosted cards with
+  yellow/cyan/green tints. Lesson view: Courier titles on lesson and activity rows, Courier eyebrow
+  labels, tinted status badges, yellow hint cards, gradient progress bars, activities on a frosted card.
+  Contrast re-checked over the mint and each glow (lowest text pair 4.75:1).
+- Lighthouse (mock build): Accessibility, Best Practices and SEO 100 on all four public pages, mobile
+  and desktop; Performance desktop 100, mobile 100 / 97 / 90 / 92 (landing, sign-in, /learn, explore).
+- Found: `/author` in demo mode shows only a sentence with no `<h1>` (lane C); one heading would fix it.
+- Next: /learn mobile LCP (two data round-trips in a row), as above.
+- Blocked: nothing.
+
+### 2026-11-15: Daxx (late joiners: start at a module)
+- Done: an instructor or CIC admin chooses the module a student starts at. Migration
+  `20261115100000_lane_b_start_module.sql`: table `module_skips` (keyed on the roster seat, so it works
+  before sign-in), `set_start_module(member_ids, module_id)`, and the unlock functions treat skipped
+  modules as done (status `skipped`: open to review, never "Start here"). Progress and stuck views no
+  longer count skipped work as missing; learning gain is unchanged. Player: "Skipped" badge, tallies
+  ignore skipped work. Instructor: "Where do these students start?" on roster import and a "Starting
+  point" section per class. Contract: `docs/contracts/database-api.md`.
+- Tests: 3 new DB tests (placement before sign-in, reset to the beginning, who may place), 3 outline
+  tests, 7 instructor UI tests.
+- Open question for CIC: should "Not started" and learning gain treat placed students differently?
+
+### 2026-11-15: Daxx (stale-code crash on /learn)
+- Found: "Something broke on this page" on /learn/explore. Cause (reproduced): the page's code file
+  could not be downloaded, `Failed to fetch dynamically imported module` (the dev server had been
+  stopped with the tab open). The same happens in production to any tab left open across a deploy.
+- Done: `src/lib/chunkReload.ts`. A failed code download reloads the page once (at most once per 30 s,
+  so an outage cannot loop), used by the player and by `lazyPage` for every staff screen. If it still
+  fails, the /learn crash screen says "This page needs a fresh copy" instead of "Something broke".
+  Logs `app.chunk_reload` (warn) and `app.route_error` with `stale_code`. 12 tests.
+
+### 2026-11-15: Daxx (open lessons for signed-in students)
+- Found in browser tests against local Supabase: (1) /learn/explore told a signed-in student "You're
+  browsing as a guest" and offered "Save my progress" (a second account); (2) a student whose class
+  has the open module got "This activity is locked" from get_activity, which the client did not
+  recognise (it only knew the bare code), so it retried and loaded for a long time; (3) a student
+  whose class does NOT have it could not open it at all (can_read_module), though guests can.
+- Done: explore and the open-activity page show a signed-in version ("Open lessons for practice",
+  "Practice done", Go to Start here; no guest prompts or device-only badges). errors.ts maps "is locked"
+  to `locked`, so the class activity page's "Not open yet" now works against the real database; the
+  open-activity page says "This lesson is part of your class". Migration
+  `20261115120000_lane_b_open_lessons_for_students.sql`: CIC Open modules readable by anyone (already
+  public to guests; keys unaffected). Tests: 6 player tests, 1 DB test (failed before the fix).
+
+### 2026-11-15: Daxx (end-to-end journey against local Supabase)
+- Ran a 12-step browser journey on a phone-sized screen against the local database: join link, name
+  pick, pre-test, video, reading, check (wrong then right), module map, progress, sign out. 12/12 pass,
+  no console errors.
+- Fixed: the module map said "Module 0" / "Lesson 0" (the database counts positions from 0, the mock
+  from 1); it now numbers by list order (test added). The video embed set fullscreen twice
+  (`allow` and `allowFullScreen`), which made browsers warn on every video page.
+
+### 2026-11-15: Daxx (catch-up plan meets late-joiner placement)
+- Found while merging main: the catch-up plan (lane A) and start-at-a-module (lane B) were built in
+  parallel. The plan listed every untaken test and unfinished activity in opened modules, so a student
+  started at module 3 was told to catch up on modules 1 and 2. Also both branches used migration number
+  20261115110000; mine is now 20261115120000.
+- Done: `20261115130000_lane_b_catch_up_skips.sql` leaves skipped modules out of `_catch_up_steps`
+  (same signature and grants). DB test added (fails on the old function, passes now). Note: `behind_by`
+  still compares completed counts with the class median, so a placed student can show as "behind";
+  worth a decision with Umang.
 
 ### 2026-11-15: Umang (lane D, live class view)
 - Done: `/instructor/:classId/live`, linked as "Live class view" from the class page, for the projector or the

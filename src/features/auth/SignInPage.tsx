@@ -97,8 +97,10 @@ export function SignInPage() {
   const signedInStudent = who && !isStaff(who) && who.class_id !== null && !demo
 
   return (
-    <div className="flex max-w-xl flex-col gap-6">
-      <h1 className="text-2xl font-bold">Sign in</h1>
+    // Centred on the screen: horizontally always; vertically in the space under the header
+    // (12rem covers the header and the page padding), so on phones it simply scrolls.
+    <div className="mx-auto flex min-h-[calc(100dvh-12rem)] w-full max-w-xl flex-col justify-center gap-6">
+      <h1 className="text-center text-3xl font-bold">Sign in</h1>
       {demo && (
         <Alert>
           <AlertDescription>

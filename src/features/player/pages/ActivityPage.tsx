@@ -42,12 +42,12 @@ export function ActivityPage({ hintsEnabled = env.hintsEnabled }: { hintsEnabled
   return (
     <QueryView query={activity} label="Loading the activity">
       {(a) => (
-        <article className="flex flex-col gap-4" aria-labelledby="activity-title">
+        <article className="flex flex-col gap-4 rounded-2xl border border-white/80 bg-card p-5 shadow-md ring-1 ring-foreground/5 sm:p-8" aria-labelledby="activity-title">
           <Link to={paths.path(classId)} className="inline-flex min-h-11 items-center gap-1 text-sm text-primary underline">
             <ArrowLeft aria-hidden="true" className="size-4" /> Your path
           </Link>
           <header>
-            <p className="text-sm text-muted-foreground">
+            <p className="eyebrow">
               {found ? `${found.module.title} · ${found.lesson.title} · ` : ''}
               {KIND_LABEL[a.kind]}
             </p>

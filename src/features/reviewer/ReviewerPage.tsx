@@ -13,7 +13,7 @@ export function ReviewerPage() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-3xl font-bold">Curriculum review</h1>
-      <p role="note" className="rounded-md border border-amber-500 bg-amber-50 p-3 font-medium text-amber-950">
+      <p role="note" className="rounded-md border border-tint-yellow-edge bg-tint-yellow p-3 font-medium text-tint-yellow-fg">
         Read-only. Answer keys and student data are hidden by design.
       </p>
       <Routes>

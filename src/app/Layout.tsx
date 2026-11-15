@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router'
+import { CicLogo } from '@/components/brand/CicLogo'
 import { canSeeFeature, invalidateMe, isDemoMode, signOut, useMe } from '@/lib/session'
 import { features } from './features'
 import { APP_NAME, pageTitle } from './titles'
@@ -36,37 +37,60 @@ export function Layout() {
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-white focus:p-3 focus:font-medium focus:text-foreground focus:shadow"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-card focus:p-3 focus:text-foreground focus:shadow-md"
       >
         Skip to main content
       </a>
-      <header className="border-b print:hidden">
-        <nav aria-label="Main" className="mx-auto flex max-w-5xl flex-wrap items-center gap-4 p-4">
-          <NavLink to="/" end className="inline-flex min-h-11 items-center gap-2 font-bold text-primary" aria-label={`${APP_NAME}, home`}>
-            <span aria-hidden="true" className="rounded-md bg-primary px-2 py-1 font-mono text-sm text-primary-foreground">{'</>'}</span>
-            {APP_NAME}
+      <header className="sticky top-0 z-40 border-b border-white/70 bg-background/75 backdrop-blur-md print:hidden">
+        <nav
+          aria-label="Main"
+          className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-1 gap-y-1 px-(--spacing-gutter) py-2"
+        >
+          <NavLink
+            to="/"
+            end
+            className="mr-4 inline-flex min-h-11 items-center rounded-md sm:order-1"
+            aria-label={`${APP_NAME}, home`}
+          >
+            <CicLogo />
           </NavLink>
-          {visible.map((feature) => (
-            <NavLink
-              key={feature.id}
-              to={feature.path}
-              className={({ isActive }) =>
-                `inline-flex min-h-11 items-center px-1 ${isActive ? 'font-semibold underline' : 'hover:underline'}`
-              }
-            >
-              {feature.label}
-            </NavLink>
-          ))}
-          {demo && <span className="ml-auto text-sm font-medium">Demo mode</span>}
-          {!demo && who && (
-            <span className="ml-auto flex items-center gap-2 text-sm">
-              {who.display_name || who.role} <span aria-hidden="true">·</span>
-              <button type="button" className="inline-flex min-h-11 items-center px-1 underline" onClick={() => void onSignOut()}>Sign out</button>
+          {demo && (
+            <span className="ml-auto rounded-full border border-tint-yellow-edge bg-tint-yellow px-2.5 py-0.5 text-xs font-semibold text-tint-yellow-fg sm:order-3 sm:ml-3">
+              Demo mode
             </span>
           )}
+          {!demo && who && (
+            <span className="ml-auto flex items-center gap-2 text-sm text-muted-foreground sm:order-3 sm:ml-3">
+              {who.display_name || who.role} <span aria-hidden="true">·</span>
+              <button
+                type="button"
+                className="inline-flex min-h-11 items-center rounded-md px-1 text-foreground underline"
+                onClick={() => void onSignOut()}
+              >
+                Sign out
+              </button>
+            </span>
+          )}
+          <div className="-mx-2.5 flex w-[calc(100%+1.25rem)] flex-wrap items-center gap-0.5 sm:order-2 sm:mx-0 sm:ml-auto sm:w-auto">
+            {visible.map((feature) => (
+              <NavLink
+                key={feature.id}
+                to={feature.path}
+                className={({ isActive }) =>
+                  `inline-flex min-h-11 items-center rounded-md px-2.5 text-sm font-medium transition-colors sm:px-3 ${
+                    isActive
+                      ? 'font-semibold text-secondary-foreground underline decoration-brand-green decoration-2 underline-offset-8'
+                      : 'text-foreground hover:bg-white/70'
+                  }`
+                }
+              >
+                {feature.label}
+              </NavLink>
+            ))}
+          </div>
         </nav>
       </header>
-      <main id="main" tabIndex={-1} className="mx-auto max-w-5xl p-6">
+      <main id="main" tabIndex={-1} className="mx-auto max-w-6xl px-(--spacing-gutter) py-8 sm:py-10">
         {guarded && me.isPending ? (
           <p role="status">Loading…</p>
         ) : denied ? (

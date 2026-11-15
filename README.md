@@ -86,20 +86,21 @@ local setup below.
 | Student player | Start-here card, module path, video, reading, checks with hints, worksheets, exit tickets, pre and post tests, own progress and growth, guest mode, self-register | `src/features/player/` |
 | Unlock engine and grading | Strict order, pre-test first, post-test last, one-shot tests, answers graded in SQL | `supabase/migrations/` |
 | Authoring studio | Lessons and activities, all five question types with hints and explanations, concept tags, pre-test and post-test with pair keys, live preview, save, submit | `src/features/authoring/`, `shared/authoring/` |
+| Find material | Per lesson: a topic, sources (YouTube, freeCodeCamp, Harvard CS50, GitHub), the language of the material and the programming language. Add a video (embedded, never copied) or an openly licensed GitHub README (copied with its source and license) to the lesson in one click | `src/features/authoring/FindMaterial.tsx`, `shared/sources/`, `functions/api/sources/` |
 | Instructor setup | Create a class, class link with QR code, roster CSV import, printable login sheet, assign modules, class dashboard | `src/features/instructor/` |
 | Admin console | Publish queue, staff and roles, classes and instructors, schools, read API keys, mentor assignment, organization overview | `src/features/admin/` |
 | Reviewer view | Read-only walkthrough of published modules, no answer keys, no student data | `src/features/reviewer/` |
-| Learning gain and analytics | Post minus pre, normalized gain, stuck and not-started lists, concept mastery and "reteach tomorrow", all as SQL views | `shared/authoring/gain.ts`, `supabase/migrations/` |
+| Learning gain and analytics | Post minus pre, normalized gain, stuck and not-started lists, concept mastery and "reteach tomorrow", all as SQL views. A page per student (from the class roster): status, progress against the class, every activity, each pre/post question pair, mastery against the class, repeated wrong choices, activity calendar, hints, struggles and suggested next steps, with reset login code, allow a retake, CSV and a drafted note | `shared/authoring/gain.ts`, `supabase/migrations/`, `src/features/instructor/student/` |
 | Read API for CIC | `GET /api/v1/completion` and `/api/v1/learning-gain`, key and scope checked, groups under 5 hidden, JSON or CSV | `functions/api/v1/`, `shared/api/`, docs at `/api/docs` |
 | Database | 26 tables, row-level security everywhere, 46 per-role tests on a real Postgres | `supabase/` |
 
 **Not yet**
 
-- AI hints (the Gemini function). Instructor-written hints work; the "Get a hint" button is off.
+- A live AI hint has not been tried with a real Gemini key yet (the function and the written fallback are built and tested).
 - Mentor view (assigning mentors works; mentors have no screen yet).
-- Instructor reset of a login code or a test from the dashboard, and the per-student learning-gain table with CSV export.
+- A class-wide learning-gain table with CSV export (each student's page has its own CSV).
 - Student PIN, `slides` and in-browser Python activity kinds, and unlocking ahead for one student.
-- Keepalive and nightly backup jobs, Lighthouse in CI.
+- Keepalive and nightly backup jobs.
 
 The honest, detailed status of every workflow is in [docs/design/system-design-v3.md](docs/design/system-design-v3.md)
 (a snapshot from Saturday afternoon, so some "missing" items there have landed since; `docs/progress.md` is the log).
@@ -123,10 +124,11 @@ flowchart LR
     R[/review/]
   end
   Browser -->|supabase-js: RPC + RLS reads, anon key| DB[(Supabase Postgres + Auth)]
-  Browser -->|POST /api/hint, planned| F[Cloudflare Pages Functions]
+  Browser -->|POST /api/hint, /api/sources/*| F[Cloudflare Pages Functions]
   CIC[CIC org dashboard] -->|Bearer API key: GET /api/v1/*| F
   F -->|service role: validate_api_key, api_* views| DB
-  F -->|question text + answer only, planned| G[Gemini Flash-Lite free tier]
+  F -->|question text + answer only| G[Gemini Flash-Lite free tier]
+  F -->|the author's search topic only| SRC[YouTube Data API, GitHub API]
   GH[GitHub Actions] -->|CI, DB tests| DB
 ```
 
@@ -193,11 +195,14 @@ the Cloudflare Pages dashboard, or your shell.
 | `VITE_SUPABASE_URL` | Vite build (public) | Supabase project URL. Unset means demo mode. |
 | `VITE_SUPABASE_ANON_KEY` | Vite build (public) | Supabase anon (or publishable) key. Safe in the browser: row-level security decides access. |
 | `VITE_DATA_SOURCE` | Vite build (public) | `mock` for sample data or `supabase` for the real database. Defaults to `supabase` when the URL is set. |
-| `VITE_FEATURE_HINTS` | Vite build (public) | `true` shows "Get a hint" after a wrong answer. Keep `false` until the hint function exists. |
+| `VITE_FEATURE_HINTS` | Vite build (public) | `true` shows "Get a hint" after a wrong answer (calls `POST /api/hint`). |
 | `VITE_API_BASE` | Vite build (public) | Base URL for `/api/...` calls. Empty means the same site. |
-| `SUPABASE_URL` | Pages Function secret | Supabase project URL, for the read API. |
+| `SUPABASE_URL` | Pages Function secret | Supabase project URL, for the read API, hints and Find material. |
+| `SUPABASE_ANON_KEY` | Pages Function secret | The same public anon key, used to ask Supabase Auth who a caller's token belongs to. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Pages Function secret | Bypasses row-level security. Server only; never in the browser or git. |
-| `GEMINI_API_KEY` | Pages Function secret | Free-tier Gemini key for hints. Optional; planned. |
+| `GEMINI_API_KEY` | Pages Function secret | Free-tier Gemini key for hints. Optional: without it, hints come from the written ladder. |
+| `YOUTUBE_API_KEY` | Pages Function secret | YouTube Data API v3 key for Find material. Optional: without it, only GitHub is searched. |
+| `GITHUB_TOKEN` | Pages Function secret | GitHub token with no scopes for Find material. Optional: 30 searches a minute instead of 10. |
 | `NODE_VERSION` | Cloudflare Pages build setting | Set to `22.12.0` so the build has a new enough Node. |
 | `SUPABASE_DB_URL` | Shell or CI (tests only) | Overrides where the database tests connect. Defaults to the local Supabase. |
 | `REQUIRE_DB` | Shell or CI (tests only) | `1` makes the database tests fail when no database is reachable, instead of skipping. |

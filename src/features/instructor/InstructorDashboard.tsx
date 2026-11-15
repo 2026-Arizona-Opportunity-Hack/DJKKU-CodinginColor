@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 
 import {
   isInstructorDatabaseConfigured,
@@ -37,7 +38,18 @@ function formatGain(value: number | null): string {
   return `${value > 0 ? '+' : ''}${rounded} pts`
 }
 
-export function InstructorDashboard() {
+/** A student's name as a link to their page (`studentId` is a profile id or a roster seat id). */
+function StudentLink({ classId, studentId, name }: { classId: string; studentId: string | null; name: string }) {
+  if (!studentId) return <>{name}</>
+  return (
+    <Link to={`/instructor/${classId}/students/${studentId}`} className="underline underline-offset-4">
+      {name}
+    </Link>
+  )
+}
+
+/** `initialClassId` (from the URL) picks the class shown first; otherwise the first class. */
+export function InstructorDashboard({ initialClassId }: { initialClassId?: string } = {}) {
   const databaseConfigured =
     isInstructorDatabaseConfigured() && isDashboardDatabaseConfigured()
 
@@ -59,7 +71,11 @@ export function InstructorDashboard() {
         if (cancelled) return
 
         setClasses(result)
-        setClassId(result[0]?.id ?? '')
+        setClassId(
+          initialClassId && result.some((c) => c.id === initialClassId)
+            ? initialClassId
+            : (result[0]?.id ?? ''),
+        )
 
         if (result.length === 0) {
           setLoading(false)
@@ -77,7 +93,7 @@ export function InstructorDashboard() {
     return () => {
       cancelled = true
     }
-  }, [databaseConfigured])
+  }, [databaseConfigured, initialClassId])
 
   useEffect(() => {
     if (!databaseConfigured || !classId) return
@@ -123,7 +139,7 @@ export function InstructorDashboard() {
     <section aria-labelledby="class-dashboard-heading" className="space-y-8">
       <div className="space-y-3">
         <div>
-          <p className="text-sm font-medium text-gray-600">
+          <p className="text-sm font-medium text-muted-foreground">
             Live class data
           </p>
           <h2
@@ -163,7 +179,7 @@ export function InstructorDashboard() {
       {loading ? (
         <p className="rounded-lg border p-4">Loading dashboard...</p>
       ) : error ? (
-        <p role="alert" className="rounded-lg border p-4 text-red-700">
+        <p role="alert" className="rounded-lg border p-4 text-destructive">
           {error}
         </p>
       ) : classes.length === 0 ? (
@@ -172,6 +188,7 @@ export function InstructorDashboard() {
         </p>
       ) : data ? (
         <LiveDashboard
+          classId={classId}
           className={selectedClass?.name ?? 'Class'}
           data={data}
         />
@@ -181,9 +198,11 @@ export function InstructorDashboard() {
 }
 
 function LiveDashboard({
+  classId,
   className,
   data,
 }: {
+  classId: string
   className: string
   data: InstructorDashboardData
 }) {
@@ -249,7 +268,7 @@ const classGain =
     <div className="space-y-8">
       <div>
         <h3 className="text-xl font-semibold">{className}</h3>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-muted-foreground">
           Data from the current class roster and student activity.
         </p>
       </div>
@@ -273,12 +292,56 @@ const classGain =
         />
       </div>
 
+      <section aria-labelledby="roster-progress-heading" className="space-y-3">
+        <div>
+          <h3 id="roster-progress-heading" className="text-xl font-semibold">
+            Students
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Open a student to see their full progress, learning gain and next steps.
+          </p>
+        </div>
+
+        {students.length === 0 ? (
+          <p className="rounded-lg border p-4">No students on the roster yet.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border">
+            <table className="w-full border-collapse text-sm">
+              <caption className="sr-only">Every student in {className}</caption>
+              <thead className="bg-muted">
+                <tr>
+                  <th scope="col" className="border-b px-3 py-2 text-left font-semibold">Student</th>
+                  <th scope="col" className="border-b px-3 py-2 text-left font-semibold">Done</th>
+                  <th scope="col" className="border-b px-3 py-2 text-left font-semibold">Last active</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...students]
+                  .sort((a, b) => a.display_name.localeCompare(b.display_name))
+                  .map((student, index) => (
+                    <tr key={`${student.student_id ?? student.display_name}-${index}`}>
+                      <td className="border-b px-3 py-2">
+                        <StudentLink classId={classId} studentId={student.student_id} name={student.display_name} />
+                        {!student.joined && <span className="block text-xs text-muted-foreground">Seat not claimed</span>}
+                      </td>
+                      <td className="border-b px-3 py-2">{Math.round(student.completion_pct)}%</td>
+                      <td className="border-b px-3 py-2">
+                        {student.last_active_at ? new Date(student.last_active_at).toLocaleDateString() : 'Never'}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
       <section aria-labelledby="attention-heading" className="space-y-3">
         <div>
           <h3 id="attention-heading" className="text-xl font-semibold">
             Needs attention
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Students currently flagged by class activity.
           </p>
         </div>
@@ -300,20 +363,22 @@ const classGain =
                   className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
-                    <p className="font-semibold">{name}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="font-semibold">
+                      <StudentLink classId={classId} studentId={student.student_id} name={name} />
+                    </p>
+                    <p className="text-sm text-muted-foreground">
                       {student.reasons.includes('wrong_attempts')
                         ? `${student.wrong_attempts} wrong attempts`
                         : student.reasons.includes('long_time')
                           ? `${student.minutes_on_activity} minutes on activity`
                           : `${student.days_inactive} school days inactive`}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       Hints used: {student.hints_used}
                     </p>
                   </div>
 
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {progress?.completion_pct ?? 0}% complete
                   </p>
                 </li>
@@ -328,7 +393,7 @@ const classGain =
           <h3 id="not-started-heading" className="text-xl font-semibold">
             Not started
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Enrolled students with no recorded progress.
           </p>
         </div>
@@ -344,8 +409,10 @@ const classGain =
                 key={`${student.student_id ?? student.display_name}-${index}`}
                 className="rounded-lg border p-4"
               >
-                <p className="font-medium">{student.display_name}</p>
-                <p className="text-sm text-gray-600">
+                <p className="font-medium">
+                  <StudentLink classId={classId} studentId={student.student_id} name={student.display_name} />
+                </p>
+                <p className="text-sm text-muted-foreground">
                   {student.joined ? '0% complete' : 'Roster seat not claimed'}
                 </p>
               </li>
@@ -359,7 +426,7 @@ const classGain =
           <h3 id="mastery-heading" className="text-xl font-semibold">
             Concept mastery
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Average class mastery from scored attempts.
           </p>
         </div>
@@ -378,7 +445,7 @@ const classGain =
                 </div>
 
                 <div
-                  className="h-3 overflow-hidden rounded-full bg-gray-200"
+                  className="h-3 overflow-hidden rounded-full bg-muted"
                   role="progressbar"
                   aria-label={`${concept.concept} mastery`}
                   aria-valuemin={0}
@@ -386,7 +453,7 @@ const classGain =
                   aria-valuenow={concept.masteryPercent}
                 >
                   <div
-                    className="h-full rounded-full bg-gray-800"
+                    className="h-full rounded-full bg-primary"
                     style={{ width: `${concept.masteryPercent}%` }}
                   />
                 </div>
@@ -444,10 +511,10 @@ function DemoDashboard() {
     <section aria-labelledby="class-dashboard-heading" className="space-y-8">
       <div>
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-gray-600">
+          <p className="text-sm font-medium text-muted-foreground">
             {demoClass.school}
           </p>
-          <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700">
+          <span className="rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
             Demo data
           </span>
         </div>
@@ -478,7 +545,7 @@ function DemoDashboard() {
           <h3 id="demo-attention-heading" className="text-xl font-semibold">
             Needs attention
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Students who may need instructor support now.
           </p>
         </div>
@@ -490,17 +557,19 @@ function DemoDashboard() {
               className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
-                <p className="font-semibold">{student.displayName}</p>
-                <p className="text-sm text-gray-600">
+                <p className="font-semibold">
+                  <StudentLink classId="demo" studentId={student.studentId} name={student.displayName} />
+                </p>
+                <p className="text-sm text-muted-foreground">
                   {student.currentActivity}
                 </p>
               </div>
 
               <div className="sm:text-right">
-                <span className="inline-block rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-900">
+                <span className="inline-block rounded-full bg-tint-yellow px-3 py-1 text-sm font-medium text-tint-yellow-fg">
                   {stuckReason(student)}
                 </span>
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {student.progressPercent}% complete
                 </p>
               </div>
@@ -520,7 +589,7 @@ function DemoDashboard() {
           >
             Not started
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Enrolled students with no progress yet.
           </p>
         </div>
@@ -531,8 +600,10 @@ function DemoDashboard() {
               key={student.studentId}
               className="rounded-lg border p-4"
             >
-              <p className="font-medium">{student.displayName}</p>
-              <p className="text-sm text-gray-600">0% complete</p>
+              <p className="font-medium">
+                <StudentLink classId="demo" studentId={student.studentId} name={student.displayName} />
+              </p>
+              <p className="text-sm text-muted-foreground">0% complete</p>
             </li>
           ))}
         </ul>
@@ -546,7 +617,7 @@ function DemoDashboard() {
           <h3 id="demo-mastery-heading" className="text-xl font-semibold">
             Concept mastery
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Class performance by curriculum concept.
           </p>
         </div>
@@ -560,7 +631,7 @@ function DemoDashboard() {
               </div>
 
               <div
-                className="h-3 overflow-hidden rounded-full bg-gray-200"
+                className="h-3 overflow-hidden rounded-full bg-muted"
                 role="progressbar"
                 aria-label={`${concept.concept} mastery`}
                 aria-valuemin={0}
@@ -568,7 +639,7 @@ function DemoDashboard() {
                 aria-valuenow={concept.masteryPercent}
               >
                 <div
-                  className="h-full rounded-full bg-gray-800"
+                  className="h-full rounded-full bg-primary"
                   style={{ width: `${concept.masteryPercent}%` }}
                 />
               </div>
@@ -597,10 +668,10 @@ interface MetricCardProps {
 function MetricCard({ label, value, detail }: MetricCardProps) {
   return (
     <div className="rounded-lg border p-4">
-      <p className="text-sm text-gray-600">{label}</p>
+      <p className="text-sm text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-bold">{value}</p>
       {detail && (
-        <p className="mt-1 text-xs text-gray-600">{detail}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
       )}
     </div>
   )

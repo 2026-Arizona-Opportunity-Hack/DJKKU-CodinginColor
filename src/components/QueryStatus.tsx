@@ -21,7 +21,7 @@ export function QueryStatus<T>({
   if (query.isPending) return <p role="status">Loading {label}…</p>
   if (query.isError || query.data === undefined) {
     return (
-      <div role="alert" className="flex flex-col items-start gap-2 text-red-700">
+      <div role="alert" className="flex flex-col items-start gap-2 text-destructive">
         <p>We could not load {label}.{query.error instanceof Error ? ` ${query.error.message}` : ''}</p>
         <Button variant="outline" size="sm" onClick={() => void query.refetch()}>
           Try again

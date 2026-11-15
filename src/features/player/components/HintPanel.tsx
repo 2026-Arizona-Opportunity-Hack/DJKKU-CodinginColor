@@ -43,7 +43,7 @@ export function HintPanel({ activityId, lastResponse }: { activityId: string; la
       </div>
       <div aria-live="polite" className="flex flex-col gap-2">
         {hints.map((text, i) => (
-          <p key={i} className="rounded-md border-l-4 border-primary bg-secondary p-3 text-secondary-foreground">
+          <p key={i} className="rounded-lg border border-l-4 border-tint-yellow-edge bg-tint-yellow p-3 text-foreground">
             <span className="font-semibold">Hint {i + 1}: </span>
             {text}
           </p>

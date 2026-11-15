@@ -23,7 +23,7 @@ Roles: **guest** (not signed in), **student** (incl. a signed-in anonymous sessi
 | `claim_roster_seat(p_join_code, p_member_id)` | student | `{class_id, class_name, display_name}` |
 | `self_register(p_display_name)` | student | `{class_id, login_code}`. Name only, no email. Joins CIC Open. |
 | `get_my_classes()` | student | `[{class_id, class_name, kind}]` |
-| `get_class_outline(p_class_id)` | student | `{modules:[{module_id,title,position,pretest,posttest,lessons:[{lesson_id,title,position,activities:[{activity_id,title,kind,position,required,status,locked_reason}]}]}]}`; `status` is `locked`, `available` or `done` |
+| `get_class_outline(p_class_id)` | student | `{modules:[{module_id,title,position,pretest,posttest,lessons:[{lesson_id,title,position,activities:[{activity_id,title,kind,position,required,status,locked_reason}]}]}]}`; `status` is `locked`, `available`, `done` or `skipped` (the instructor started this student at a later module: counts as done for unlocking, open to review, never the next step; also used for a skipped module's `pretest`/`posttest`) |
 | `next_activity(p_class_id)` | student | `{module_id, lesson_id, activity_id}` or `null` (finished, or the next step is a pre or post test). `null` means finished OR the next step is the module's pre-test or post-test; the client must check `get_class_outline` for a `pretest`/`posttest` with status `available`. |
 | `get_activity(p_activity_id)` | guest (CIC Open modules), student, staff preview | `{activity_id,title,kind,status,prev_id,next_id,content}`. Errors if locked. Content never has keys. |
 | `submit_answer(p_activity_id, p_response, p_class_id?)` | student | `{is_correct, score, feedback, explanation, completed, next_activity_id, module_completed, unlocked_module_title}` |
@@ -31,6 +31,7 @@ Roles: **guest** (not signed in), **student** (incl. a signed-in anonymous sessi
 | `get_assessment(p_assessment_id)` | student, staff preview | `{assessment_id, kind, taken, items:[questionContent]}` |
 | `submit_assessment(p_assessment_id, p_responses, p_class_id?)` | student | `{score_pct, per_concept:[{concept, pct}]}`. **One shot.** |
 | `get_my_progress(p_class_id)` | student | `{completed, total, modules:[{title,pct,pre_pct,post_pct,gain}]}` |
+| `get_catch_up(p_class_id)` | student | `{steps_left, minutes_left, behind_by, steps:[{kind, activity_id, assessment_id, title, minutes}]}` (first 8 steps, in order: pre-test, activities, post-test). Minutes are the median time classmates spent once 3 have finished, else a default by kind. `behind_by` is how many required activities fewer than the class median. |
 | `list_open_modules()` | guest, student | `[{module_id,title,summary,lessons:[{lesson_id,title,activities:[{activity_id,title,kind}]}]}]` |
 | `import_guest_progress(p_payload)` | independent | `{imported}`. Only video/reading "viewed" credit is accepted. |
 
@@ -57,12 +58,14 @@ score. `explanation` comes back only once the activity is complete.
 | `reset_login_code(p_member_id)` | class instructor, admin, the student's mentor | `{login_code}`. Claiming it on a new device moves the student's data. |
 | `reset_assessment_result(p_student_id, p_class_id, p_assessment_id)` | class instructor, admin | Lets a student retake a test |
 | `assign_module(p_class_id, p_module_id, p_opens_at?)` | class instructor, admin | Published modules only; appended to the class order |
+| `set_start_module(p_member_ids, p_module_id?)` | class instructor, admin | Late joiners. `{students, start_module_id, skipped_modules}`. Starts these roster seats (`class_members.id`, so it works before they sign in; 1 to 300, one class) at `p_module_id`: every earlier module in the class is skipped for them. `null` = from the beginning. Replaces any earlier choice. Skips are readable in table `module_skips` (own seat, class instructors, admins). Errors: `Choose between 1 and 300 students`, `Students not found in one class`, `Not allowed to manage this class`, `That module is not assigned to this class`. |
 | `upsert_concept(p_id, p_name, p_description?)` | author | Concept tag |
 | `save_module_draft(p_module)` | author (owner), admin | Saves a whole draft in one transaction (payload below). Returns the module id. |
 | `submit_module(p_module_id)` | owner | Validates, locks the draft, returns `{errors, warnings}` (errors block) |
 | `publish_module(p_module_id)` | admin | Validates, then freezes this version forever |
 | `return_module_to_draft(p_module_id)` | admin | Sends a submitted module back |
 | `new_module_version(p_module_id)` | author | Deep copy of a published module as version + 1 (one open draft per module) |
+| `get_class_catch_up(p_class_id)` | class instructor, admin | `[{student_id, display_name, steps_left, minutes_left, behind_by}]` for signed-in students |
 | `get_activity_keys(p_activity_id)`, `get_assessment_keys(p_assessment_id)` | admin, owner, instructor of a class using it, mentor of a student in it | Answer keys. Never students or reviewers. |
 
 **`save_module_draft` payload** (built by `toDraftPayload` in `shared/authoring/schemas.ts`; `fromDraftRows` turns saved rows back into the editor's form):

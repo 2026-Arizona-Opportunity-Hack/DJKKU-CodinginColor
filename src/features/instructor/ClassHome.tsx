@@ -8,6 +8,7 @@ import { JoinCodeCard } from './JoinCodeCard'
 import { PrintableCodes } from './PrintableCodes'
 import { QueryStatus } from '@/components/QueryStatus'
 import { RosterImport } from './RosterImport'
+import { StartingPoint } from './StartingPoint'
 
 /** Everything for one class (`/instructor/:classId`). Login codes live only in this component's memory. */
 export function ClassHome() {
@@ -45,7 +46,8 @@ function ClassSections({ classId, className }: { classId: string; className: str
       <div ref={sheet}>{codes.length > 0 && <PrintableCodes className={className} codes={codes} />}</div>
       <div className="flex flex-col gap-10 print:hidden">
         <AssignModule classId={classId} />
-        <InstructorDashboard />
+        <StartingPoint classId={classId} />
+        <InstructorDashboard initialClassId={classId} />
       </div>
     </div>
   )
