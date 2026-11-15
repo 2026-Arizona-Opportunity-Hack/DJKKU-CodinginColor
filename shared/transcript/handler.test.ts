@@ -53,10 +53,33 @@ describe('GET /api/transcript', () => {
     expect(res.headers.get('cache-control')).toBe('public, max-age=86400')
     const [call] = supadataCalls()
     expect(call!.url).toContain('mode=native') // captions only: no paid AI transcription
+    expect(call!.url).toContain('lang=en') // otherwise Supadata returns the first track, e.g. a partial translation
     expect(call!.url).toContain(encodeURIComponent(`https://www.youtube.com/watch?v=${VIDEO}`))
     const headers = (call!.init!.headers ?? {}) as Record<string, string>
     expect(headers['x-api-key']).toBe('supadata-secret-key')
     expect(writes()).toEqual([expect.objectContaining({ video_id: VIDEO, status: 'ok', lang: 'en' })])
+  })
+
+  it('refuses a transcript in another language and remembers it (an English lesson came back in Arabic)', async () => {
+    world.supadata = () => Response.json({ lang: 'ar', availableLangs: ['ar'], content: [{ text: 'أهلاً بكم', offset: 0, duration: 1000 }] })
+    const res = await get()
+    expect(res.status).toBe(404)
+    expect(await res.json()).toEqual({ error: 'transcript_unavailable' })
+    expect(writes()).toEqual([expect.objectContaining({ status: 'unavailable', lang: 'ar', segments: [] })])
+    expect(logs.some((l) => l.includes('"cause":"wrong_language"'))).toBe(true)
+  })
+
+  it('replaces a non-English transcript cached before the language fix', async () => {
+    world.cache = [{ status: 'ok', lang: 'ar', segments: [{ start_ms: 0, text: 'أهلاً بكم' }], fetched_at: '2026-11-15T10:00:00Z' }]
+    const res = await get()
+    expect(await res.json()).toMatchObject({ source: 'supadata', lang: 'en' })
+    expect(supadataCalls()).toHaveLength(1)
+    expect(writes()).toEqual([expect.objectContaining({ status: 'ok', lang: 'en' })])
+  })
+
+  it('accepts regional English such as en-US', async () => {
+    world.supadata = () => Response.json({ lang: 'en-US', availableLangs: ['en-US'], content: [{ text: 'Hello.', offset: 0, duration: 1000 }] })
+    expect((await get()).status).toBe(200)
   })
 
   it('serves the cache without spending a Supadata request', async () => {
