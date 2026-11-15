@@ -10,7 +10,7 @@ describe('feature registry', () => {
   })
 
   it('has unique top-level paths, and none takes over the home page', () => {
-    const paths = features.map((f) => f.path)
+    const paths = features.flatMap((f) => [f.path, ...(f.extraPaths ?? [])])
     expect(new Set(paths).size).toBe(paths.length)
     expect(paths).not.toContain('/')
   })
@@ -20,7 +20,8 @@ describe('feature registry', () => {
       expect(feature.path.startsWith('/')).toBe(true)
       expect(feature.routes.length).toBeGreaterThan(0)
       for (const route of feature.routes) {
-        expect(route.path?.startsWith(feature.path)).toBe(true)
+        const owned = [feature.path, ...(feature.extraPaths ?? [])]
+        expect(owned.some((p) => route.path?.startsWith(p))).toBe(true)
       }
     }
   })

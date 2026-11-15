@@ -7,5 +7,5 @@ export const instructor: FeatureModule = {
   label: 'Instructor',
   path: '/instructor',
   routes: [{ path: '/instructor/*', element: <InstructorPage /> }],
-  roles: ['instructor', 'mentor', 'admin'],
+  roles: ['instructor', 'cic_admin', 'mentor'],
 }

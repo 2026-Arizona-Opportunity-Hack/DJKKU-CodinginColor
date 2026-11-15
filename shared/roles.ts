@@ -2,13 +2,13 @@
 // Keep it free of React, DOM and Workers-only APIs so either side can import it.
 // Put zod schemas that forms and server endpoints both validate against here too.
 
-/** The six roles in the design plan. One `role` column on `profiles`. */
+/** The six roles, exactly the values of the `profiles.role` CHECK constraint in the database. */
 export const ROLES = [
   'student',
   'independent_student',
   'mentor',
   'instructor',
-  'admin',
+  'cic_admin',
   'reviewer',
 ] as const
 

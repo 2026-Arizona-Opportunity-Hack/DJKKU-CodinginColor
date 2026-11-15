@@ -1,7 +1,14 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router/dom'
 import { router } from './router'
 
-// App-wide providers (data cache, auth session) wrap the router here as they are added.
+// App-wide data cache for the shell (who is signed in). The player keeps its own cache inside /learn.
+const queryClient = new QueryClient()
+
 export default function App() {
-  return <RouterProvider router={router} />
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  )
 }
