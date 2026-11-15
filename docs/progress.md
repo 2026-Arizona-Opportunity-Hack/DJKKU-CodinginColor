@@ -520,4 +520,12 @@ instead of repeating them.
   and admins, and kept in the database because classroom Chromebooks are shared. SECURITY.md and the contract
   say so. Demo mode has the same behavior. DB tests per role, mock API, component and page tests with axe.
 - Next: 6c (studio code editor), misconception radar.
+### 2026-11-15: Krishna (lane E, hints through the OHack AI gateway)
+- Done: hints can use an OpenAI-compatible gateway (`AI_GATEWAY_URL`, `AI_GATEWAY_KEY`, optional
+  `AI_MODEL`, default `gpt-oss-120b`) instead of Gemini, so the demo has live AI hints with the team's
+  OHack key. gpt-oss rather than muse-spark because the gateway says muse-spark prompts may be used for
+  training, and these prompts hold students' answers. Same rules as Gemini: only the question and the
+  answer are sent, 300 characters at most, refused if it gives the answer away, 8 second limit, written
+  ladder on any failure (including when the OHack key expires after the event). Tested with a mocked
+  gateway; the live call is checked on the deployed site.
 - Blocked: nothing.
