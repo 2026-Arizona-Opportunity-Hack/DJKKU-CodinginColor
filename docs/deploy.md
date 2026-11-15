@@ -288,7 +288,13 @@ curl -i PAGES_URL/api/v1/completion
 # add them and redeploy.
 ```
 
-Make a read API key for the nonprofit's dashboard. Run in the SQL editor, with your `ADMIN_ID`:
+Make a read API key for the nonprofit's dashboard: sign in as a CIC admin, open `/admin/keys`, give it a
+name, choose what it may read and press **Make key**. Copy the key it shows (it starts with `oh_`); it is
+shown once and only a fingerprint is stored. The same page lists every key with when it was last used,
+and **Revoke** stops one at once.
+
+Without the app (for example before the first admin exists), the same thing in the SQL editor, with
+your `ADMIN_ID`:
 
 ```sql
 begin;
@@ -299,8 +305,8 @@ commit;
 
 `begin` and `commit` keep both lines in one transaction, which the SQL editor needs (otherwise
 `create_api_key` answers "Only a CIC admin can create API keys"). `progress` allows
-`/api/v1/completion` and `assessments` allows `/api/v1/learning-gain`. There is no screen for keys yet.
-To revoke one later, run the same block with `select public.revoke_api_key('API_KEY_ID');`.
+`/api/v1/completion` and `assessments` allows `/api/v1/learning-gain`. To revoke one in SQL, run the
+same block with `select public.revoke_api_key('API_KEY_ID');`.
 
 Copy `raw_key` (it starts with `oh_`) from the result **now**. It is shown once and only a hash is
 stored. Then:

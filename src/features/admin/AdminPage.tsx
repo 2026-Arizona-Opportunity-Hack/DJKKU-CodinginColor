@@ -1,6 +1,7 @@
 import { Navigate, NavLink, Route, Routes } from 'react-router'
 import { DemoNote } from '@/components/DemoNote'
 import { isDemoMode, useMe } from '@/lib/session'
+import { ApiKeysTab } from './ApiKeysTab'
 import { OverviewTab } from './OverviewTab'
 import { PublishQueue } from './PublishQueue'
 import { StaffTab } from './StaffTab'
@@ -9,6 +10,7 @@ const TABS = [
   { path: 'publish', label: 'Publish queue', element: <PublishQueue /> },
   { path: 'overview', label: 'Overview', element: <OverviewTab /> },
   { path: 'staff', label: 'Staff', element: <StaffTab /> },
+  { path: 'keys', label: 'API keys', element: <ApiKeysTab /> },
 ]
 
 /** `/admin/<tab>`: the CIC admin console. Only CIC admins; the database enforces it too. */

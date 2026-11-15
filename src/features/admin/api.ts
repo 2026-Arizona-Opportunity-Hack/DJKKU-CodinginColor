@@ -69,6 +69,29 @@ const Invite = z.object({ email: z.string(), role: z.enum(STAFF_ROLES), can_auth
 export type Invite = z.infer<typeof Invite>
 export const listInvites = () => rows(getSupabase().from('staff_invites').select('email, role, can_author, created_at, accepted_at').order('created_at', { ascending: false }), Invite.array())
 
+// ---------- read API keys ----------
+
+/** What a key may read: `progress` is /api/v1/completion, `assessments` is /api/v1/learning-gain. */
+export const API_SCOPES = ['progress', 'assessments'] as const
+export type ApiScope = (typeof API_SCOPES)[number]
+const ApiKeyRow = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  scope: z.array(z.enum(API_SCOPES)),
+  created_at: z.string(),
+  last_used_at: z.string().nullable(),
+  revoked_at: z.string().nullable(),
+})
+export type ApiKeyRow = z.infer<typeof ApiKeyRow>
+/** Every key, newest first. Only the name and dates: the key itself is stored only as a hash. */
+export const listApiKeys = () =>
+  rows(getSupabase().from('api_keys').select('id, name, scope, created_at, last_used_at, revoked_at').order('created_at', { ascending: false }), ApiKeyRow.array())
+/** A new key. `raw_key` is returned this one time and never again. */
+export const createApiKey = async (name: string, scope: ApiScope[]) =>
+  z.object({ api_key_id: z.string().uuid(), raw_key: z.string().startsWith('oh_') }).parse(await rpc('create_api_key', { p_name: name.trim(), p_scope: scope }))
+/** Stops a key working at once. It stays in the list, marked revoked. */
+export const revokeApiKey = (id: string) => rpc('revoke_api_key', { p_api_key_id: id })
+
 const Removal = z.object({ classes_left_without_instructor: z.array(z.object({ id: z.string(), name: z.string() })) })
 export type Removal = z.infer<typeof Removal>
 /** What removing this person would do, without doing it: the classes left with no instructor. */

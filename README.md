@@ -88,10 +88,10 @@ local setup below.
 | Authoring studio | Lessons and activities, all five question types with hints and explanations, concept tags, pre-test and post-test with pair keys, live preview, save, submit | `src/features/authoring/`, `shared/authoring/` |
 | Find material | Per lesson: a topic, sources (YouTube, freeCodeCamp, Harvard CS50, GitHub), the language of the material and the programming language. Add a video (embedded, never copied) or an openly licensed GitHub README (copied with its source and license) to the lesson in one click | `src/features/authoring/FindMaterial.tsx`, `shared/sources/`, `functions/api/sources/` |
 | Instructor setup | Create a class, class link with QR code, roster CSV import, printable login sheet, assign modules, class dashboard | `src/features/instructor/` |
-| Admin console | Publish queue, staff and roles (remove a person's access, cancel an unused invite), classes with their instructors, schools, mentor assignment, organization overview. Read API keys are created in SQL for now ([docs/deploy.md](docs/deploy.md), Part 4) | `src/features/admin/` |
+| Admin console | Publish queue, staff and roles (remove a person's access, cancel an unused invite), classes with their instructors, schools, mentor assignment, organization overview, and read API keys (make one and see it once, see when each was last used, revoke) | `src/features/admin/` |
 | Reviewer view | Read-only walkthrough of published modules, no answer keys, no student data | `src/features/reviewer/` |
 | Learning gain and analytics | Post minus pre, normalized gain, stuck and not-started lists, concept mastery and "reteach tomorrow", all as SQL views. A page per student (from the class roster): status, progress against the class, every activity, each pre/post question pair, mastery against the class, repeated wrong choices, activity calendar, hints, struggles and suggested next steps, with reset login code, allow a retake, CSV and a drafted note | `shared/authoring/gain.ts`, `supabase/migrations/`, `src/features/instructor/student/` |
-| Read API for CIC | `GET /api/v1/completion` and `/api/v1/learning-gain`, key and scope checked, groups under 5 hidden, JSON or CSV | `functions/api/v1/`, `shared/api/`, docs at `/api/docs` |
+| Read API for CIC | `GET /api/v1/completion` and `/api/v1/learning-gain`, key and scope checked, groups under 5 hidden, JSON or CSV. Keys are made in `/admin/keys` | `functions/api/v1/`, `shared/api/`, docs at `/api/docs` |
 | Code activities | Python runs in the browser (no install, no account): predict, run, then change the starter code until the visible checks pass. Parsons problems: put lines of code in order | `src/features/player/code/`, `shared/authoring/` |
 | Classroom tools | Live class view for the projector, a catch-up plan for students who missed class, starting a late joiner at a later module, the most common wrong answer per question, and a one-page learning-gain report for funders | `src/features/instructor/` |
 | Video transcripts and notes | A lesson video's real English captions (Supadata, cached so each video is fetched once), and a notes panel beside the lesson that moves with the student | `shared/transcript/`, `functions/api/transcript.ts`, `src/components/learning/` |
@@ -101,7 +101,6 @@ local setup below.
 **Not yet**
 
 - A long-term AI key. The AI helpers run on the OHack AI gateway key (`gpt-oss-120b`), which stops working after the event (Sun Nov 15, 6 PM Arizona time); then set `GEMINI_API_KEY` or another gateway. Without one, hints are the written ones and the other AI helpers say AI is unavailable.
-- A screen for read API keys (an admin creates them in SQL for now).
 - Mentor view (assigning mentors works; mentors have no screen yet).
 - A class-wide learning-gain table with CSV export (each student's page has its own CSV).
 - Student PIN and a `slides` activity kind.

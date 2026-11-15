@@ -755,3 +755,12 @@ instead of repeating them.
   upload with wrangler, and the API key SQL that works in the SQL editor (begin/commit) plus revoke.
   Architecture: all 11 endpoints and their privacy rules. Decisions 25 to 29 recorded.
 - Blocked: nothing.
+### 2026-11-15: Krishna (lane E, in lane D's folder; Jad to review)
+- Done: `/admin/keys`, an API keys tab in the admin console (the Guide already linked to it). Make a
+  key (name, what it may read), shown once with Copy and a warning, then gone for good; a list with
+  what each key may read, when it was made and last used, and Revoke (asks first). Uses the existing
+  `create_api_key` and `revoke_api_key`; no database change. README and deploy guide now point to the
+  screen, with SQL kept as the fallback.
+- Note for Umang: the Guide also links `/admin/classes`, `/admin/schools` and `/admin/mentors`, which do
+  not exist and redirect to the publish queue (classes and schools are on Overview).
+- Blocked: nothing.
