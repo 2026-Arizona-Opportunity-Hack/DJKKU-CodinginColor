@@ -34,6 +34,7 @@ export function ActivityEditor({ lesson, index, count, kind, control, register, 
   const e = errors.lessons?.[lesson]?.activities?.[index]
   const url = useWatch({ control, name: `${at}.youtubeUrl` }) ?? ''
   const body = useWatch({ control, name: `${at}.body` }) ?? ''
+  const prompt = useWatch({ control, name: `${at}.prompt` }) ?? ''
   const activity = useWatch({ control, name: at })
   const conceptId = useWatch({ control, name: `${at}.conceptId` })
   const [preview, setPreview] = useState(false)
@@ -79,6 +80,46 @@ export function ActivityEditor({ lesson, index, count, kind, control, register, 
 
       {kind === 'reading' && (
         <MarkdownField label="Reading (markdown)" registration={register(`${at}.body`)} value={body} error={e?.body?.message} disabled={readOnly} />
+      )}
+
+      {kind === 'code' && (
+        <>
+          <MarkdownField label="Task for the student (markdown)" registration={register(`${at}.prompt`)} value={prompt} error={e?.prompt?.message} disabled={readOnly} />
+          <div className="flex flex-col gap-1">
+            <Label htmlFor={`${id}-predict`}>Predict question (optional, asked before the first run)</Label>
+            <Input id={`${id}-predict`} disabled={readOnly} placeholder="What will this program print?" {...register(`${at}.predict`)} />
+            <Err message={e?.predict?.message} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label htmlFor={`${id}-starter`}>Starter code (Python)</Label>
+            <Textarea id={`${id}-starter`} rows={6} spellCheck={false} className="font-mono text-sm" disabled={readOnly} {...register(`${at}.starter`)} />
+            <Err message={e?.starter?.message} />
+          </div>
+          <Controller
+            control={control}
+            name={`${at}.tests`}
+            render={({ field }) => (
+              <div className="flex flex-col gap-1">
+                <Label htmlFor={`${id}-tests`}>Checks, one per line (up to 10)</Label>
+                <Textarea
+                  id={`${id}-tests`}
+                  rows={3}
+                  spellCheck={false}
+                  className="font-mono text-sm"
+                  disabled={readOnly}
+                  aria-describedby={`${id}-tests-help`}
+                  defaultValue={(field.value ?? []).join(String.fromCharCode(10))}
+                  onChange={(ev) => field.onChange(ev.target.value.split(String.fromCharCode(10)).map((t) => t.trim()).filter(Boolean))}
+                  onBlur={field.onBlur}
+                />
+                <p id={`${id}-tests-help`} className="text-sm text-muted-foreground">
+                  Each line is a Python assert the student can see, for example <code>assert total == 55, "total should be 55"</code>. The text after the comma is shown when it fails.
+                </p>
+                <Err message={(e as { tests?: { message?: string } } | undefined)?.tests?.message} />
+              </div>
+            )}
+          />
+        </>
       )}
 
       {(kind === 'check' || kind === 'worksheet' || kind === 'exit') && (

@@ -51,6 +51,9 @@ insert into public.activities (id, lesson_id, position, kind, title, content, re
    ']}', true, 'loops'),
   ('50000000-0000-4000-8000-000000000006', '40000000-0000-4000-8000-000000000002', 2, 'check', 'Loops check',
    '{"questions":[{"id":"q-loop-c1","type":"fill_blank","prompt":"A loop that runs while a condition is true starts with ___.","conceptId":"loops"}]}', true, 'loops'),
+  -- Python in the browser (optional): predict, run, then change the loop until the visible check passes.
+  ('50000000-0000-4000-8000-000000000008', '40000000-0000-4000-8000-000000000002', 3, 'code', 'Try it: count with a loop',
+   '{"prompt":"This loop adds up the numbers 1, 2 and 3. Change it so `total` is the sum of 1 to **10**.","starter":"total = 0\nfor n in range(1, 4):\n    total = total + n\nprint(total)\n","predict":"What will this program print before you change it?","tests":["assert total == 55, \"total should be 55 (1 + 2 + ... + 10)\""]}', false, 'loops'),
   ('50000000-0000-4000-8000-000000000007', '40000000-0000-4000-8000-000000000003', 0, 'exit', 'Exit ticket',
    '{"questions":[{"id":"q-exit-1","type":"reflection","prompt":"What was the hardest part of loops today, and what helped?"}]}', true, null);
 
