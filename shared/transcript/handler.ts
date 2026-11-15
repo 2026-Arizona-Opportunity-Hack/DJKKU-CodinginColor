@@ -20,6 +20,10 @@ const RETRY_UNAVAILABLE_MS = 7 * 24 * 60 * 60 * 1000
 const MAX_TOTAL_CHARS = 200_000 // about 4 hours of speech; longer is cut, never an error
 const CHUNK_CHARS = 400 // Supadata merges captions into readable paragraphs of about this size
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/
+// CIC teaches in English. Without `lang`, Supadata returns the FIRST caption track it finds, which can
+// be a partial translation (found locally: an English lesson came back in Arabic). Ask for English and
+// treat any other language as "no transcript", so students get the author's summary instead.
+export const TRANSCRIPT_LANG = 'en'
 
 export interface TranscriptEnv {
   SUPABASE_URL?: string
@@ -120,13 +124,17 @@ export async function handleTranscript(request: Request, env: TranscriptEnv, dep
     // 3. Cache.
     const cached = CacheRow.safeParse((await read(`video_transcripts?video_id=eq.${videoId}&select=status,lang,segments,fetched_at&limit=1`))[0])
     if (cached.success) {
-      if (cached.data.status === 'ok') return ok({ video_id: videoId, lang: cached.data.lang, segments: cached.data.segments, source: 'cache' })
-      if (now() - Date.parse(cached.data.fetched_at) < RETRY_UNAVAILABLE_MS) return fail(404, 'transcript_unavailable', { videoId, source: 'cache' })
+      // A cached transcript in another language (stored before lang=en was sent) is treated as a miss and replaced.
+      const english = !cached.data.lang || cached.data.lang.toLowerCase().startsWith(TRANSCRIPT_LANG)
+      if (cached.data.status === 'ok' && english) return ok({ video_id: videoId, lang: cached.data.lang, segments: cached.data.segments, source: 'cache' })
+      if (cached.data.status === 'unavailable' && now() - Date.parse(cached.data.fetched_at) < RETRY_UNAVAILABLE_MS) {
+        return fail(404, 'transcript_unavailable', { videoId, source: 'cache' })
+      }
     }
 
     // 4. Supadata.
     if (!env.SUPADATA_API_KEY) return fail(503, 'unavailable', { videoId, cause: 'missing_supadata_key' })
-    const params = new URLSearchParams({ url: `https://www.youtube.com/watch?v=${videoId}`, mode: 'native', chunkSize: String(CHUNK_CHARS) })
+    const params = new URLSearchParams({ url: `https://www.youtube.com/watch?v=${videoId}`, lang: TRANSCRIPT_LANG, mode: 'native', chunkSize: String(CHUNK_CHARS) })
     let res: Response
     try {
       res = await f(`${SUPADATA_URL}?${params}`, { headers: { 'x-api-key': env.SUPADATA_API_KEY }, signal: AbortSignal.timeout(TIMEOUT_MS) })
@@ -144,6 +152,10 @@ export async function handleTranscript(request: Request, env: TranscriptEnv, dep
 
     const parsed = SupadataChunks.safeParse(await res.json().catch(() => null))
     if (!parsed.success) return fail(503, 'unavailable', { videoId, cause: 'upstream_shape' })
+    if (parsed.data.lang && !parsed.data.lang.toLowerCase().startsWith(TRANSCRIPT_LANG)) {
+      await remember({ status: 'unavailable', lang: parsed.data.lang, segments: [] })
+      return fail(404, 'transcript_unavailable', { videoId, cause: 'wrong_language', lang: parsed.data.lang })
+    }
     const segments = toSegments(parsed.data.content)
     if (segments.length === 0) {
       await remember({ status: 'unavailable', lang: null, segments: [] })
