@@ -37,7 +37,9 @@ jobs:
       - run: npm ci
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned (the version we test locally). "latest" asks the GitHub API which release is
+          # newest, and that call is rate limited on shared runners, which failed the job twice.
+          version: 3.1.0
       - name: Start local Supabase (only what the tests need)
         run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,mailpit,realtime,storage-api,supavisor,postgres-meta
       - name: Apply migrations and seed from scratch
