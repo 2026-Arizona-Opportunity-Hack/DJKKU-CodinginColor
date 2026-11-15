@@ -1,4 +1,5 @@
 import type { FeatureModule } from '@/lib/feature'
+import { reviewerGuide } from './guide'
 import { lazyPage } from '@/lib/lazyPage'
 
 const ReviewerPage = lazyPage(() => import('./ReviewerPage'), 'ReviewerPage')
@@ -10,4 +11,5 @@ export const reviewer: FeatureModule = {
   path: '/review',
   routes: [{ path: '/review/*', element: <ReviewerPage /> }],
   roles: ['reviewer', 'cic_admin'],
+  guide: reviewerGuide,
 }

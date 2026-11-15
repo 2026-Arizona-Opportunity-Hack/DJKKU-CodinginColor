@@ -1,4 +1,5 @@
 import type { FeatureModule } from '@/lib/feature'
+import { authoringGuide } from './guide'
 import { lazyPage } from '@/lib/lazyPage'
 
 const AuthoringPage = lazyPage(() => import('./AuthoringPage'), 'AuthoringPage')
@@ -11,4 +12,5 @@ export const authoring: FeatureModule = {
   routes: [{ path: '/author/*', element: <AuthoringPage /> }],
   roles: ['instructor', 'cic_admin'],
   needsAuthorFlag: true,
+  guide: authoringGuide,
 }

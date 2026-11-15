@@ -1,4 +1,5 @@
 import type { FeatureModule } from '@/lib/feature'
+import { adminGuide } from './guide'
 import { lazyPage } from '@/lib/lazyPage'
 
 const AdminPage = lazyPage(() => import('./AdminPage'), 'AdminPage')
@@ -10,4 +11,5 @@ export const admin: FeatureModule = {
   path: '/admin',
   routes: [{ path: '/admin/*', element: <AdminPage /> }],
   roles: ['cic_admin'],
+  guide: adminGuide,
 }

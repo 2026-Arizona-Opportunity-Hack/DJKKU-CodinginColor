@@ -27,4 +27,28 @@ export interface FeatureModule {
   showSignedOut?: 'also' | 'only'
   /** Nav only: also needs `profiles.can_author` (CIC admins always pass). */
   needsAuthorFlag?: boolean
+  /** What this feature offers, for the Guide page (/guide). Each feature describes itself. */
+  guide?: GuideEntry[]
+}
+
+/** Who a guide entry is for. 'author' is an instructor or admin with can_author; 'visitor' is signed out. */
+export type GuideRole = 'visitor' | 'student' | 'instructor' | 'author' | 'cic_admin' | 'reviewer' | 'mentor'
+
+export interface GuideEntry {
+  /** Unique across the app. */
+  id: string
+  title: string
+  /** One sentence: what it is for, in the user's words. */
+  summary: string
+  /** Where "Go there" leads: an exact screen, or a /<feature>/go/<section> link the feature resolves. */
+  to: string
+  /** True for a static page outside the app (opened as a normal link). */
+  external?: boolean
+  roles: GuideRole[]
+  /** Heading the entry sits under for its role, such as "Run a class". */
+  group: string
+  /** Position in "Your first steps" for the entry's FIRST role (1, 2, 3...); other roles list it without a number. */
+  step?: number
+  /** Extra steps once there, when the feature sits inside a screen. */
+  howTo?: string
 }

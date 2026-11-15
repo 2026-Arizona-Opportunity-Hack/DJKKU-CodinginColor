@@ -734,3 +734,18 @@ instead of repeating them.
   remove the seed data or reset those codes before real students use the hosted project.
 - Next: `npx supabase db push --remote`, then redeploy.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane E shell and every feature folder, Guide: find any feature by role)
+
+- Done: a Guide page at `/guide`, linked as "Guide" in the top nav for everyone. A tab per role (Visitor, Student,
+  Instructor, Author, CIC admin, Reviewer, Mentor) opens on your own role and shows "Your first steps" in order,
+  then everything else grouped, each with one line on what it is for, "Once there" steps when the feature sits
+  inside a screen, and a "Go there" button straight to it. A search box finds any feature across roles. Each
+  feature folder describes its own entries (`guide.ts`, a new optional `guide` field on `FeatureModule`), so the
+  page never needs editing when a feature changes. Deep links that need a class resolve it:
+  `/instructor/go/<section>` opens a page or a section anchor (#roster, #assign...) of your first class, and
+  `/learn/go/<section>` opens your notebook, progress or path. The class page scrolls to and focuses the section.
+- Tests: every link points at a real route or valid section, ids unique, steps numbered without gaps, search,
+  role mapping, tabs with arrow keys, axe (0 serious on desktop and phone), both redirects.
+- Next: part 2, a cleaner and more distinct UI per role, starting with the authoring studio's next-step clarity.
+- Blocked: nothing.

@@ -87,6 +87,18 @@ export function Layout() {
                 {feature.label}
               </NavLink>
             ))}
+            <NavLink
+              to="/guide"
+              className={({ isActive }) =>
+                `inline-flex min-h-11 items-center rounded-md px-2.5 text-sm font-medium transition-colors sm:px-3 ${
+                  isActive
+                    ? 'font-semibold text-secondary-foreground underline decoration-brand-green decoration-2 underline-offset-8'
+                    : 'text-foreground hover:bg-white/70'
+                }`
+              }
+            >
+              Guide
+            </NavLink>
           </div>
         </nav>
       </header>

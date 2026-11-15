@@ -51,6 +51,7 @@ describe('role-aware nav', () => {
     expect(await screen.findByRole('link', { name: 'Sign in' })).toBeInTheDocument()
     expect(nav()).toHaveTextContent('Learn')
     expect(nav()).not.toHaveTextContent('Admin')
+    expect(within(nav()).getByRole('link', { name: 'Guide' })).toHaveAttribute('href', '/guide')
   })
 
   it('shows the name next to Sign out, and signing out calls Supabase', async () => {

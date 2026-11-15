@@ -3,6 +3,7 @@ import { isDemoMode } from '@/lib/session'
 import { ClassHome } from './ClassHome'
 import { ClassPicker } from './ClassPicker'
 import { CreateClassForm } from './CreateClassForm'
+import { GoToSection } from './GoToSection'
 import { ImpactReport } from './ImpactReport'
 import { LiveView } from './LiveView'
 import { Misconceptions } from './Misconceptions'
@@ -43,6 +44,7 @@ export function InstructorPage() {
       <Routes>
         <Route index element={<FirstClass />} />
         <Route path="new" element={<CreateClassForm />} />
+        <Route path="go/:section" element={<GoToSection />} />
         <Route path=":classId" element={<ClassHome />} />
         <Route path=":classId/live" element={<LiveView />} />
         <Route path=":classId/reteach" element={<Misconceptions />} />
