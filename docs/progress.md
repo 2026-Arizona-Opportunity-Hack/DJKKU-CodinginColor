@@ -354,3 +354,12 @@ instead of repeating them.
   Checked on a local Supabase as a real instructor; a class you do not teach says so plainly.
 - Next: Parsons problems.
 - Blocked: nothing.
+### 2026-11-14: Krishna (lane E; "Submit for review" in lane C's folder, Umang to review)
+- Done: authors could not send a draft to the publish queue (the database had `submit_module`; no
+  screen called it), so a new version of a module could never be published. The editor now has
+  **Submit for review** for a saved draft: it asks first, refuses while there are unsaved changes,
+  lists the database's "Fix these first" reasons one per line, and on success reloads the module
+  locked, with the database's warnings shown as notes for the reviewer and focus moved to them. The
+  admin publish queue then shows it as before.
+- Next: an instructor assigns the new version to a class (students on version 1 stay on it).
+- Blocked: nothing.

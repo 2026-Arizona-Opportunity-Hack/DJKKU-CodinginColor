@@ -124,3 +124,20 @@ export async function loadModule(moduleId: string): Promise<LoadedModule> {
 
 /** Saves the whole draft in one transaction. Returns the module id. */
 export const saveDraft = (payload: DraftPayload) => rpc('save_module_draft', { p_module: payload }, z.string().uuid())
+
+const Check = z.object({ errors: z.array(z.string()).default([]), warnings: z.array(z.string()).default([]) })
+
+/**
+ * Sends a saved draft to the CIC admins' publish queue and locks it. The database checks it first and
+ * refuses with "Fix these first: a; b"; on success it returns warnings (like "no pre or post test").
+ */
+export const submitModule = async (moduleId: string): Promise<{ warnings: string[] }> => {
+  const check = Check.safeParse(await rpc('submit_module', { p_module_id: moduleId }, z.unknown()))
+  return { warnings: check.success ? check.data.warnings : [] }
+}
+
+/** "Fix these first: a; b" → ['a', 'b']. Any other message is one item. */
+export function fixList(message: string): string[] {
+  const m = /^Fix these first:\s*(.*)$/s.exec(message)
+  return m ? m[1]!.split('; ').map((s) => s.trim()).filter(Boolean) : [message]
+}
