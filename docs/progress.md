@@ -690,4 +690,17 @@ instead of repeating them.
 - Done: the admin Overview class table has an Instructors column (who teaches each class, read from
   instructor seats) and flags a class with no instructor, for example after Remove access. Assigning an
   instructor under Class staffing updates it without a reload. No database change.
+
+### 2026-11-15: Umang (lanes C and E, draft both tests with AI)
+
+- Done: "Draft both tests with AI" in the test builder. The studio sends the module as it is on screen (titles,
+  readings, video transcripts, code tasks, question prompts; never answer keys or student data) to
+  `POST /api/draft-tests` (authors and admins only, checked with the author's token). The function fetches the
+  real transcript of up to 5 imported videos that have no text, asks the AI provider configured in Cloudflare for
+  paired questions (same skill, different wording and values), checks every item against the save schema, drops
+  broken pairs and moves the right answer off the first choice. Both tabs fill as a draft; the author reviews and
+  saves, and the usual submit and publish review still applies. SECURITY.md lists what the AI sees.
+- Tests: 11 for the material, prompt, conversion and endpoint (fake AI: 401, 403, 503, 400, 413, 502, 200), 2
+  studio tests, 1 DB test that saves an AI-shaped draft through `save_module_draft`.
+- Next: try it on the deployed site on the imported YouTube and GitHub modules.
 - Blocked: nothing.

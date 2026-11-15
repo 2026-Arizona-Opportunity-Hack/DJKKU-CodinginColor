@@ -1128,3 +1128,31 @@ describe.skipIf(!up)('my notebook', () => {
     await fails('select public.get_my_notes()', [], /permission denied/)
   })
 })
+
+describe.skipIf(!up)('AI-drafted pre-test and post-test', () => {
+  // The exact shape the studio sends after "Draft both tests with AI" (shared/authoring/draftTests.ts
+  // toAssessments, then toDraftPayload): question ids ai-pre-p1 / ai-post-p1, rotated choices, keys.
+  const item = (kind: 'pre' | 'post', n: number) => ({
+    pair_key: `p${n}`, concept_id: 'loops', question_id: `ai-${kind}-p${n}`,
+    content: { id: `ai-${kind}-p${n}`, conceptId: 'loops', type: 'mcq', prompt: `How many times does \`for i in range(${n + 2}):\` run?`, choices: [{ id: 'a', text: '0' }, { id: 'b', text: String(n + 2) }, { id: 'c', text: '1' }] },
+    key: { type: 'mcq', correctChoiceId: 'b', hints: [] },
+  })
+
+  it('save through save_module_draft as paired, keyed items like hand-written ones', async () => {
+    const author = await mkUser('instructor', { author: true })
+    await as(author)
+    const payload = {
+      slug: `ai-${randomUUID().slice(0, 8)}`, title: 'Loops from a video', summary: '',
+      lessons: [{ title: 'Loops', activities: [{ kind: 'reading', title: 'R', required: true, concept_id: 'loops', content: { body: 'for loops' }, keys: [] }] }],
+      assessments: (['pre', 'post'] as const).map((kind) => ({ kind, title: `Loops from a video ${kind}-test`, items: [1, 2, 3].map((n) => item(kind, n)) })),
+    }
+    const moduleId = await one<string>('select public.save_module_draft($1::jsonb) as r', [JSON.stringify(payload)])
+    await asSuper()
+    const items = await q<{ kind: string; pair_key: string; has_key: boolean }>(
+      `select a.kind, i.pair_key, exists (select 1 from assessment_keys k where k.assessment_item_id = i.id) as has_key
+       from assessments a join assessment_items i on i.assessment_id = a.id where a.module_id = $1 order by a.kind, i.position`, [moduleId])
+    expect(items.filter((i) => i.kind === 'pre').map((i) => i.pair_key)).toEqual(['p1', 'p2', 'p3'])
+    expect(items.filter((i) => i.kind === 'post').map((i) => i.pair_key)).toEqual(['p1', 'p2', 'p3'])
+    expect(items.every((i) => i.has_key)).toBe(true)
+  })
+})

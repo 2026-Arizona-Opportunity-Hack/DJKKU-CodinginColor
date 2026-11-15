@@ -34,6 +34,7 @@ profile). The plain-language notice for families is at `/privacy`.
 | YouTube (youtube-nocookie.com) | That a video was played, from the student's browser | Lesson videos, privacy-enhanced embed |
 | jsDelivr | That Python was downloaded | Pyodide for code activities |
 | Gemini (only if AI hints are on) | The question text and the student's answer, under an opaque id. No name, class or school | AI hints. The free tier may use prompts to improve Google products, so the written hint ladder is the default |
+| The configured AI provider (test drafting, authors only) | A module's own lesson material: titles, readings, video transcripts, code tasks, question prompts. Never student data or answer keys | "Draft both tests with AI" in the studio (`/api/draft-tests`). The provider and model are set in Cloudflare, not in code |
 
 ## Codes and keys
 

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { pairWarnings, type AuthoredAssessment, type AuthoredQuestion } from '@shared/authoring/schemas'
+import { AiDraft } from './AiDraft'
 import type { ItemFV, ModuleFV, TestFV } from './formTypes'
 import { errorMessages, newQuestion, QUESTION_LABEL, QUESTION_TYPES, shortId, type QuestionType } from './questionDefaults'
 import { QuestionEditor } from './QuestionEditor'
@@ -95,7 +96,7 @@ function TestItems({ kind, control, register, setValue, errors, readOnly }: Test
 /** Pre-test and post-test, one tab each. Items with the same pair key are compared for learning gain. */
 export function TestBuilder(props: TestBuilderProps) {
   const id = useId()
-  const { control, setValue, readOnly } = props
+  const { control, setValue, getValues, readOnly } = props
   const [tab, setTab] = useState<Kind>('pre')
   const pre = useWatch({ control, name: 'pre' }) as TestFV | null | undefined
   const post = useWatch({ control, name: 'post' }) as TestFV | null | undefined
@@ -105,7 +106,7 @@ export function TestBuilder(props: TestBuilderProps) {
       ? pairWarnings(pre as AuthoredAssessment, post as AuthoredAssessment)
       : pre || post
         ? [`There is no ${pre ? 'post-test' : 'pre-test'} yet, so this module will show no learning gain.`]
-        : ['This module has no pre-test or post-test yet, so it will show no learning gain. Add them below.']
+        : ['This module has no pre-test or post-test yet, so it will show no learning gain. Draft them with AI or add them by hand.']
 
   function copyPreToPost() {
     if (!pre) return
@@ -126,6 +127,7 @@ export function TestBuilder(props: TestBuilderProps) {
         Students take the pre-test before the module and the post-test after it. Items with the same pair key are compared to
         measure learning gain, so they should test the same skill in different words.
       </p>
+      {!readOnly && <AiDraft setValue={setValue} getValues={getValues} onDrafted={() => setTab('pre')} />}
       <div role="tablist" aria-label="Tests" className="flex gap-1">
         {(['pre', 'post'] as const).map((k) => (
           <Button key={k} type="button" role="tab" id={`${id}-tab-${k}`} aria-selected={tab === k} aria-controls={`${id}-panel-${k}`} variant={tab === k ? 'default' : 'outline'} onClick={() => setTab(k)}>
