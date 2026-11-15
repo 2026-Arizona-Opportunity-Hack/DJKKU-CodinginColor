@@ -201,6 +201,7 @@ the Cloudflare Pages dashboard, or your shell.
 | `SUPABASE_ANON_KEY` | Pages Function secret | The same public anon key, used to ask Supabase Auth who a caller's token belongs to. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Pages Function secret | Bypasses row-level security. Server only; never in the browser or git. |
 | `GEMINI_API_KEY` | Pages Function secret | Free-tier Gemini key for hints. Optional: without it, hints come from the written ladder. |
+| `AI_GATEWAY_URL`, `AI_GATEWAY_KEY`, `AI_MODEL` | Pages Function secret | Optional, instead of Gemini: an OpenAI-compatible gateway for hints (the OHack gateway during the event). `AI_MODEL` defaults to `gpt-oss-120b`. |
 | `YOUTUBE_API_KEY` | Pages Function secret | YouTube Data API v3 key for Find material. Optional: without it, only GitHub is searched. |
 | `GITHUB_TOKEN` | Pages Function secret | GitHub token with no scopes for Find material. Optional: 30 searches a minute instead of 10. |
 | `NODE_VERSION` | Cloudflare Pages build setting | Set to `22.12.0` so the build has a new enough Node. |
