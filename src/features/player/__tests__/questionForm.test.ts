@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { blankCount, labelBlanks, type Question } from '../content'
 import { defaultValue, fieldSchema, move, toResponse, toResponses } from '../questionForm'
-import { safeUrl } from '../safeUrl'
+import { safeUrl } from '@/components/learning/safeUrl'
 
 // Lane C question content shapes (shared/authoring/schemas.ts).
 const mcq: Question = { id: 'q1', conceptId: 'c', type: 'mcq', prompt: 'p', choices: [{ id: 'a', text: 'A' }, { id: 'b', text: 'B' }] }

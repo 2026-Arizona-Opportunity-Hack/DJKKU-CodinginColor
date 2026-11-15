@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import { Controller, useWatch, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form'
 import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { parseYouTubeId } from '@shared/authoring/schemas'
+import { ActivityPreview } from './ActivityPreview'
 import { ConceptSelect } from './ConceptSelect'
 import { KIND_LABEL, type ActivityFV, type ModuleFV } from './formTypes'
 import { MarkdownField } from './MarkdownField'
+import { QuestionList } from './QuestionList'
 
 type Props = {
   lesson: number
@@ -25,16 +27,18 @@ type Props = {
 
 const Err = ({ message }: { message?: string }) => <p role="alert" className="text-sm font-medium text-destructive empty:hidden">{message}</p>
 
-/** One activity: title, required, concept, and the fields for its kind. Questions arrive in the next step. */
+/** One activity: title, required, concept, the fields for its kind, and a student preview. */
 export function ActivityEditor({ lesson, index, count, kind, control, register, errors, readOnly, onMove, onRemove }: Props) {
   const id = useId()
   const at = `lessons.${lesson}.activities.${index}` as const
   const e = errors.lessons?.[lesson]?.activities?.[index]
   const url = useWatch({ control, name: `${at}.youtubeUrl` }) ?? ''
   const body = useWatch({ control, name: `${at}.body` }) ?? ''
-  const questions = useWatch({ control, name: `${at}.questions` }) ?? []
+  const activity = useWatch({ control, name: at })
+  const conceptId = useWatch({ control, name: `${at}.conceptId` })
+  const [preview, setPreview] = useState(false)
   const videoId = kind === 'video' ? parseYouTubeId(url) : null
-  const questionsError = (e as { questions?: { message?: string; root?: { message?: string } } } | undefined)?.questions
+  const questionsError = (e as { questions?: unknown } | undefined)?.questions
 
   return (
     <li className="flex flex-col gap-3 rounded-lg border p-4">
@@ -78,11 +82,7 @@ export function ActivityEditor({ lesson, index, count, kind, control, register, 
       )}
 
       {(kind === 'check' || kind === 'worksheet' || kind === 'exit') && (
-        <div className="rounded-md bg-muted p-3 text-sm">
-          <p className="font-medium">Questions: add them in the next step.</p>
-          {questions.length > 0 && <p>{questions.length} question{questions.length === 1 ? '' : 's'} from your saved draft will be kept.</p>}
-          <Err message={questionsError?.message ?? questionsError?.root?.message ? 'This needs at least one question, and the question editor arrives in the next update.' : undefined} />
-        </div>
+        <QuestionList control={control} name={`${at}.questions`} max={kind === 'worksheet' ? 30 : 3} defaultConcept={conceptId ?? ''} readOnly={readOnly} errors={questionsError} />
       )}
 
       <div className="flex flex-wrap items-end gap-6">
@@ -95,6 +95,17 @@ export function ActivityEditor({ lesson, index, count, kind, control, register, 
           name={`${at}.conceptId`}
           render={({ field }) => <ConceptSelect value={field.value} onChange={field.onChange} disabled={readOnly} />}
         />
+      </div>
+
+      <div className="flex flex-col gap-2 border-t pt-3">
+        <Button type="button" variant="outline" className="self-start" aria-expanded={preview} aria-controls={`${id}-preview`} onClick={() => setPreview((p) => !p)}>
+          {preview ? 'Hide preview' : 'Preview as student'}
+        </Button>
+        {preview && (
+          <section id={`${id}-preview`} aria-label={`Student preview of ${activity?.title || KIND_LABEL[kind]}`} className="rounded-md bg-muted/40 p-3">
+            <ActivityPreview activity={activity} />
+          </section>
+        )}
       </div>
     </li>
   )

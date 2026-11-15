@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { blankCount, labelBlanks, type Question } from '../content'
 
 import { fieldName, move, type FormValues } from '../questionForm'
-import { InlineCode } from './InlineCode'
+import { InlineCode } from '@/components/learning/InlineCode'
 
 type Props = { question: Question; index: number; disabled?: boolean }
 

@@ -214,3 +214,17 @@ instead of repeating them.
   come back equal), save again, submit, admin publish, frozen after publish, new version.
 - Next: 6b: question editor, pre-test and post-test builder, submit and publish, student preview.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane C, authoring studio 6b part 1)
+- Done: question editor inside check, worksheet and exit activities: multiple choice (choices
+  add, remove, reorder, pick the correct one), short answer (accepted answers one per line, case
+  sensitive), fill in the blank (`___` markers, answers per blank kept in step with the text),
+  ordering (items in the correct order; students see them shuffled) and reflection (not scored, no
+  key). Every scored question has an explanation, up to 3 hints and its own concept; all of that
+  goes in the key, never in content. Question ids are made once (`q-` plus 6 characters) and never
+  changed. "Preview as student" on every activity, built from `splitQuestion` output so no key can
+  show. To share the student view without features importing each other, `VideoEmbed`, `Reading`,
+  `InlineCode` and `safeUrl` moved from the player to `src/components/learning/` (player imports
+  updated, its tests unchanged and passing), plus a new presentational `QuestionPreview`.
+- Next: 6b part 2: pre-test and post-test builder, submit for review, publish.
+- Blocked: nothing.

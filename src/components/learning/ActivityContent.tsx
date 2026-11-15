@@ -3,7 +3,7 @@ import { ExternalLink } from 'lucide-react'
 
 import { parseYouTubeId, youtubeEmbedUrl } from '@shared/authoring/schemas'
 
-import { safeUrl } from '../safeUrl'
+import { safeUrl } from './safeUrl'
 
 /**
  * Privacy-enhanced YouTube embed (B8) with a transcript and a plain link as fallbacks.
