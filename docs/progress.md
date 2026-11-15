@@ -174,3 +174,11 @@ instead of repeating them.
   are separate instructor-side copies because features may not import each other.
 - Next: 4b, the dashboard on real views.
 - Blocked: nothing.
+
+### 2026-11-14: Umang (lane A, CI)
+- Done: pinned the Supabase CLI in `.github/workflows/db-tests.yml` to 3.1.0. With `version: latest`
+  the setup step asks the GitHub API for the newest release, and that call hit "rate limit exceeded"
+  on the shared runners, so the database job failed in about 20 seconds on PRs #22 and #23 with no
+  code problem (re-running it passed once). Lane E: this is your file area, please check it.
+- Next: re-run the database job on open PRs after this lands.
+- Blocked: nothing.
