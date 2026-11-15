@@ -1,10 +1,11 @@
 import { useId, useState } from 'react'
-import { useFieldArray, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form'
+import { useFieldArray, useWatch, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form'
 import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ActivityEditor } from './ActivityEditor'
+import { FindMaterial } from './FindMaterial'
 import { KIND_LABEL, KINDS, newActivity, type ModuleFV } from './formTypes'
 
 type Props = {
@@ -23,6 +24,8 @@ export function LessonEditor({ index, count, control, register, errors, readOnly
   const id = useId()
   const { fields, append, remove, move } = useFieldArray({ control, name: `lessons.${index}.activities` })
   const [kind, setKind] = useState<(typeof KINDS)[number]>('video')
+  const [finding, setFinding] = useState(false)
+  const lessonTitle = useWatch({ control, name: `lessons.${index}.title` }) ?? ''
   const e = errors.lessons?.[index]
   const listError = (e?.activities as { message?: string; root?: { message?: string } } | undefined)
 
@@ -72,7 +75,13 @@ export function LessonEditor({ index, count, control, register, errors, readOnly
             </select>
           </div>
           <Button type="button" variant="outline" onClick={() => append(newActivity(kind))}>Add activity</Button>
+          <Button type="button" variant="outline" aria-expanded={finding} aria-controls={`${id}-find`} onClick={() => setFinding((f) => !f)}>
+            Find material
+          </Button>
         </div>
+      )}
+      {!readOnly && finding && (
+        <FindMaterial id={`${id}-find`} lessonNumber={index + 1} lessonTitle={lessonTitle} activityCount={fields.length} onAdd={(a) => append(a)} />
       )}
     </li>
   )

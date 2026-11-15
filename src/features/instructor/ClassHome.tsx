@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import type { ImportedRosterMember } from './api.supabase'
 import { AssignModule } from './AssignModule'
 import { InstructorDashboard } from './InstructorDashboard'
@@ -27,7 +27,10 @@ function ClassSections({ classId, className }: { classId: string; className: str
 
   return (
     <div className="flex flex-col gap-10">
-      <h2 className="text-2xl font-semibold print:hidden">{className}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <h2 className="text-2xl font-semibold">{className}</h2>
+        <Link className="inline-flex min-h-11 items-center rounded-md border px-3 font-medium hover:bg-accent" to={`/instructor/${classId}/report`}>Impact report for funders</Link>
+      </div>
       <div className="flex flex-col gap-10 print:hidden">
         <JoinCodeCard classId={classId} />
         <RosterImport
@@ -41,7 +44,7 @@ function ClassSections({ classId, className }: { classId: string; className: str
       <div className="flex flex-col gap-10 print:hidden">
         <AssignModule classId={classId} />
         <StartingPoint classId={classId} />
-        <InstructorDashboard />
+        <InstructorDashboard initialClassId={classId} />
       </div>
     </div>
   )
