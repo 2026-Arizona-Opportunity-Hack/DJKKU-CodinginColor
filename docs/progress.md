@@ -189,3 +189,10 @@ instead of repeating them.
   low" advice and the duplicate "CIC Open" step for seeded projects.
 - Next: someone with the Cloudflare and Supabase accounts follows the guide; paste the live URL into the README.
 - Blocked: needs the human with the dashboard accounts.
+### 2026-11-14: Umang (lane A, CI)
+- Done: pinned the Supabase CLI in `.github/workflows/db-tests.yml` to 3.1.0. With `version: latest`
+  the setup step asks the GitHub API for the newest release, and that call hit "rate limit exceeded"
+  on the shared runners, so the database job failed in about 20 seconds on PRs #22 and #23 with no
+  code problem (re-running it passed once). Lane E: this is your file area, please check it.
+- Next: re-run the database job on open PRs after this lands.
+- Blocked: nothing.
