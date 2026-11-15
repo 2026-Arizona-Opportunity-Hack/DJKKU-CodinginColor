@@ -748,4 +748,10 @@ instead of repeating them.
 - Tests: every link points at a real route or valid section, ids unique, steps numbered without gaps, search,
   role mapping, tabs with arrow keys, axe (0 serious on desktop and phone), both redirects.
 - Next: part 2, a cleaner and more distinct UI per role, starting with the authoring studio's next-step clarity.
+### 2026-11-15: Krishna (lane E, documentation pass for judging)
+- Done: README matches what is built: AI helpers, transcripts and notes, misconception summaries and
+  reusable login codes listed; the missing API key screen stated honestly; counts updated (29 tables,
+  71 database tests); "planned" removed from AI; how the live site is deployed. Deploy guide: direct
+  upload with wrangler, and the API key SQL that works in the SQL editor (begin/commit) plus revoke.
+  Architecture: all 11 endpoints and their privacy rules. Decisions 25 to 29 recorded.
 - Blocked: nothing.
