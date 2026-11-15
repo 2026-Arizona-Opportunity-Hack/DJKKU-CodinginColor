@@ -104,8 +104,11 @@ export function homePathFor(me: Me | null): string {
     case 'independent_student':
       return '/learn'
     case 'instructor':
-    case 'mentor':
       return '/instructor'
+    // Mentors exist in the database but have no screens in this version (the Guide and the invite form
+    // hide the role). The sign-in page tells them so and signs them out, instead of a page they cannot use.
+    case 'mentor':
+      return '/sign-in'
     case 'cic_admin':
       return '/admin'
     case 'reviewer':

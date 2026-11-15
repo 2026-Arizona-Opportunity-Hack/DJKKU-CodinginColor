@@ -37,7 +37,7 @@ finish.
 | ID | Requirement | Priority |
 |---|---|---|
 | R9 | Independent (homeschool) students: open lessons with no account, self-register with a display name only | P0 for the demo script |
-| R10 | Mentor role (approved volunteer, sees assigned mentees only) | P0 for the demo script |
+| R10 | Mentor role (approved volunteer, sees assigned mentees only) | P0 for the demo script. Deferred: built in the database, no screens, not offered in this version (2026-11-15) |
 | R11 | AI Socratic hints and instructor stuck-assist; AI must never break the core flow | P1 |
 | R12 | Concept mastery view ("reteach tomorrow") | P1 |
 | R13 | Pyodide in-browser Python runner | Stretch |
