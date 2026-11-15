@@ -1,15 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router'
 import { Reading, VideoEmbed } from '@/components/learning/ActivityContent'
+import { CodePreview } from '@/components/learning/CodePreview'
 import { QuestionPreview } from '@/components/learning/QuestionPreview'
 import type { QuestionContent } from '@shared/authoring/schemas'
 import { loadModule, type ReviewContent } from './api'
 
-const KIND: Record<string, string> = { video: 'Video', reading: 'Reading', check: 'Check', worksheet: 'Worksheet', exit: 'Exit ticket' }
+const KIND: Record<string, string> = { video: 'Video', reading: 'Reading', check: 'Check', worksheet: 'Worksheet', exit: 'Exit ticket', code: 'Code (Python)' }
 
 function Content({ title, content }: { title: string; content: ReviewContent }) {
   if (content.kind === 'video') return <VideoEmbed embedUrl={content.embedUrl} title={title} transcript={content.transcript} />
   if (content.kind === 'reading') return <Reading markdown={content.body} />
+  if (content.kind === 'code') return <CodePreview content={content} />
   if (content.kind === 'unreadable') return <p>This activity's content could not be shown.</p>
   return <div className="flex flex-col gap-3">{content.questions.map((q, i) => <QuestionPreview key={q.id} question={q} index={i} />)}</div>
 }

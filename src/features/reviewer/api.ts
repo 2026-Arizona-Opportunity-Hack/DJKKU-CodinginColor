@@ -62,6 +62,7 @@ export async function listPublishedModules(): Promise<ModuleSummary[]> {
 const Video = z.object({ embedUrl: z.string(), transcript: z.string().optional() })
 const Reading = z.object({ body: z.string() })
 const Questions = z.object({ questions: z.array(questionContent) })
+const Code = z.object({ prompt: z.string(), starter: z.string(), predict: z.string().nullish(), tests: z.array(z.string()) }).strict()
 
 const ActivityRow = z.object({
   id: z.string(), position: z.number(), kind: z.enum(['video', 'reading', 'check', 'worksheet', 'exit']),
@@ -80,6 +81,7 @@ export type ReviewContent =
   | { kind: 'video'; embedUrl: string; transcript?: string }
   | { kind: 'reading'; body: string }
   | { kind: 'questions'; questions: z.infer<typeof questionContent>[] }
+  | { kind: 'code'; prompt: string; starter: string; predict?: string | null; tests: string[] }
   | { kind: 'unreadable' }
 
 export interface ReviewModule {
@@ -101,6 +103,10 @@ function toContent(kind: string, raw: unknown): ReviewContent {
   if (kind === 'reading') {
     const p = Reading.safeParse(raw)
     return p.success ? { kind: 'reading', body: p.data.body } : { kind: 'unreadable' }
+  }
+  if (kind === 'code') {
+    const c = Code.safeParse(raw)
+    return c.success ? { kind: 'code', ...c.data } : { kind: 'unreadable' }
   }
   const p = Questions.safeParse(raw) // strict: content with a key field in it is refused, not shown
   return p.success ? { kind: 'questions', questions: p.data.questions } : { kind: 'unreadable' }

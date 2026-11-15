@@ -529,3 +529,12 @@ instead of repeating them.
   ladder on any failure (including when the OHack key expires after the event). Tested with a mocked
   gateway; the live call is checked on the deployed site.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane C, code activities 6c: studio and previews)
+
+- Done: "Code (Python)" is now in the studio's activity picker. Authors write the task (markdown), an optional
+  predict question, starter code and up to 10 visible checks (one `assert` per line). "Preview as student" and
+  the reviewer view show it read-only through a shared `src/components/learning/CodePreview.tsx`. The seed has
+  an optional code activity in the Loops lesson ("Try it: count with a loop"), so the signed-in demo shows it too.
+- Next: misconception radar.
+- Blocked: nothing.
