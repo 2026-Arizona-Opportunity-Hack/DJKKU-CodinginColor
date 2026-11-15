@@ -28,9 +28,12 @@ export function CertificatePage() {
           const m = p.modules[Number(moduleIndex)]
           if (!m || m.post_pct === null || m.post_pct === undefined) {
             return (
+              <>
+              <h1 className="text-2xl font-bold">Certificate</h1>
               <EmptyState title="No certificate yet">
                 <p>Finish this module and its post-test, and your certificate will be here.</p>
               </EmptyState>
+              </>
             )
           }
           const gain = m.gain !== null && m.gain !== undefined && whole(m.gain) > 0 ? whole(m.gain) : null

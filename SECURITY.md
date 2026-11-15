@@ -20,8 +20,20 @@ is no student account to take over. The roster import accepts names only and ref
 Staff, reviewers and mentors are adults and sign in with Google. Their email is used to match an
 admin invitation and to sign them in.
 
-What we have not decided yet: a data retention period, and how a student's data is deleted on request.
-Until CIC says, nothing is deleted automatically.
+**Retention (proposed, CIC to confirm):** delete student data 12 months after a class ends, or sooner on
+request. Until the deletion job exists, an admin deletes on request (a student's rows cascade from their
+profile). The plain-language notice for families is at `/privacy`.
+
+## Services that see data
+
+| Service | What it sees | Why |
+|---|---|---|
+| Supabase (database and auth) | All stored data, encrypted at rest | Stores everything; enforces row-level security |
+| Cloudflare Pages | Requests to the site and the API | Hosts the site and the API functions |
+| Google | Staff email and name at sign-in | Staff sign-in only; students never use Google |
+| YouTube (youtube-nocookie.com) | That a video was played, from the student's browser | Lesson videos, privacy-enhanced embed |
+| jsDelivr | That Python was downloaded | Pyodide for code activities |
+| Gemini (only if AI hints are on) | The question text and the student's answer, under an opaque id. No name, class or school | AI hints. The free tier may use prompts to improve Google products, so the written hint ladder is the default |
 
 ## Codes and keys
 
@@ -91,12 +103,26 @@ We would rather list these than hide them.
 - **Code activities are graded in the browser.** Python runs on the student's device (Pyodide), so a student
   who edits the page could report passing checks they did not pass. Code activities are practice; learning
   gain comes only from the pre-test and post-test, which are graded in the database.
-- **AI hints are planned, not built.** When they are, only the question text and the student's answer
-  go to the provider under an opaque id, never a name or school. A free-tier provider may use prompts
-  to improve its models, so treat anything sent as non-private.
+- **AI hints are off by default** (`VITE_FEATURE_HINTS`). When on, `/api/hint` checks the student's session
+  and access to the activity, sends only the question text and the student's answer under an opaque id,
+  caps each student at 3 hints per activity, refuses any model reply that contains the answer, and falls
+  back to the author's written hints. A free-tier provider may use prompts to improve its models, so treat
+  anything sent as non-private.
+- **No rate limit on the read API (`/api/v1/*`)** beyond Cloudflare's defaults. Keys are scoped and revocable.
+- **Login-code guessing is not counted per session** (see above); codes are 64-bit random.
 - **The free Supabase plan pauses after 7 days without use**, and has no automated backups we control.
   The keepalive and backup jobs are not built yet.
 - Stuck and learning-gain rules are defaults that CIC has not confirmed.
+
+## If something leaks
+
+| What leaked | Do this first | Then |
+|---|---|---|
+| A read API key | Admin console, API keys: revoke it (takes effect at once) | Make a new key for the consumer; check function logs for its use |
+| The service-role key or the Gemini key | Rotate it in the Supabase or Google dashboard, then update the Cloudflare Pages secret and redeploy | Check the Supabase logs for use since the leak; tell CIC |
+| A student or instructor saw a class they should not | Remove the wrong class membership; reset affected login codes | Add a DB test that reproduces it before fixing the rule; tell CIC and the school |
+
+Deleting a message that contained a key does not count: rotate it.
 
 ## Reporting a vulnerability
 

@@ -65,8 +65,13 @@ const LearningGainRow = z.object({
   incomplete_count: z.number(),
 })
 
+/** A roster seat. An unclaimed seat has no profile yet, so it is linked by its seat id. */
+const SeatRow = z.object({ id: z.string(), profile_id: z.string().nullable(), display_name: z.string() })
+
 export interface InstructorDashboardData {
   progress: z.infer<typeof ClassProgressRow>[]
+  /** Optional so older callers and test fixtures still type-check; the roster links unclaimed seats with it. */
+  seats?: z.infer<typeof SeatRow>[]
   notStarted: z.infer<typeof NotStartedRow>[]
   stuck: z.infer<typeof StuckRow>[]
   mastery: z.infer<typeof ConceptMasteryRow>[]
@@ -93,6 +98,7 @@ export async function loadInstructorDashboard(
     masteryResult,
     reteachResult,
     gainResult,
+    seatsResult,
   ] = await Promise.all([
     supabase.from('v_class_progress').select('*').eq('class_id', classId),
     supabase.from('v_not_started').select('*').eq('class_id', classId),
@@ -104,6 +110,7 @@ export async function loadInstructorDashboard(
       .select('*')
       .eq('class_id', classId)
       .eq('scope', 'class'),
+    supabase.from('class_members').select('id, profile_id, display_name').eq('class_id', classId).eq('member_role', 'student'),
   ])
 
   const results = [
@@ -113,6 +120,7 @@ export async function loadInstructorDashboard(
     masteryResult,
     reteachResult,
     gainResult,
+    seatsResult,
   ]
 
   const failed = results.find((result) => result.error)
@@ -128,5 +136,6 @@ export async function loadInstructorDashboard(
     mastery: ConceptMasteryRow.array().parse(masteryResult.data),
     reteach: ReteachRow.array().parse(reteachResult.data),
     learningGain: LearningGainRow.array().parse(gainResult.data),
+    seats: SeatRow.array().parse(seatsResult.data),
   }
 }

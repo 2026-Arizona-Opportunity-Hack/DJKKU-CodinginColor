@@ -626,6 +626,40 @@ instead of repeating them.
   replaced, so the live site repairs itself with no manual clean-up. Same video now: English, 61 timed
   paragraphs over 24 minutes. 3 new tests (20 in the handler).
 
+### 2026-11-15: Umang (security and QA pass, gates G-01 and G-02)
+
+- Done: ran SECURITY_QA_CHECKLIST against main. Full suite 699 tests and e2e pass. Results by ID in
+  `docs/security-audit.md` and `docs/qa-report.md`. New `scripts/security-probe.mjs` probes the REST API as a
+  stranger, an unclaimed anonymous session and a claimed student (54/54 pass locally, 17/17 on production).
+  Fixes opened: #59 (headers), #60 (privacy page, SECURITY.md), #61 (login code in URL, hint body cap).
+- Next: owner runs `npx supabase db push` on the hosted project (S-92), then re-run the probe on production.
+- Blocked: S-92 and the dashboard-only rows (OWNER in the audit).
+### 2026-11-15: Umang (lanes D and E files, privacy page and SECURITY.md, S-61, S-62, S-71)
+
+- Done: a plain-language `/privacy` page (what we keep about students, who sees it, services used, retention and
+  deletion, contact), linked from a new site footer with a Security link. SECURITY.md gains a table of every service
+  that sees data and what it sees, a proposed retention rule (12 months after a class ends, CIC to confirm), "If
+  something leaks" steps, and an accurate AI hints entry (it said "planned, not built").
+- Next: security audit report.
+- Blocked: CIC to confirm the retention period and a security contact.
+### 2026-11-15: Umang (lane E files, security headers S-50, S-51, S-59)
+
+- Done: `public/_headers` sets a Content-Security-Policy (only the origins the app uses: Supabase, jsDelivr for
+  Pyodide, the YouTube no-cookie player, YouTube thumbnails), nosniff, Referrer-Policy, Permissions-Policy,
+  X-Frame-Options DENY with frame-ancestors 'none', and HSTS, and drops Cloudflare's default wildcard CORS on static
+  files. The API docs page gets a separate policy for Scalar. `functions/api/_middleware.ts` adds nosniff, no-store,
+  no-referrer and frame denial to every JSON API response, since `_headers` does not reach Functions. Tested by
+  serving the exact policy in Playwright: video, Python and every main route ran with zero CSP violations.
+- Next: re-run the header scan on the live URL after deploy.
+- Blocked: nothing.
+### 2026-11-15: Krishna (lane E, in lane D's folder; Jad to review)
+- Done: a student who has not joined yet ("Seat not claimed") now links to their student page, so an
+  instructor can give them a login code (Reset login code works for unclaimed seats; there was just no
+  way to reach it). The roster view has no seat id, so the dashboard also reads the class's seats and
+  links unclaimed ones by seat id (the page accepts either); two unclaimed students with the same name
+  get one seat each. No database change.
+- Blocked: nothing.
+
 ### 2026-11-15: Daxx (transcript follows the video; page-length fix)
 - Fixed: opening "Read the transcript" made the page about 21,000 px tall on a phone. The hidden "At"
   labels before each timestamp are absolutely positioned and escaped the scroll box, which was not
