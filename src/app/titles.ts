@@ -1,6 +1,7 @@
 export const APP_NAME = 'Coding in Color Learn'
 
 const RULES: [RegExp, string][] = [
+  [/^\/privacy/, 'Privacy'],
   [/^\/$/, 'Home'],
   [/^\/sign-in/, 'Sign in'],
   [/^\/join\//, 'Join your class'],
