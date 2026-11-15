@@ -470,6 +470,15 @@ describe.skipIf(!up)('authoring and publishing', () => {
   })
   const save = (m: Row) => one<string>('select public.save_module_draft($1::jsonb) as r', [JSON.stringify(m)])
 
+  it('a module with no tests submits with a warning, and one with no lessons is refused in words', async () => {
+    const author = await mkUser('instructor', { author: true })
+    await as(author)
+    const noTests = await one<{ errors: string[]; warnings: string[] }>('select public.submit_module($1) as r', [await save(draft({ assessments: [] }))])
+    expect(noTests.errors).toEqual([])
+    expect(noTests.warnings).toContain('This module has no pre or post test, so it will have no learning gain')
+    await fails('select public.submit_module($1)', [await save(draft({ lessons: [] }))], /Fix these first: Add at least one lesson/)
+  })
+
   it('author drafts, submits; only an admin publishes; published is frozen; drafts stay private', async () => {
     const author = await mkUser('instructor', { author: true })
     const rival = await mkUser('instructor', { author: true })
