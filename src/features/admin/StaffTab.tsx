@@ -1,51 +1,12 @@
-import { useId, useState, type FormEvent } from 'react'
+import { useId } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Link } from 'react-router'
 import { Label } from '@/components/ui/label'
 import { QueryStatus } from '@/components/QueryStatus'
 import { useMe } from '@/lib/session'
-import { inviteStaff, listInvites, listStaff, ROLE_LABEL, setRole, STAFF_ROLES, type StaffRole } from './api'
+import { listInvites, listStaff, ROLE_LABEL, setRole, STAFF_ROLES, type StaffRole } from './api'
 
 const KEYS = [['admin', 'invites'], ['admin', 'staff']] as const
-
-function InviteForm({ onDone }: { onDone: () => void }) {
-  const id = useId()
-  const [email, setEmail] = useState('')
-  const [role, setRoleValue] = useState<StaffRole>('instructor')
-  const [canAuthor, setCanAuthor] = useState(false)
-  const [sent, setSent] = useState('')
-  const invite = useMutation({
-    mutationFn: () => inviteStaff(email.trim(), role, canAuthor),
-    onSuccess: () => { setSent(email.trim().toLowerCase()); setEmail(''); onDone() },
-  })
-  const submit = (e: FormEvent) => { e.preventDefault(); setSent(''); invite.mutate() }
-
-  return (
-    <form className="flex max-w-xl flex-col gap-3" onSubmit={submit}>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor={`${id}-email`}>Email</Label>
-        <Input id={`${id}-email`} type="email" required autoComplete="off" value={email} onChange={(e) => setEmail(e.target.value)} />
-      </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor={`${id}-role`}>Role</Label>
-        <select id={`${id}-role`} value={role} onChange={(e) => setRoleValue(e.target.value as StaffRole)} className="min-h-11 rounded-md border bg-background px-3 py-2">
-          {STAFF_ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
-        </select>
-      </div>
-      {role === 'instructor' && (
-        <label className="flex min-h-11 items-center gap-2">
-          <input type="checkbox" className="size-5" checked={canAuthor} onChange={(e) => setCanAuthor(e.target.checked)} />
-          Can author modules
-        </label>
-      )}
-      <p className="text-sm text-muted-foreground">They get this role the first time they sign in with Google using this email.</p>
-      <div role="alert" className="text-sm font-medium text-destructive empty:hidden">{invite.error?.message}</div>
-      <p role="status" className="text-sm font-medium empty:hidden">{sent ? `Invited ${sent}.` : ''}</p>
-      <Button type="submit" className="self-start" disabled={invite.isPending}>{invite.isPending ? 'Inviting…' : 'Send invite'}</Button>
-    </form>
-  )
-}
 
 /** One staff member: role and author switch. Your own row is locked, like the database rule. */
 function StaffRow({ id, name, role, canAuthor, mine, onSave, busy }: { id: string; name: string; role: StaffRole; canAuthor: boolean; mine: boolean; busy: boolean; onSave: (id: string, role: StaffRole, canAuthor: boolean) => void }) {
@@ -86,13 +47,9 @@ export function StaffTab() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section aria-labelledby="invite-title" className="flex flex-col gap-3">
-        <h2 id="invite-title" className="text-xl font-semibold">Invite someone</h2>
-        <InviteForm onDone={() => void refresh()} />
-      </section>
-
       <section aria-labelledby="pending-title" className="flex flex-col gap-3">
         <h2 id="pending-title" className="text-xl font-semibold">Invitations</h2>
+        <p className="text-sm">To invite someone, use the form on the <Link className="underline" to="/admin/overview">Overview</Link> tab. They get the role the first time they sign in with Google using that email.</p>
         <QueryStatus query={invites} label="invitations" isEmpty={(l) => l.length === 0} empty={<p>No invitations yet.</p>}>
           {(list) => (
             <div className="overflow-x-auto">
@@ -119,7 +76,7 @@ export function StaffTab() {
       <section aria-labelledby="staff-title" className="flex flex-col gap-3">
         <h2 id="staff-title" className="text-xl font-semibold">Staff</h2>
         <div role="alert" className="text-destructive empty:hidden">{change.error?.message}</div>
-        <QueryStatus query={staff} label="staff" isEmpty={(l) => l.length === 0} empty={<p>No staff yet. Invite someone above.</p>}>
+        <QueryStatus query={staff} label="staff" isEmpty={(l) => l.length === 0} empty={<p>No staff yet.</p>}>
           {(list) => (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left">

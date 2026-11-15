@@ -62,9 +62,6 @@ export const STAFF_ROLES = ['instructor', 'mentor', 'reviewer', 'cic_admin'] as 
 export type StaffRole = (typeof STAFF_ROLES)[number]
 export const ROLE_LABEL: Record<StaffRole, string> = { instructor: 'Instructor', mentor: 'Mentor', reviewer: 'Reviewer', cic_admin: 'CIC admin' }
 
-export const inviteStaff = (email: string, role: StaffRole, canAuthor: boolean) =>
-  rpc('invite_staff', { p_email: email, p_role: role, p_can_author: role === 'instructor' && canAuthor })
-
 export const setRole = (profileId: string, role: StaffRole, canAuthor: boolean) =>
   rpc('set_profile_role', { p_profile_id: profileId, p_role: role, p_can_author: role === 'instructor' && canAuthor })
 

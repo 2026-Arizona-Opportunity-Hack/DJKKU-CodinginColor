@@ -1,10 +1,12 @@
 import { Navigate, NavLink, Route, Routes } from 'react-router'
 import { isDemoMode, useMe } from '@/lib/session'
+import { OverviewTab } from './OverviewTab'
 import { PublishQueue } from './PublishQueue'
 import { StaffTab } from './StaffTab'
 
 const TABS = [
   { path: 'publish', label: 'Publish queue', element: <PublishQueue /> },
+  { path: 'overview', label: 'Overview', element: <OverviewTab /> },
   { path: 'staff', label: 'Staff', element: <StaffTab /> },
 ]
 
