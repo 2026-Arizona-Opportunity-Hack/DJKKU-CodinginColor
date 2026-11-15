@@ -141,7 +141,7 @@ instead of repeating them.
   429 message). The nav now follows the role, with a "no access" page for the wrong role (RLS is still the
   real gate), the home page sends signed-in people to their own screen, and `shared/roles.ts` now says
   `cic_admin` like the database. Demo mode (no Supabase URL) is labelled and keeps the mock player working.
-  `supabase/config.toml` redirect URLs point at the Vite dev server. 44 new tests, including axe checks.
+  `supabase/config.toml` redirect URLs point at the Vite dev server. 42 new tests, including axe checks.
 - Next: the player adapter reads `get_me` (its schema needs `class_id` and `class_name` to be nullable);
   the hosted project needs the Cloudflare Pages URL under Auth > URL Configuration.
 - Blocked: nothing.
