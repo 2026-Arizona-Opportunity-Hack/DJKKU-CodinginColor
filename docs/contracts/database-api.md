@@ -65,7 +65,7 @@ score. `explanation` comes back only once the activity is complete.
 | `new_module_version(p_module_id)` | author | Deep copy of a published module as version + 1 (one open draft per module) |
 | `get_activity_keys(p_activity_id)`, `get_assessment_keys(p_assessment_id)` | admin, owner, instructor of a class using it, mentor of a student in it | Answer keys. Never students or reviewers. |
 
-**`save_module_draft` payload** (what the studio builds from `splitModule`):
+**`save_module_draft` payload** (built by `toDraftPayload` in `shared/authoring/schemas.ts`; `fromDraftRows` turns saved rows back into the editor's form):
 
 ```json
 { "module_id": null, "slug": "variables-and-loops", "title": "...", "summary": "...",

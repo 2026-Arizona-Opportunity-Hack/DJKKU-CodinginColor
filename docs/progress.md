@@ -196,3 +196,21 @@ instead of repeating them.
   code problem (re-running it passed once). Lane E: this is your file area, please check it.
 - Next: re-run the database job on open PRs after this lands.
 - Blocked: nothing.
+
+### 2026-11-14: Umang (lane C, authoring studio 6a)
+- Done: first half of the authoring studio at `/author`. Shared contract helpers in
+  `shared/authoring/schemas.ts`: optional `conceptId` on every activity and test item (the database
+  needs a concept per test item for learning gain), `slugify`, `toDraftPayload` (exactly the
+  `save_module_draft` JSON, keys split from content with `splitQuestion`) and `fromDraftRows` (the
+  inverse, with ordering restored from the key and half-finished drafts still opening), all with
+  tests including a full round trip. In `src/features/authoring/`: the typed API layer, "My modules"
+  (status, Edit, New version), and the module editor (lessons and activities add, rename, delete,
+  move up or down; video link with a live check, reading with a markdown preview and no raw HTML,
+  required switch, concept picker with "New concept..."; Save draft with "Saved at", plain-language
+  database errors, and a warning before leaving with unsaved changes). Published and submitted
+  modules open read-only. Only CIC admins and instructors with `can_author` get in. Questions and the
+  test builder are 6b; check, worksheet and exit activities keep any questions already saved.
+  Checked on a local Supabase as a real author and admin: save, reload (module, pre-test and post-test
+  come back equal), save again, submit, admin publish, frozen after publish, new version.
+- Next: 6b: question editor, pre-test and post-test builder, submit and publish, student preview.
+- Blocked: nothing.

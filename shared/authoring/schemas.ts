@@ -185,7 +185,8 @@ export function splitQuestion(input: AuthoredQuestion): { content: QuestionConte
 export const activityKind = z.enum(['video', 'reading', 'check', 'worksheet', 'exit']);
 export type ActivityKind = z.infer<typeof activityKind>;
 
-const activityBase = { title: text(120), required: z.boolean().default(true) };
+// conceptId tags the activity for learning gain per concept and "reteach tomorrow" (activities.concept_id).
+const activityBase = { title: text(120), required: z.boolean().default(true), conceptId: id.nullable().optional() };
 
 export const authoredActivity = z.discriminatedUnion('kind', [
   z
@@ -257,7 +258,8 @@ export function splitModule(input: AuthoredModule) {
 // ---------- assessments (pre and post tests) ----------
 
 export const assessmentItem = z
-  .object({ pairKey: id, question: authoredQuestion })
+  // conceptId is the item's own tag (assessment_items.concept_id); when absent the question's conceptId is used.
+  .object({ pairKey: id, conceptId: id.nullable().optional(), question: authoredQuestion })
   .strict()
   .refine((i) => i.question.content.type !== 'reflection', { message: 'Tests cannot contain unscored reflection questions', path: ['question'] });
 
@@ -280,4 +282,165 @@ export function pairWarnings(pre: AuthoredAssessment, post: AuthoredAssessment):
     ...missingPost.map((k) => `Pre item "${k}" has no matching post item, so it will not count toward gain`),
     ...missingPre.map((k) => `Post item "${k}" has no matching pre item, so it will not count toward gain`),
   ];
+}
+
+// ---------- saving and loading a draft (the save_module_draft contract) ----------
+
+/** A URL-safe name for a module: lowercase a-z, 0-9 and dashes, at most 60 characters. */
+export function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+/, '')
+    .slice(0, 60)
+    .replace(/-+$/, '');
+}
+
+export interface DraftPayload {
+  module_id: string | null;
+  slug: string;
+  title: string;
+  summary: string;
+  lessons: {
+    title: string;
+    activities: {
+      kind: ActivityKind;
+      title: string;
+      required: boolean;
+      concept_id: string | null;
+      content: Record<string, unknown>;
+      keys: { question_id: string; key: QuestionKey }[];
+    }[];
+  }[];
+  assessments: {
+    kind: 'pre' | 'post';
+    title: string;
+    items: { pair_key: string; concept_id: string | null; question_id: string; content: QuestionContent; key: QuestionKey | null }[];
+  }[];
+}
+
+/**
+ * Build EXACTLY the JSON that save_module_draft takes (docs/contracts/database-api.md). Content
+ * and keys are split with splitQuestion, so no key field can end up inside `content`. Positions
+ * are array order. Throws a ZodError if the module is invalid.
+ */
+export function toDraftPayload(input: {
+  moduleId: string | null;
+  slug?: string;
+  module: AuthoredModule;
+  pre: AuthoredAssessment | null;
+  post: AuthoredAssessment | null;
+}): DraftPayload {
+  const m = authoredModule.parse(input.module);
+  const testPayload = (kind: 'pre' | 'post', a: AuthoredAssessment | null): DraftPayload['assessments'] => {
+    if (!a) return [];
+    const t = authoredAssessment.parse(a);
+    return [
+      {
+        kind,
+        title: `${m.title} ${kind === 'pre' ? 'pre-test' : 'post-test'}`.slice(0, 120),
+        items: t.items.map((item) => {
+          const { content, key } = splitQuestion(item.question);
+          return {
+            pair_key: item.pairKey,
+            concept_id: item.conceptId ?? ('conceptId' in content ? content.conceptId : null),
+            question_id: content.id,
+            content,
+            key,
+          };
+        }),
+      },
+    ];
+  };
+  return {
+    module_id: input.moduleId,
+    slug: input.slug ?? (slugify(m.title) || 'module'),
+    title: m.title,
+    summary: m.summary,
+    lessons: m.lessons.map((l) => ({
+      title: l.title,
+      activities: l.activities.map((a) => {
+        const base = { kind: a.kind, title: a.title, required: a.required, concept_id: a.conceptId ?? null };
+        if (a.kind === 'video') {
+          const embedUrl = youtubeEmbedUrl(parseYouTubeId(a.youtubeUrl)!);
+          return { ...base, content: { embedUrl, ...(a.transcript ? { transcript: a.transcript } : {}) }, keys: [] };
+        }
+        if (a.kind === 'reading') return { ...base, content: { body: a.body }, keys: [] };
+        const split = a.questions.map((q) => splitQuestion(q));
+        return {
+          ...base,
+          content: { questions: split.map((s) => s.content) },
+          keys: split.flatMap((s) => (s.key ? [{ question_id: s.content.id, key: s.key }] : [])),
+        };
+      }),
+    })),
+    assessments: [...testPayload('pre', input.pre), ...testPayload('post', input.post)],
+  };
+}
+
+/** Rows as the database returns them (select from modules, lessons, ...) plus the key lists. */
+export interface DraftRows {
+  module: { title: string; summary: string; status: 'draft' | 'submitted' | 'published' };
+  lessons: { id: string; position: number; title: string }[];
+  activities: { id: string; lesson_id: string; position: number; kind: ActivityKind; title: string; content?: unknown; required: boolean; concept_id: string | null }[];
+  assessments: { id: string; kind: 'pre' | 'post' }[];
+  assessmentItems: { assessment_id: string; position: number; pair_key: string; concept_id: string; question_id: string; content?: unknown }[];
+  /** From get_activity_keys, by activity id. Missing means the keys could not be read. */
+  activityKeys: Record<string, { question_id: string; key: unknown }[]>;
+  /** From get_assessment_keys, by assessment id. */
+  assessmentKeys: Record<string, { question_id: string; key: unknown }[]>;
+}
+
+function authoredFrom(content: QuestionContent, keys: { question_id: string; key: unknown }[] | undefined): AuthoredQuestion {
+  const key = (keys?.find((k) => k.question_id === content.id)?.key ?? null) as QuestionKey | null;
+  // The student-facing order is shuffled; the author's order is the key's correct order.
+  if (content.type === 'ordering' && key?.type === 'ordering') {
+    const byId = new Map(content.items.map((i) => [i.id, i]));
+    const items = key.correctOrder.map((x) => byId.get(x)).filter((i): i is NonNullable<typeof i> => Boolean(i));
+    if (items.length === content.items.length) return { content: { ...content, items }, key };
+  }
+  return { content, key };
+}
+
+/**
+ * The inverse of toDraftPayload, for opening a saved draft in the editor. It does not validate:
+ * a half-finished draft must still open. Video links come back as watch URLs.
+ */
+export function fromDraftRows(rows: DraftRows): { module: AuthoredModule; pre: AuthoredAssessment | null; post: AuthoredAssessment | null } {
+  const byPosition = <T extends { position: number }>(list: T[]) => [...list].sort((a, b) => a.position - b.position);
+  const module: AuthoredModule = {
+    title: rows.module.title,
+    summary: rows.module.summary,
+    status: rows.module.status,
+    lessons: byPosition(rows.lessons).map((l) => ({
+      title: l.title,
+      activities: byPosition(rows.activities.filter((a) => a.lesson_id === l.id)).map((a): AuthoredActivity => {
+        const base = { title: a.title, required: a.required, ...(a.concept_id ? { conceptId: a.concept_id } : {}) };
+        const content = (a.content ?? {}) as Record<string, unknown>;
+        if (a.kind === 'video') {
+          const id = parseYouTubeId(String(content.embedUrl ?? ''));
+          const transcript = typeof content.transcript === 'string' && content.transcript ? { transcript: content.transcript } : {};
+          return { ...base, kind: 'video', youtubeUrl: id ? `https://www.youtube.com/watch?v=${id}` : '', ...transcript };
+        }
+        if (a.kind === 'reading') return { ...base, kind: 'reading', body: String(content.body ?? '') };
+        const questions = ((content.questions ?? []) as QuestionContent[]).map((q) => authoredFrom(q, rows.activityKeys[a.id]));
+        return { ...base, kind: a.kind, questions };
+      }),
+    })),
+  };
+  const test = (kind: 'pre' | 'post'): AuthoredAssessment | null => {
+    const t = rows.assessments.find((x) => x.kind === kind);
+    if (!t) return null;
+    return {
+      kind,
+      items: byPosition(rows.assessmentItems.filter((i) => i.assessment_id === t.id)).map((i) => {
+        const question = authoredFrom(i.content as QuestionContent, rows.assessmentKeys[t.id]);
+        const own = 'conceptId' in question.content ? question.content.conceptId : null;
+        return { pairKey: i.pair_key, ...(i.concept_id !== own ? { conceptId: i.concept_id } : {}), question };
+      }),
+    };
+  };
+  return { module, pre: test('pre'), post: test('post') };
 }
