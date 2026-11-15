@@ -163,6 +163,16 @@ Open the project > **Settings** > **Variables and Secrets** > **Add**. For each,
 | `SUPABASE_ANON_KEY` | `ANON_KEY` (the hint function uses it to ask Supabase who a student's token belongs to; it is the same public key as in step 1) |
 | `SUPABASE_SERVICE_ROLE_KEY` | `SERVICE_ROLE_KEY` |
 | `GEMINI_API_KEY` | Optional. A free key from Google AI Studio (no billing). Without it every hint comes from the instructor's written ladder. |
+| `YOUTUBE_API_KEY` | Optional, for **Find material** in the authoring studio. Without it the YouTube, freeCodeCamp and CS50 sources say "not set up" and GitHub still works. How to get one is below. |
+| `GITHUB_TOKEN` | Optional, for Find material. A fine-grained token with **no permissions** (public repositories, read-only) raises GitHub searches from 10 to 30 a minute. Without it, searches still work. |
+
+**A YouTube key (free, about 3 minutes).** In the [Google Cloud console](https://console.cloud.google.com/),
+pick (or create) a project, open **APIs & Services** > **Library**, search **YouTube Data API v3** and
+click **Enable**. Then **Credentials** > **Create credentials** > **API key**. Click the new key, under
+**API restrictions** choose **Restrict key** and tick only **YouTube Data API v3**, and save. No billing
+account is needed. The free quota allows about **100 searches a day** for the whole project; each
+YouTube-type source ticked in a search uses one, and a repeated search within a day is served from
+the cache.
 
 Also add the five build variables from step 1 to the **Preview** environment if the dashboard
 shows Production and Preview separately, so preview deploys work too.
@@ -279,6 +289,11 @@ curl -i -H "Authorization: Bearer RAW_KEY" PAGES_URL/api/v1/completion
 Sign in with Google as an admin: `/admin` opens. Sign in as an invited instructor: `/instructor`
 opens with the classes they were added to.
 
+Find material: as an admin, open `/author`, edit a draft, press **Find material** under a lesson and
+search `loops` with GitHub ticked. Openly licensed repositories appear; **Add README as reading**
+adds a reading to the lesson (save the draft to keep it). With `YOUTUBE_API_KEY` set, videos appear
+too and **Add as video** adds one.
+
 ---
 
 ## If something goes wrong
@@ -293,6 +308,9 @@ opens with the classes they were added to.
 | "Too many sign-ins from this network" | The rate limit is still 30 an hour (Part 1 step 5). |
 | `/api/v1/completion` returns 503 | `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` secret missing, or no redeploy after adding. |
 | An invited instructor sees no classes | They need `add_class_instructor` (Part 3). |
+| Find material says "not set up on this site yet" for YouTube | `YOUTUBE_API_KEY` is missing, or no redeploy after adding it. GitHub results still work. |
+| Find material says "the daily search limit is used up" | The YouTube quota (about 100 searches a day) is spent. It resets at midnight Pacific time. |
+| Find material says "Only authors can search" | The account is not a CIC admin or an instructor with authoring rights (`/admin` > Staff). |
 | `Only a CIC admin can ...` in the SQL editor | Run the `set_config` line first, in the same run, with an `ADMIN_ID` that has role `cic_admin`. |
 
 ## Keeping it running
