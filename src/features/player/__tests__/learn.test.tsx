@@ -94,6 +94,18 @@ describe('B6 module path', () => {
     await expectNoSeriousA11yViolations(container)
   })
 
+  it('numbers modules and lessons from 1 even when the database counts positions from 0', async () => {
+    const api = mockApi(MID_MODULE)
+    const real = await api.getClassOutline(CLASS_ID)
+    // The real database stores position 0 for the first module and lesson (the mock uses 1).
+    const zeroBased = { modules: real.modules.map((m, mi) => ({ ...m, position: mi, lessons: m.lessons.map((l, li) => ({ ...l, position: li })) })) }
+    vi.spyOn(api, 'getClassOutline').mockResolvedValue(zeroBased)
+    renderRoute(<ClassPathPage />, { path: '/learn/:classId', url: `/learn/${CLASS_ID}`, api })
+    expect(await screen.findByRole('heading', { name: /^Module 1:/ })).toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { name: /^Lesson 1:/ }).length).toBeGreaterThan(0)
+    expect(screen.queryByRole('heading', { name: /^(Module|Lesson) 0:/ })).toBeNull()
+  })
+
   it('locked items cannot be reached with Tab', async () => {
     renderRoute(<ClassPathPage />, { path: '/learn/:classId', url: `/learn/${CLASS_ID}`, api: mockApi(MID_MODULE) })
     await screen.findByRole('link', { name: /Variables check/ })

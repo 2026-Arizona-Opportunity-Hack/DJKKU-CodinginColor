@@ -32,8 +32,8 @@ export function ClassPathPage() {
           ) : (
             <>
               <TallyBar label="Overall" tally={overallTally(o)} />
-              {o.modules.map((m) => (
-                <ModuleSection key={m.module_id} classId={classId} module={m} />
+              {o.modules.map((m, i) => (
+                <ModuleSection key={m.module_id} classId={classId} module={m} number={i + 1} />
               ))}
             </>
           )
@@ -57,21 +57,22 @@ function TallyBar({ label, tally }: { label: string; tally: Tally }) {
   )
 }
 
-function ModuleSection({ classId, module: m }: { classId: string; module: OutlineModule }) {
+// Numbers come from list order, not `position`: the database counts from 0, the mock from 1.
+function ModuleSection({ classId, module: m, number }: { classId: string; module: OutlineModule; number: number }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          Module {m.position}: {m.title}
+          Module {number}: {m.title}
         </CardTitle>
         <TallyBar label="This module" tally={moduleTally(m)} />
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {m.pretest && <TestRow classId={classId} label="Pretest" test={m.pretest} />}
-        {m.lessons.map((l) => (
+        {m.lessons.map((l, li) => (
           <section key={l.lesson_id} aria-labelledby={`lesson-${l.lesson_id}`}>
             <h3 id={`lesson-${l.lesson_id}`} className="mb-2 font-semibold">
-              Lesson {l.position}: {l.title}
+              Lesson {li + 1}: {l.title}
             </h3>
             <ul className="flex flex-col gap-2">
               {l.activities.map((a) => (
@@ -86,21 +87,22 @@ function ModuleSection({ classId, module: m }: { classId: string; module: Outlin
   )
 }
 
-const rowClass = 'flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1 rounded-md border px-3 py-2'
+// Lesson rows: solid white on the frosted card, Courier titles to match the headings.
+const rowClass = 'flex min-h-11 flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border bg-white px-3 py-2'
 
 function ActivityRow({ classId, activity: a }: { classId: string; activity: OutlineActivity }) {
   const title = (
-    <span className="flex-1">
+    <span className="flex-1 font-display font-bold">
       <span className="sr-only">{KIND_LABEL[a.kind]}: </span>
       {a.title}
-      <span aria-hidden="true" className="ml-2 text-xs text-muted-foreground">
+      <span aria-hidden="true" className="ml-2 font-sans text-xs font-medium tracking-wide text-muted-foreground uppercase">
         {KIND_LABEL[a.kind]}
       </span>
     </span>
   )
   if (a.status === 'locked') {
     return (
-      <li className={`${rowClass} bg-muted/50 text-muted-foreground`}>
+      <li className={`${rowClass} bg-muted text-muted-foreground`}>
         {title}
         <StatusBadge status="locked" />
         {a.locked_reason && <span className="basis-full text-sm">{a.locked_reason}</span>}
@@ -109,7 +111,7 @@ function ActivityRow({ classId, activity: a }: { classId: string; activity: Outl
   }
   return (
     <li>
-      <Link to={paths.activity(classId, a.activity_id)} className={`${rowClass} hover:bg-accent`}>
+      <Link to={paths.activity(classId, a.activity_id)} className={`${rowClass} transition-colors hover:border-tint-green-edge hover:bg-tint-green/60`}>
         {title}
         <StatusBadge status={a.status} />
       </Link>
@@ -120,7 +122,7 @@ function ActivityRow({ classId, activity: a }: { classId: string; activity: Outl
 function TestRow({ classId, label, test }: { classId: string; label: string; test: AssessmentRef }) {
   return (
     <div className={rowClass}>
-      <span className="flex-1 font-medium">{label}</span>
+      <span className="flex-1 font-display font-bold">{label}</span>
       <StatusBadge status={test.status} />
       {test.status === 'available' && (
         <Button asChild size="sm">

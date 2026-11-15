@@ -67,6 +67,8 @@ function isKnownCode(s: unknown): s is ErrorCode {
 
 /** Plain-language messages the database raises (SQLSTATE P0001), matched to our codes. */
 const DB_MESSAGES: [RegExp, ErrorCode][] = [
+  // get_activity / submit_answer / heartbeat raise "This activity is locked: <reason>" (lane A core functions).
+  [/is locked/i, 'locked'],
   [/already belongs to a class/i, 'already_in_class'],
   [/display name|no email/i, 'invalid_name'],
   [/cannot (self-register|claim)/i, 'wrong_account'],
