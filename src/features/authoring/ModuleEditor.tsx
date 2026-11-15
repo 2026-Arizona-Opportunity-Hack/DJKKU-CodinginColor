@@ -181,7 +181,7 @@ function EditorForm({
         {!readOnly && <Button type="button" variant="outline" className="self-start" onClick={() => lessons.append({ title: '', activities: [] })}>Add lesson</Button>}
       </section>
 
-      {!keysHidden && <TestBuilder control={control} register={register} setValue={setValue} getValues={getValues} errors={errors} readOnly={readOnly} />}
+      {!keysHidden && <TestBuilder control={control} register={register} setValue={setValue} getValues={getValues} errors={errors} readOnly={readOnly} status={status} onNewVersion={moduleId ? () => version2.mutate() : undefined} newVersionPending={version2.isPending} />}
 
       {!readOnly && (
         <div className="flex flex-wrap items-center gap-4 border-t pt-4">
