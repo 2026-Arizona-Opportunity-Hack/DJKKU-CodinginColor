@@ -559,3 +559,13 @@ instead of repeating them.
   (Kraft and Rogers 2015).
 - Next: belonging wording, completion certificate.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lanes B and C, belonging moments)
+
+- Done: a wrong answer now also shows a short "struggle is normal" line ("Every coder gets stuck. A wrong try
+  shows you what to change next."), one of three, chosen from the feedback so it does not flicker. In the
+  studio, "Add a Coder spotlight" adds an optional reading template for a coder students can see themselves in,
+  with every detail in [brackets] and a placeholder note, because CIC must supply real stories with permission.
+  Research: Walton and Cohen 2011 (belonging), Scott, Sheridan and Clark 2015 (culturally responsive computing).
+- Next: completion certificate.
+- Blocked: real Coder spotlight stories from CIC.
