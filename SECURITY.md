@@ -35,6 +35,7 @@ profile). The plain-language notice for families is at `/privacy`.
 | jsDelivr | That Python was downloaded | Pyodide for code activities |
 | Gemini (only if AI hints are on) | The question text and the student's answer, under an opaque id. No name, class or school | AI hints. The free tier may use prompts to improve Google products, so the written hint ladder is the default |
 | The configured AI provider (test drafting, authors only) | A module's own lesson material: titles, readings, video transcripts, code tasks, question prompts. Never student data or answer keys | "Draft both tests with AI" in the studio (`/api/draft-tests`). The provider and model are set in Cloudflare, not in code |
+| The configured AI provider ("Explain it for my grade") | One reading or video's text and a grade number (1 to 12). No name, id, class or answers | Students and guests ask for a lesson rewritten for their grade (`/api/simplify`). The server loads the lesson itself with the caller's own token, so only material they may open is sent, and caches each rewrite per grade |
 
 ## Codes and keys
 
