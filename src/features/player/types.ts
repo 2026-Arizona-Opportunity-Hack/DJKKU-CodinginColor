@@ -129,6 +129,21 @@ export const OpenModule = z.object({
 })
 export type OpenModule = z.infer<typeof OpenModule>
 
+/** get_catch_up: what a student still has to do, with an estimate, and how far behind the class they are. */
+export const CatchUp = z.object({
+  steps_left: z.number(),
+  minutes_left: z.number(),
+  behind_by: z.number(),
+  steps: z.array(z.object({
+    kind: z.string(),
+    activity_id: z.string().nullable(),
+    assessment_id: z.string().nullable(),
+    title: z.string(),
+    minutes: z.number(),
+  })),
+})
+export type CatchUp = z.infer<typeof CatchUp>
+
 export const ImportResult = z.object({ imported: z.number() })
 export type ImportResult = z.infer<typeof ImportResult>
 

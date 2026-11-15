@@ -31,6 +31,7 @@ Roles: **guest** (not signed in), **student** (incl. a signed-in anonymous sessi
 | `get_assessment(p_assessment_id)` | student, staff preview | `{assessment_id, kind, taken, items:[questionContent]}` |
 | `submit_assessment(p_assessment_id, p_responses, p_class_id?)` | student | `{score_pct, per_concept:[{concept, pct}]}`. **One shot.** |
 | `get_my_progress(p_class_id)` | student | `{completed, total, modules:[{title,pct,pre_pct,post_pct,gain}]}` |
+| `get_catch_up(p_class_id)` | student | `{steps_left, minutes_left, behind_by, steps:[{kind, activity_id, assessment_id, title, minutes}]}` (first 8 steps, in order: pre-test, activities, post-test). Minutes are the median time classmates spent once 3 have finished, else a default by kind. `behind_by` is how many required activities fewer than the class median. |
 | `list_open_modules()` | guest, student | `[{module_id,title,summary,lessons:[{lesson_id,title,activities:[{activity_id,title,kind}]}]}]` |
 | `import_guest_progress(p_payload)` | independent | `{imported}`. Only video/reading "viewed" credit is accepted. |
 
@@ -64,6 +65,7 @@ score. `explanation` comes back only once the activity is complete.
 | `publish_module(p_module_id)` | admin | Validates, then freezes this version forever |
 | `return_module_to_draft(p_module_id)` | admin | Sends a submitted module back |
 | `new_module_version(p_module_id)` | author | Deep copy of a published module as version + 1 (one open draft per module) |
+| `get_class_catch_up(p_class_id)` | class instructor, admin | `[{student_id, display_name, steps_left, minutes_left, behind_by}]` for signed-in students |
 | `get_activity_keys(p_activity_id)`, `get_assessment_keys(p_assessment_id)` | admin, owner, instructor of a class using it, mentor of a student in it | Answer keys. Never students or reviewers. |
 
 **`save_module_draft` payload** (built by `toDraftPayload` in `shared/authoring/schemas.ts`; `fromDraftRows` turns saved rows back into the editor's form):

@@ -837,3 +837,50 @@ describe.skipIf(!up)('get_me and class staffing', () => {
     await fails('select public.remove_class_instructor($1, $2)', [P1, randomUUID()], /permission denied/)
   })
 })
+
+describe.skipIf(!up)('catch-up plan', () => {
+  type Plan = { steps_left: number; minutes_left: number; behind_by: number; steps: { kind: string; title: string; minutes: number }[] }
+
+  it('gives a student who fell behind their remaining steps in order, with minutes, and how far behind they are', async () => {
+    const seat = (await q<{ profile_id: string }>(`select profile_id from class_members where class_id = $1 and display_name = 'Cam R.'`, [P1]))[0]!.profile_id
+    await as(seat)
+    const plan = await one<Plan>('select public.get_catch_up($1) as r', [P1])
+    expect(plan.steps_left).toBeGreaterThan(5)
+    expect(plan.behind_by).toBeGreaterThan(0)
+    expect(plan.minutes_left).toBeGreaterThanOrEqual(plan.steps.reduce((n, s) => n + s.minutes, 0))
+    expect(plan.steps[0]!.kind).not.toBe('posttest')
+    expect(plan.steps.at(-1)!.kind).toBe('posttest')
+    expect(plan.steps.every((s) => s.minutes >= 1)).toBe(true)
+  })
+
+  it('is empty for a student who has finished everything, and refused for a class you are not in', async () => {
+    await as(SEED_STUDENT_1)
+    const done = await one<Plan>('select public.get_catch_up($1) as r', [P1])
+    expect(done).toMatchObject({ steps_left: 0, minutes_left: 0, behind_by: 0, steps: [] })
+    await fails('select public.get_catch_up($1)', ['11000000-0000-4000-8000-000000000002'], /not in this class/)
+    await as(null)
+    await fails('select public.get_catch_up($1)', [P1], /permission denied/)
+  })
+
+  it('a fresh student starts with the pre-test', async () => {
+    const id = await mkUser()
+    await as(id)
+    await q('select public.claim_login_code($1)', ['DEMO-0000-0000-0001'])
+    const plan = await one<Plan>('select public.get_catch_up($1) as r', [P1])
+    expect(plan.steps[0]).toMatchObject({ kind: 'pretest', title: 'Pre-test: Variables and Loops' })
+  })
+
+  it('lets the class instructor see everyone, and nobody else', async () => {
+    const ins = await mkUser('instructor')
+    await asSuper()
+    await q(`insert into class_members (class_id, profile_id, member_role, display_name) values ($1, $2, 'instructor', 'T')`, [P1, ins])
+    await as(ins)
+    const rows = await one<{ display_name: string; steps_left: number; behind_by: number }[]>('select public.get_class_catch_up($1) as r', [P1])
+    expect(rows.length).toBeGreaterThan(5)
+    expect(rows.find((r) => r.display_name === 'Cam R.')!.behind_by).toBeGreaterThan(0)
+    await fails('select public.get_class_catch_up($1)', ['11000000-0000-4000-8000-000000000002'], /Not allowed/)
+    await as(SEED_STUDENT_1)
+    await fails('select public.get_class_catch_up($1)', [P1], /Not allowed/)
+    await fails('select public._catch_up_steps($1, $2)', [SEED_STUDENT_1, P1], /permission denied/)
+  })
+})

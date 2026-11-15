@@ -329,6 +329,17 @@ instead of repeating them.
 - Next: /learn mobile LCP (3.1 s simulated) waits on two data round-trips in a row (classes, then
   next activity + outline). One `get_student_home` RPC returning all three would remove one.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane C, Parsons problems)
+- Done: an ordering question can now be a Parsons problem (lines of code to put in order), which research
+  finds gives similar learning to writing the code in less time (Ericson, Margulieux and Rick 2017; Ericson
+  et al. 2022). In the studio, a checkbox on an ordering question ("These are lines of code") turns its items into
+  monospace lines that keep their indentation. Students see the lines as code with "Your program so far" below,
+  updated as they move lines (keyboard first, as before). The preview and the reviewer view show it as code too.
+  Schema: `display: 'code'` on ordering content, and ordering items keep leading spaces (only trailing space is
+  dropped). Grading is unchanged (the order is still only in the key). The demo seed's "Loops worksheet" ordering
+  question is now a 4-line indented program.
+- Next: live class view and catch-up plan.
 ### 2026-11-14: Krishna (lane E, per-student page in lane D's folder; Jad to review)
 - Done: `/instructor/:classId/students/:studentId` (seat id or profile id), linked from a new Students
   roster on the class page and from the stuck and not-started lists. One page per student: status (not
@@ -372,6 +383,18 @@ instead of repeating them.
   missing a test is counted as missing, never as zero (ADR 0020); groups under 5 are shown with a warning.
   Checked on a local Supabase as a real instructor; a class you do not teach says so plainly.
 - Next: Parsons problems.
+- Blocked: nothing.
+
+### 2026-11-15: Umang (lanes A and B, catch-up plan)
+- Done: a catch-up plan for students who miss class (chronic absence compounds, and attendance is uneven in
+  CIC's programs). New migration `20261115110000_lane_a_catch_up.sql`: `get_catch_up` (student) and
+  `get_class_catch_up` (class instructor or admin) return the steps still to do, in course order (pre-test,
+  activities, post-test), with minutes estimated from the median time classmates actually spent (once 3 have
+  finished; a default by kind before that), and how many steps behind the class median the student is. Only
+  aggregates leave the functions. On Start here the student sees "You are 7 steps behind the class. That
+  happens, and it is fixable: 8 steps left, about 19 minutes." (the seed's Cam R.) with the steps listed. DB tests
+  per role; contract updated. The instructor "Catch-up" column on the live view follows once #41 merges.
+- Next: Python in the browser (PRIMM).
 - Blocked: nothing.
 
 ### 2026-11-14: Daxx (UI theme from the mockup)
@@ -418,7 +441,7 @@ instead of repeating them.
   "Practice done", Go to Start here; no guest prompts or device-only badges). errors.ts maps "is locked"
   to `locked`, so the class activity page's "Not open yet" now works against the real database; the
   open-activity page says "This lesson is part of your class". Migration
-  `20261115110000_lane_b_open_lessons_for_students.sql`: CIC Open modules readable by anyone (already
+  `20261115120000_lane_b_open_lessons_for_students.sql`: CIC Open modules readable by anyone (already
   public to guests; keys unaffected). Tests: 6 player tests, 1 DB test (failed before the fix).
 
 ### 2026-11-15: Daxx (end-to-end journey against local Supabase)

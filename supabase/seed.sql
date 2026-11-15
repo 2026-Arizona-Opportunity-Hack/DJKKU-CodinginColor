@@ -46,7 +46,7 @@ insert into public.activities (id, lesson_id, position, kind, title, content, re
    '{"id":"q-loop-1","type":"short_answer","prompt":"Which built-in function gives a for-loop a sequence of numbers?","conceptId":"loops"},'
    '{"id":"q-loop-2","type":"fill_blank","prompt":"Complete the loop: ___ i in ___(5):","conceptId":"loops"},'
    -- items are listed in a scrambled order on purpose: the order shown is never the solved order
-   '{"id":"q-loop-3","type":"ordering","prompt":"Put these lines in order so the program prints 0, 1, 2.","conceptId":"loops","items":[{"id":"l3","text":"i = i + 1"},{"id":"l1","text":"i = 0"},{"id":"l2","text":"while i < 3: print(i)"}]},'
+   '{"id":"q-loop-3","type":"ordering","display":"code","prompt":"Put these lines of code in order so the program prints 0, 1, 2.","conceptId":"loops","items":[{"id":"l3","text":"    print(i)"},{"id":"l1","text":"i = 0"},{"id":"l4","text":"    i = i + 1"},{"id":"l2","text":"while i < 3:"}]},'
    '{"id":"q-loop-4","type":"mcq","prompt":"How many times does `for i in range(4):` run its body?","conceptId":"loops","choices":[{"id":"a","text":"3"},{"id":"b","text":"4"},{"id":"c","text":"5"}]}'
    ']}', true, 'loops'),
   ('50000000-0000-4000-8000-000000000006', '40000000-0000-4000-8000-000000000002', 2, 'check', 'Loops check',
@@ -58,7 +58,7 @@ insert into public.activity_keys (activity_id, question_id, key) values
   ('50000000-0000-4000-8000-000000000003', 'q-vars-1', '{"type":"mcq","correctChoiceId":"b","explanation":"x + 2 uses the old value, 3, so x becomes 5.","hints":["Work out the right side first, using the value x has right now.","x is 3 before the second line runs."]}'),
   ('50000000-0000-4000-8000-000000000005', 'q-loop-1', '{"type":"short_answer","accepted":["range","range()"],"caseSensitive":false,"explanation":"range() makes the numbers a for-loop walks through.","hints":["It starts with the letter r."]}'),
   ('50000000-0000-4000-8000-000000000005', 'q-loop-2', '{"type":"fill_blank","blanks":[["for"],["range"]],"caseSensitive":false,"hints":["The first word starts every counting loop."]}'),
-  ('50000000-0000-4000-8000-000000000005', 'q-loop-3', '{"type":"ordering","correctOrder":["l1","l2","l3"],"hints":["Something has to be set before the loop starts."]}'),
+  ('50000000-0000-4000-8000-000000000005', 'q-loop-3', '{"type":"ordering","correctOrder":["l1","l2","l3","l4"],"hints":["Something has to be set before the loop starts.","The two indented lines belong inside the loop."]}'),
   ('50000000-0000-4000-8000-000000000005', 'q-loop-4', '{"type":"mcq","correctChoiceId":"b","hints":["range(4) is 0, 1, 2, 3."]}'),
   ('50000000-0000-4000-8000-000000000006', 'q-loop-c1', '{"type":"fill_blank","blanks":[["while"]],"caseSensitive":false,"explanation":"while keeps going until the condition is false.","hints":["Think of the word that means \"as long as\".","It has five letters and starts with w."]}');
 
