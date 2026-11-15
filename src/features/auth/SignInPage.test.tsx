@@ -10,6 +10,7 @@ const { client } = vi.hoisted(() => ({
     auth: {
       getSession: vi.fn(),
       signInAnonymously: vi.fn(),
+      signInWithOAuth: vi.fn(),
     },
     rpc: vi.fn(),
   },
@@ -39,6 +40,10 @@ beforeEach(() => {
   client.auth.getSession.mockResolvedValue({ data: { session: null }, error: null })
   client.auth.signInAnonymously.mockResolvedValue({
     data: { session: { user: { id: 'student-id' } } },
+    error: null,
+  })
+  client.auth.signInWithOAuth.mockResolvedValue({
+    data: { provider: 'google', url: 'https://accounts.google.com/' },
     error: null,
   })
 })
@@ -98,6 +103,17 @@ describe('student sign-in', () => {
 
     expect(await screen.findByText('Class home')).toBeInTheDocument()
     expect(client.rpc).toHaveBeenCalledWith('guest_sign_in', { p_display_name: 'Guest' })
+  })
+
+  it('starts staff Google OAuth and returns to the sign-in callback', async () => {
+    renderSignIn()
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in with Google' }))
+
+    expect(client.auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: 'google',
+      options: { redirectTo: expect.stringMatching(/\/sign-in$/) },
+    })
+    expect(await screen.findByRole('status')).toHaveTextContent(/opening google sign-in/i)
   })
 
   it('shows backend errors without clearing the entered code', async () => {

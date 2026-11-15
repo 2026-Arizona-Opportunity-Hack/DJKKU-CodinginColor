@@ -55,8 +55,11 @@ invites staff, assigns mentors and makes API keys. The per-role proof is in `tes
    project that holds real students; load it only into a separate demo project.
 2. Authentication > Providers: turn **Google** on (client id and secret from Google Cloud
    Console), turn **Anonymous sign-ins** on, and leave **Email** off to keep student accounts
-   email-free. Under Rate Limits keep the anonymous sign-in limit low (30 per hour per IP is
-   the default).
+   email-free. Add Supabase's Google callback URL (shown in the provider settings, usually
+   `https://<project-ref>.supabase.co/auth/v1/callback`) to the Google OAuth client's
+   authorized redirect URIs. In Authentication > URL Configuration, allow the app callback
+   URLs `http://localhost:5173/sign-in` and `https://<your-app-domain>/sign-in`. Under Rate
+   Limits keep the anonymous sign-in limit low (30 per hour per IP is the default).
 3. Create the first admin by hand: sign in once with Google, then in the SQL editor run
    `update public.profiles set role = 'cic_admin' where id = '<your user id>';`.
    After that the admin console invites everyone else with `invite_staff`.

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { appRoleFromDatabase, roleLandingPath } from '@/lib/authRole'
 import { getSupabase } from '@/lib/supabase'
 
 const DisplayNameSchema = z
@@ -74,8 +75,31 @@ export function SignInPage() {
         const { data, error } = await client.auth.getSession()
         if (error) throw error
         if (!data.session) return
+        const { data: profile, error: profileError } = await client
+          .from('profiles')
+          .select('role')
+          .eq('id', data.session.user.id)
+          .maybeSingle()
+        if (profileError) throw profileError
+        const role = appRoleFromDatabase(profile?.role)
+        if (!role) throw new Error('Your account does not have an approved role.')
+        const landingPath = roleLandingPath(role)
+        if (active && landingPath) {
+          navigate(landingPath, { replace: true })
+          return
+        }
+        if (
+          active &&
+          data.session.user.app_metadata.provider === 'google' &&
+          (role === 'student' || role === 'independent_student')
+        ) {
+          setStatus({ message: 'This Google account is not approved for staff access. Students use a personal login code.', kind: 'error' })
+          return
+        }
         const context = await loadStudentContext(client)
-        if (active && context?.class_id) navigate(learningPath(context.class_id), { replace: true })
+        if (active && context?.class_id) {
+          navigate(learningPath(context.class_id), { replace: true })
+        }
       } catch (error) {
         if (active) setStatus({ message: getErrorMessage(error), kind: 'error' })
       }
@@ -179,6 +203,23 @@ export function SignInPage() {
       const guest = ClassResultSchema.safeParse(firstRecord(data))
       if (!guest.success) throw new Error('Guest access is not ready yet. Ask your teacher for help.')
       navigate(learningPath(guest.data.class_id))
+    } catch (error) {
+      setStatus({ message: getErrorMessage(error), kind: 'error' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function onGoogleSignIn() {
+    setStatus(null)
+    setBusy(true)
+    try {
+      const { error } = await getSupabase().auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/sign-in` },
+      })
+      if (error) throw error
+      setStatus({ message: 'Opening Google sign-in…', kind: 'success' })
     } catch (error) {
       setStatus({ message: getErrorMessage(error), kind: 'error' })
     } finally {
@@ -327,6 +368,12 @@ export function SignInPage() {
                 Ask your instructor to reset your personal code. For privacy, student accounts do not use email or password reset.
               </p>
             </details>
+            <div className="mt-3 border-t pt-4">
+              <p className="mb-3 text-center text-xs text-muted-foreground">For instructors and staff</p>
+              <Button type="button" variant="outline" className="w-full" disabled={busy} onClick={onGoogleSignIn}>
+                Sign in with Google
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </section>

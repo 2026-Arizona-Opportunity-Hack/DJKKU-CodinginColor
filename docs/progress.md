@@ -129,3 +129,9 @@ instead of repeating them.
 - Next: apply the new migration to the hosted Supabase project.
 - Blocked: nothing.
 
+### 2026-11-14: Krishna (lane E)
+- Done: added Google OAuth for invited staff, role-aware route and navigation guards, and
+  focused tests for staff access and Google sign-in.
+- Next: enable Google OAuth and add the app callback URL in Supabase Auth settings.
+- Blocked: local database verification requires Supabase/Postgres to be running.
+

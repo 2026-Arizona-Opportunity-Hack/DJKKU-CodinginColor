@@ -1,8 +1,16 @@
 import { NavLink, Outlet } from 'react-router'
+import { useAuth } from './useAuth'
 import { features } from './features'
 
 // The shared page frame: skip link, nav landmark, and the single <main>.
 export function Layout() {
+  const auth = useAuth()
+  const visibleFeatures = features.filter(
+    (feature) =>
+      !feature.roles ||
+      (auth.status === 'signedIn' && feature.roles.includes(auth.role)),
+  )
+
   return (
     <>
       <a
@@ -16,7 +24,7 @@ export function Layout() {
           <NavLink to="/" end className="font-bold">
             Coding in Color
           </NavLink>
-          {features.map((feature) => (
+          {visibleFeatures.map((feature) => (
             <NavLink
               key={feature.id}
               to={feature.path}

@@ -16,6 +16,6 @@ export interface FeatureModule {
   path: string
   /** Full-path routes, e.g. { path: '/learn/*', element: <PlayerPage /> }. */
   routes: RouteObject[]
-  /** Roles allowed in. Not enforced yet; enforcement is done by RLS regardless. */
+  /** Roles allowed in; the router checks these for navigation, and RLS remains authoritative. */
   roles?: Role[]
 }

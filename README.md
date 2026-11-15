@@ -76,7 +76,9 @@ the "Stack, commands and layout" section of [AGENTS.md](AGENTS.md).
 Student access is email-free: students use their personal login code, create an
 account with a display name, or continue as a guest. Supabase anonymous sign-ins
 must be enabled; see [Supabase setup](supabase/README.md). Lost codes are reset
-by an instructor, admin, or assigned mentor.
+by an instructor, admin, or assigned mentor. Staff sign in with Google and need
+an active staff invite; allow the local `/sign-in` callback and deployed site URL
+in Supabase Auth's redirect URL settings.
 
 ## Links
 
