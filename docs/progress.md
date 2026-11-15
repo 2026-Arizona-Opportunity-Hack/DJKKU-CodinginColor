@@ -724,4 +724,13 @@ instead of repeating them.
   Cloudflare, checks the reply and caches it per activity, grade and material. Tests: rubric, doc in sync, endpoint
   with a fake AI (200, cache, guest, 401, 403, 400, 413, 422, 502, 503).
 - Next: the student panel.
+### 2026-11-15: Krishna (lane E, in lane A's folder; Koen to review)
+- Done: login codes are reusable (decision by Krishna, 2026-11-15). The same code signs a student in on
+  another device; the seat and everything they have moves there, and one device holds the seat at a
+  time. A reset still replaces the code. While at it, moving a seat now also moves the student's notes,
+  their mentor assignment and the mentor's notes (before, a reset left those on the old device).
+  Trade-off: the code is now effectively the student's password; a seen slip can be used until the
+  instructor resets it. Note: seeded demo codes (such as the one in the README) are reusable too, so
+  remove the seed data or reset those codes before real students use the hosted project.
+- Next: `npx supabase db push --remote`, then redeploy.
 - Blocked: nothing.

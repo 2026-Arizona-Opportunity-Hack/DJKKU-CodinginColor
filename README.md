@@ -71,7 +71,7 @@ local setup below.
 
 | You are | Do this |
 |---|---|
-| **A student with a code** | Go to `/sign-in` and type `DEMO-0000-0000-0001`. You land on "Start: Variables and Loops pre-test". Each code works once. |
+| **A student with a code** | Go to `/sign-in` and type `DEMO-0000-0000-0001`. You land on "Start: Variables and Loops pre-test". The same code works on any device (the seat and progress move to the newest one) until an instructor resets it. |
 | **A student with a class link** | Open `/join/DEMO-JOIN-1234`, pick an unclaimed name. |
 | **A guest** | Open `/learn/explore` to try the free lessons with no account. |
 | **An instructor, CIC admin or reviewer** | Sign in with Google at `/sign-in`. A CIC admin has to invite your email first and add instructors to a class (steps in [docs/deploy.md](docs/deploy.md), Part 3). |
