@@ -773,3 +773,15 @@ instead of repeating them.
   answer stays hidden until they ask. Works for guests on open lessons. Demo mode shows a labelled sample built
   from the rubric. Tests: grade remembered, answer hidden then shown, glossary only for older grades, axe.
 - Blocked: nothing. Try it on the deployed site with the Cloudflare AI settings.
+
+### 2026-11-15: Umang (lanes D and E, hide the unfinished mentor role; Guide links only real tabs)
+
+- Found: PR #31 (Classes, Schools, API keys and Mentors admin tabs) was merged into #30's branch after #30 had
+  reached main, so it never shipped (#79 has since re-added API keys). Mentor is a real database role, but with no
+  screen to assign students, an invited mentor would see nothing, and the Guide linked to three admin tabs that do
+  not exist (they fell through to the Publish queue).
+- Done: Mentor is no longer offered in the admin role menus or shown in the Guide (the database support stays;
+  existing rows still load and show their label). The Guide links only to the real admin tabs, and its test now
+  reads the tab list from `AdminPage.tsx`. README and SECURITY.md say mentor screens are next.
+- Next version: mentor screens and assignment, Classes and Schools admin tabs (from #31).
+- Blocked: nothing.

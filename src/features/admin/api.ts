@@ -58,14 +58,18 @@ export const sendBack = (id: string) => rpc('return_module_to_draft', { p_module
 
 // ---------- staff ----------
 
-export const STAFF_ROLES = ['instructor', 'mentor', 'reviewer', 'cic_admin'] as const
-export type StaffRole = (typeof STAFF_ROLES)[number]
+// Every staff role the database knows, so existing rows always load and show a label.
+export const ALL_STAFF_ROLES = ['instructor', 'mentor', 'reviewer', 'cic_admin'] as const
+export type StaffRole = (typeof ALL_STAFF_ROLES)[number]
+// The roles an admin can give. 'mentor' exists in the database, but mentors have no screens yet (next
+// version: assigning students to a mentor), so it is not offered.
+export const STAFF_ROLES: readonly StaffRole[] = ['instructor', 'reviewer', 'cic_admin']
 export const ROLE_LABEL: Record<StaffRole, string> = { instructor: 'Instructor', mentor: 'Mentor', reviewer: 'Reviewer', cic_admin: 'CIC admin' }
 
 export const setRole = (profileId: string, role: StaffRole, canAuthor: boolean) =>
   rpc('set_profile_role', { p_profile_id: profileId, p_role: role, p_can_author: role === 'instructor' && canAuthor })
 
-const Invite = z.object({ email: z.string(), role: z.enum(STAFF_ROLES), can_author: z.boolean(), created_at: z.string(), accepted_at: z.string().nullable() })
+const Invite = z.object({ email: z.string(), role: z.enum(ALL_STAFF_ROLES), can_author: z.boolean(), created_at: z.string(), accepted_at: z.string().nullable() })
 export type Invite = z.infer<typeof Invite>
 export const listInvites = () => rows(getSupabase().from('staff_invites').select('email, role, can_author, created_at, accepted_at').order('created_at', { ascending: false }), Invite.array())
 
@@ -102,7 +106,7 @@ export const removeStaff = (profileId: string) => rpc('remove_staff', { p_profil
 /** Deletes an invite nobody used yet. */
 export const cancelInvite = (email: string) => rpc('cancel_staff_invite', { p_email: email })
 
-const Staff = z.object({ id: z.string().uuid(), display_name: z.string(), role: z.enum(STAFF_ROLES), can_author: z.boolean() })
+const Staff = z.object({ id: z.string().uuid(), display_name: z.string(), role: z.enum(ALL_STAFF_ROLES), can_author: z.boolean() })
 export type Staff = z.infer<typeof Staff>
 export const listStaff = () =>
   rows(getSupabase().from('profiles').select('id, display_name, role, can_author').not('role', 'in', '(student,independent_student)').order('display_name'), Staff.array())

@@ -32,7 +32,7 @@ export interface FeatureModule {
 }
 
 /** Who a guide entry is for. 'author' is an instructor or admin with can_author; 'visitor' is signed out. */
-export type GuideRole = 'visitor' | 'student' | 'instructor' | 'author' | 'cic_admin' | 'reviewer' | 'mentor'
+export type GuideRole = 'visitor' | 'student' | 'instructor' | 'author' | 'cic_admin' | 'reviewer'
 
 export interface GuideEntry {
   /** Unique across the app. */

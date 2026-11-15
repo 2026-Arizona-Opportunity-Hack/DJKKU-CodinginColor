@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { features } from './features'
 import { allEntries, canUse, defaultRole, forRole, ROLE_ORDER, rolesOf, search } from './guideData'
@@ -7,13 +8,18 @@ const entries = allEntries(features)
 const SHELL_PATHS = ['/', '/privacy', '/guide']
 const INSTRUCTOR_GO = ['join-code', 'roster', 'assign', 'starting-point', 'dashboard', 'live', 'reteach', 'report']
 const LEARN_GO = ['path', 'progress', 'notebook']
-const ADMIN_TABS = ['publish', 'overview', 'staff', 'classes', 'schools', 'keys', 'mentors']
+// The admin tabs that really exist, read from the page itself, so a guide link can never point at a missing tab.
+const ADMIN_TABS = [...readFileSync(new URL('../features/admin/AdminPage.tsx', import.meta.url), 'utf8').matchAll(/\{ path: '([a-z-]+)', label:/g)].map((m) => m[1]!)
 const me = (role: Me['role'], can_author = false) => ({ role, can_author, profile_id: 'p', display_name: 'X', class_id: null, class_name: null }) as Me
 
 describe('guide entries', () => {
   it('have unique ids', () => {
     const ids = entries.map((e) => e.id)
     expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('read the real admin tabs', () => {
+    expect(ADMIN_TABS).toEqual(expect.arrayContaining(['publish', 'overview', 'staff', 'keys']))
   })
 
   it('link only to real screens', () => {
@@ -62,6 +68,7 @@ describe('roles', () => {
     expect(rolesOf(me('instructor'))).toEqual(['instructor'])
     expect(rolesOf(me('instructor', true))).toEqual(['instructor', 'author'])
     expect(rolesOf(me('cic_admin'))).toEqual(['cic_admin', 'instructor', 'author', 'reviewer'])
+    expect(rolesOf(me('mentor'))).toEqual(['visitor']) // no mentor screens in this version
     expect(defaultRole(me('reviewer'))).toBe('reviewer')
     const draft = entries.find((e) => e.id === 'draft-tests')!
     expect(canUse(draft, rolesOf(me('instructor')))).toBe(false)

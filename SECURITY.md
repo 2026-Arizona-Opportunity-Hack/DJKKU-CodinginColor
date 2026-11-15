@@ -65,7 +65,7 @@ The menu hiding links for other roles is a courtesy; the rules below are the rea
 - **Students** see only their own rows and their own class's published modules. They cannot read
   other students, keys, or draft curriculum, and they cannot write progress directly.
 - **Instructors** see only the classes they teach. **Mentors** see only the students an admin assigned
-  them. **Reviewers** can read published curriculum and nothing else: no keys, no student data and
+  them (enforced in the database; mentor screens come in the next version, so no one is given the role yet). **Reviewers** can read published curriculum and nothing else: no keys, no student data and
   no write path (the reviewer screen makes no write call and never asks for keys).
 - **Only a CIC admin** publishes a module, invites staff, changes a role, assigns a mentor or creates
   an API key. Published module versions are frozen by database triggers. Staff roles are granted only

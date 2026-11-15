@@ -18,7 +18,7 @@ function StaffRow({ id, name, role, canAuthor, mine, onSave, onRemove, busy }: {
       <td className="p-3">
         <Label htmlFor={`${uid}-role`} className="sr-only">Role for {name || 'this person'}</Label>
         <select id={`${uid}-role`} disabled={mine || busy} value={role} onChange={(e) => onSave(id, e.target.value as StaffRole, canAuthor)} className="min-h-11 rounded-md border bg-background px-3 py-2">
-          {STAFF_ROLES.map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
+          {(STAFF_ROLES.includes(role) ? STAFF_ROLES : [...STAFF_ROLES, role]).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}
         </select>
         {mine && <p className="text-xs">You can't change your own role.</p>}
       </td>
