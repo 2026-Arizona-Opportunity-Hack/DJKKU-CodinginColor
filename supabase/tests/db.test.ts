@@ -951,6 +951,26 @@ describe.skipIf(!up)('catch-up plan', () => {
   })
 })
 
+describe.skipIf(!up)('misconception radar', () => {
+  type Row = { activity_title: string; question: { id: string; type: string }; answered: number; wrong: number; answers: { answer: Record<string, unknown>; students: number }[] }
+
+  it("groups students' first wrong answers per question for the class instructor, and nobody else", async () => {
+    const ins = await mkUser('instructor')
+    await asSuper()
+    await q(`insert into class_members (class_id, profile_id, member_role, display_name) values ($1, $2, 'instructor', 'T')`, [P1, ins])
+    await as(ins)
+    const rows = await one<Row[]>('select public.get_class_misconceptions($1) as r', [P1])
+    const vars = rows.find((r) => r.question.id === 'q-vars-1')!
+    expect(vars.wrong).toBeGreaterThanOrEqual(2)
+    expect(vars.answers[0]).toMatchObject({ answer: { choice_id: 'c' } }) // the "32" answer: joining, not adding
+    expect(vars.answers[0]!.students).toBeGreaterThan(vars.answers[1]?.students ?? 0)
+    expect(JSON.stringify(rows)).not.toMatch(/correctChoiceId|accepted|correctOrder/)
+    await as(SEED_STUDENT_1)
+    await fails('select public.get_class_misconceptions($1)', [P1], /Not allowed/)
+    await as(null)
+    await fails('select public.get_class_misconceptions($1)', [P1], /permission denied/)
+  })
+})
 describe.skipIf(!up)('my notebook', () => {
   type Note = { activity_id: string; activity_title: string; lesson_title: string; module_title: string; body: string }
 

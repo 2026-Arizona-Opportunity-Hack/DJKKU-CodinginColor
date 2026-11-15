@@ -537,6 +537,27 @@ instead of repeating them.
   the reviewer view show it read-only through a shared `src/components/learning/CodePreview.tsx`. The seed has
   an optional code activity in the Loops lesson ("Try it: count with a loop"), so the signed-in demo shows it too.
 - Next: misconception radar.
+
+### 2026-11-15: Umang (lanes A and D, misconception radar)
+
+- Done: "What to reteach" at `/instructor/:classId/reteach`, linked from the class page. For each question
+  where 2 or more students were wrong on their FIRST try (what they thought before feedback; a check only
+  completes when right, so the latest try would hide it), it shows how many and the most common wrong answers
+  in words, for example "4 students chose "32"" on `x = x + 2`. New migration
+  `20261115160000_lane_a_misconceptions.sql`: `get_class_misconceptions` (class instructor or admin; no answer
+  keys returned). The seed gains first tries for Demo Period 1 so the demo shows real patterns. DB test, unit
+  tests for the answer wording.
+- Next: note home drafter, belonging wording, certificate.
+- Blocked: nothing.
+
+### 2026-11-15: Umang (lane D folder, note home)
+
+- Done: "Note home" on the instructor's student page. "Draft a note home" writes a short, positive-first message
+  for the family from the report (what they finished, a real gain, a strength, what is next and one way to help
+  at home, a warm line if they have been away). The instructor edits it and copies it into their own school
+  tool: nothing is sent from the app. Works in demo mode too. Research: personal messages home raised completion
+  (Kraft and Rogers 2015).
+- Next: belonging wording, completion certificate.
 - Blocked: nothing.
 
 ### 2026-11-15: Umang (lanes B and C, belonging moments)

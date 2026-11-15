@@ -6,6 +6,7 @@ import { isDemoMode } from '@/lib/session'
 import { demoClass } from '../dashboardData'
 import { demoReportInput } from './demoReport'
 import { buildStudentReport } from './report'
+import { NoteHome } from './NoteHome'
 import { StudentActions } from './StudentActions'
 import { StudentReportView } from './StudentReportView'
 import { loadStudent } from './studentApi'
@@ -43,6 +44,7 @@ function LiveStudent({ classId, studentKey: key }: { classId: string; studentKey
         <StudentReportView
           report={d.report}
           actions={
+            <>
             <StudentActions
               report={d.report}
               classId={classId}
@@ -50,6 +52,8 @@ function LiveStudent({ classId, studentKey: key }: { classId: string; studentKey
               profileId={d.profileId}
               onChanged={() => void queryClient.invalidateQueries({ queryKey: studentKey(classId, key) })}
             />
+            <NoteHome report={d.report} />
+            </>
           }
         />
       )}
@@ -64,7 +68,7 @@ function DemoStudent({ studentId }: { studentId: string }) {
   return (
     <>
       <p role="status" className="text-sm">Demo mode: this is sample data, not a real student.</p>
-      <StudentReportView report={report} actions={<StudentActions report={report} classId="demo" memberId="demo" profileId={null} demo />} />
+      <StudentReportView report={report} actions={<><StudentActions report={report} classId="demo" memberId="demo" profileId={null} demo /><NoteHome report={report} /></>} />
     </>
   )
 }
