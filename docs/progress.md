@@ -713,6 +713,17 @@ instead of repeating them.
   an editable draft where the AI button works); a module waiting for review says to ask an admin to send it back.
   The new version still needs admin publishing, and instructors assign it to their classes.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane E, grade rubric and the simplify endpoint)
+
+- Done: the grade rubric for "Explain it for my grade" (`shared/simplify/rubric.ts`, shown in
+  `docs/grade-rubric.md`): grades 1 to 12 in the K-12 CS Framework bands, each with vocabulary, sentence length,
+  how ideas are built, examples, technical terms, code, length and a check question, plus example themes per
+  concept. `POST /api/simplify` takes only an activity id and a grade, loads the lesson with the caller's own token
+  (guests reach open lessons only), uses the video transcript when there is one, asks the AI provider configured in
+  Cloudflare, checks the reply and caches it per activity, grade and material. Tests: rubric, doc in sync, endpoint
+  with a fake AI (200, cache, guest, 401, 403, 400, 413, 422, 502, 503).
+- Next: the student panel.
 ### 2026-11-15: Krishna (lane E, in lane A's folder; Koen to review)
 - Done: login codes are reusable (decision by Krishna, 2026-11-15). The same code signs a student in on
   another device; the seat and everything they have moves there, and one device holds the seat at a
