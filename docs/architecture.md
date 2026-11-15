@@ -99,6 +99,19 @@ visible to CIC admin, and outbound notes are drafted by the system and sent by a
   for a day, never by person. Everything added lands in a draft that a CIC admin
   reviews before students see it.
 
+- **Other AI helpers** (`/api/simplify`, `/api/draft-tests`, `/api/attention`) use the same AI call
+  (`shared/ai/`): the OHack gateway (`gpt-oss-120b`) when `AI_GATEWAY_URL` and `AI_GATEWAY_KEY` are
+  set, else Gemini, else none. Grade-level rewrites send only lesson text and are cached per grade;
+  test drafts are for authors and admins only and land as a draft the author reviews; attention
+  insights send only anonymous numbers for one student, never a name or id. Every one degrades to
+  the non-AI version on any failure.
+- **Video transcripts** (`/api/transcript`): only for videos in a published lesson (so the free
+  Supadata quota cannot be spent on arbitrary videos); only the video id leaves the site; English
+  captions are requested and each video's answer is cached in `video_transcripts`, which no client
+  role can read.
+- **Student login codes** are reusable until an instructor resets them (decision 26): one device
+  holds the seat at a time, and moving devices moves everything the student has.
+
 ## Unlock and "stuck" defaults
 
 - Strict order: activities in a lesson, lessons in a module, modules in a class.
@@ -185,9 +198,13 @@ src/components/         shared UI (shadcn/ui in ui/), learning/ (student-view pi
 src/lib/                shared helpers: feature contract, Supabase client, session (who is signed in)
 shared/                 code used by both browser and functions: roles, class and login-code rules,
                         authoring/ (zod schemas, learning gain, CSV), api/ (read API handlers and types),
-                        hint/ (the hint handler), sources/ (Find material: catalog, YouTube, GitHub, handler)
-functions/api/          Pages Functions, one file per endpoint (health, hint, sources/search,
-                        sources/readme, v1/completion, v1/learning-gain)
+                        hint/ (the hint handler), sources/ (Find material: catalog, YouTube, GitHub, handler),
+                        ai/ (one AI call for every feature, gateway or Gemini), simplify/ (grade-level
+                        rewrites and the grade 1 to 12 rubric), attention/ (instructor insights),
+                        transcript/ (video captions)
+functions/api/          Pages Functions, one file per endpoint (health, hint, simplify, draft-tests,
+                        attention, sources/search, sources/readme, transcript, v1/completion,
+                        v1/learning-gain)
 functions/_lib/         helpers for the functions (env bindings, dependencies, the search cache)
 public/api/docs/        the static API reference page served at /api/docs
 supabase/               migrations, seed, config and the per-role tests (layout in its README)

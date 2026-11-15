@@ -82,27 +82,30 @@ local setup below.
 
 | Feature | What it does | Where it lives |
 |---|---|---|
-| Sign-in | Student login code, class join link, Google for staff, role-aware navigation | `src/features/auth/`, `src/lib/session.ts` |
+| Sign-in | Student login code (reusable on any device until an instructor resets it), class join link, Google for staff, role-aware navigation | `src/features/auth/`, `src/lib/session.ts` |
 | Student player | Start-here card, module path, video, reading, checks with hints, worksheets, exit tickets, pre and post tests, own progress and growth, guest mode, self-register | `src/features/player/` |
 | Unlock engine and grading | Strict order, pre-test first, post-test last, one-shot tests, answers graded in SQL | `supabase/migrations/` |
 | Authoring studio | Lessons and activities, all five question types with hints and explanations, concept tags, pre-test and post-test with pair keys, live preview, save, submit | `src/features/authoring/`, `shared/authoring/` |
 | Find material | Per lesson: a topic, sources (YouTube, freeCodeCamp, Harvard CS50, GitHub), the language of the material and the programming language. Add a video (embedded, never copied) or an openly licensed GitHub README (copied with its source and license) to the lesson in one click | `src/features/authoring/FindMaterial.tsx`, `shared/sources/`, `functions/api/sources/` |
 | Instructor setup | Create a class, class link with QR code, roster CSV import, printable login sheet, assign modules, class dashboard | `src/features/instructor/` |
-| Admin console | Publish queue, staff and roles (remove a person's access, cancel an unused invite), classes and instructors, schools, read API keys, mentor assignment, organization overview | `src/features/admin/` |
+| Admin console | Publish queue, staff and roles (remove a person's access, cancel an unused invite), classes with their instructors, schools, mentor assignment, organization overview, and read API keys (make one and see it once, see when each was last used, revoke) | `src/features/admin/` |
 | Reviewer view | Read-only walkthrough of published modules, no answer keys, no student data | `src/features/reviewer/` |
 | Learning gain and analytics | Post minus pre, normalized gain, stuck and not-started lists, concept mastery and "reteach tomorrow", all as SQL views. A page per student (from the class roster): status, progress against the class, every activity, each pre/post question pair, mastery against the class, repeated wrong choices, activity calendar, hints, struggles and suggested next steps, with reset login code, allow a retake, CSV and a drafted note | `shared/authoring/gain.ts`, `supabase/migrations/`, `src/features/instructor/student/` |
-| Read API for CIC | `GET /api/v1/completion` and `/api/v1/learning-gain`, key and scope checked, groups under 5 hidden, JSON or CSV | `functions/api/v1/`, `shared/api/`, docs at `/api/docs` |
+| Read API for CIC | `GET /api/v1/completion` and `/api/v1/learning-gain`, key and scope checked, groups under 5 hidden, JSON or CSV. Keys are made in `/admin/keys` | `functions/api/v1/`, `shared/api/`, docs at `/api/docs` |
 | Code activities | Python runs in the browser (no install, no account): predict, run, then change the starter code until the visible checks pass. Parsons problems: put lines of code in order | `src/features/player/code/`, `shared/authoring/` |
-| Classroom tools | Live class view for the projector, a catch-up plan for students who missed class, starting a late joiner at a later module, and a one-page learning-gain report for funders | `src/features/instructor/` |
-| Database | 26 tables, row-level security everywhere, 46 per-role tests on a real Postgres | `supabase/` |
+| Classroom tools | Live class view for the projector, a catch-up plan for students who missed class, starting a late joiner at a later module, the most common wrong answer per question, and a one-page learning-gain report for funders | `src/features/instructor/` |
+| Video transcripts and notes | A lesson video's real English captions (Supadata, cached so each video is fetched once), and a notes panel beside the lesson that moves with the student | `shared/transcript/`, `functions/api/transcript.ts`, `src/components/learning/` |
+| AI helpers | A hint after a wrong answer; "Explain it for my grade" (a reading rewritten for grades 1 to 12, cached); a drafted pre-test and post-test for an author to review; attention insights for instructors from anonymous analytics. Only the question and answer, or anonymous numbers, are sent. Every one falls back to non-AI content on any failure | `shared/hint/`, `shared/simplify/`, `shared/authoring/draftTests.ts`, `shared/attention/`, `shared/ai/` |
+| Database | 29 tables, row-level security everywhere, 71 database tests (per-role access and every flow) on a real Postgres | `supabase/` |
 
 **Not yet**
 
-- A live AI hint has not been tried with a real Gemini key yet (the function and the written fallback are built and tested).
+- A long-term AI key. The AI helpers run on the OHack AI gateway key (`gpt-oss-120b`), which stops working after the event (Sun Nov 15, 6 PM Arizona time); then set `GEMINI_API_KEY` or another gateway. Without one, hints are the written ones and the other AI helpers say AI is unavailable.
 - Mentor view (assigning mentors works; mentors have no screen yet).
 - A class-wide learning-gain table with CSV export (each student's page has its own CSV).
 - Student PIN and a `slides` activity kind.
 - `input()` in the in-browser Python (code activities set values in the code instead).
+- A language check on transcripts whose captions carry no language label (English is requested and labelled ones are checked).
 - Keepalive and nightly backup jobs.
 
 The honest, detailed status of every workflow is in [docs/design/system-design-v3.md](docs/design/system-design-v3.md)
@@ -112,8 +115,8 @@ The honest, detailed status of every workflow is in [docs/design/system-design-v
 
 The browser is a React single-page app on Cloudflare Pages. It talks to Supabase (Postgres and Auth)
 directly: it reads tables through row-level security and writes only through database functions that
-check who is calling. A few Cloudflare Pages Functions sit beside it for the read API (and, later, AI
-hints); they use the service-role key, which never reaches the browser. The longer version is in
+check who is calling. A few Cloudflare Pages Functions sit beside it for the read API, the AI helpers, Find material and video
+transcripts; the ones that need it use the service-role key, which never reaches the browser. The longer version is in
 [docs/architecture.md](docs/architecture.md) and the reasons for each choice are in [docs/decisions.md](docs/decisions.md).
 
 ```mermaid
@@ -127,11 +130,12 @@ flowchart LR
     R[/review/]
   end
   Browser -->|supabase-js: RPC + RLS reads, anon key| DB[(Supabase Postgres + Auth)]
-  Browser -->|POST /api/hint, /api/sources/*| F[Cloudflare Pages Functions]
+  Browser -->|/api/hint, /api/simplify, /api/draft-tests, /api/attention, /api/sources/*, /api/transcript| F[Cloudflare Pages Functions]
   CIC[CIC org dashboard] -->|Bearer API key: GET /api/v1/*| F
   F -->|service role: validate_api_key, api_* views| DB
-  F -->|question text + answer only| G[Gemini Flash-Lite free tier]
+  F -->|question text + answer, or anonymous numbers, only| G[AI: OHack gateway gpt-oss-120b, or Gemini]
   F -->|the author's search topic only| SRC[YouTube Data API, GitHub API]
+  F -->|a video id only| SUP[Supadata captions]
   GH[GitHub Actions] -->|CI, DB tests| DB
 ```
 
@@ -140,9 +144,9 @@ Security is described in [SECURITY.md](SECURITY.md).
 ## Tech stack
 
 - Frontend: React 19, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query, react-hook-form, zod
-- Backend: Cloudflare Pages Functions (read API, AI hints planned)
+- Backend: Cloudflare Pages Functions (read API, AI helpers, Find material, video transcripts)
 - Database: Supabase (Postgres, Auth, row-level security)
-- APIs / services: Cloudflare Pages (hosting), GitHub Actions (CI), Gemini free tier (hints, planned)
+- APIs / services: Cloudflare Pages (hosting), GitHub Actions (CI), OHack AI gateway or Gemini free tier (AI helpers), YouTube Data API and GitHub API (Find material), Supadata (transcripts)
 
 ## Run it locally
 
@@ -177,14 +181,19 @@ npm run build
 ```
 
 The `/api/*` Functions are not served by `npm run dev`. To try them, run `npm run build` then
-`npx wrangler pages dev dist` (set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` with `--binding`).
+`npx wrangler pages dev dist`, with the server values from `.env.example` (at least `SUPABASE_URL`,
+`SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`) in a `.dev.vars` file, which is gitignored.
 More on the database is in [supabase/README.md](supabase/README.md); contributing, lane ownership and how to
 add a feature or endpoint are in the "Stack, commands and layout" section of [AGENTS.md](AGENTS.md).
 
 ## Deploy and cost
 
-Step-by-step for Supabase and Cloudflare Pages: [docs/deploy.md](docs/deploy.md). It costs **$0 a month** and
-needs no credit card: Supabase free plan, Cloudflare Pages free, GitHub Actions free. The first paid
+Step-by-step for Supabase and Cloudflare Pages: [docs/deploy.md](docs/deploy.md). The live demo is
+deployed by direct upload with `wrangler` while the Cloudflare GitHub app waits for an org owner's
+approval ("If the GitHub connection is waiting for approval" in that guide). It costs **$0 a month** and
+needs no credit card: Supabase free plan, Cloudflare Pages free, GitHub Actions free. The optional
+services are free too, with limits: YouTube Data API about 100 searches a day, Supadata 100 transcripts
+a month (each video is fetched once), GitHub search 10 a minute without a token. The first paid
 step, if CIC outgrows the free tiers, is Supabase Pro at about $25 a month, which also removes the
 7-day idle pause on the free plan.
 

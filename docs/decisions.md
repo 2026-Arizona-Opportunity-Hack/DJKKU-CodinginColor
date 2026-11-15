@@ -67,6 +67,11 @@ also change how the system works. A dash means the ADR file is not written yet.
 | 22 | Authored questions split into student content and answer key; keys never in student payloads (lane C) | Accepted | [0022](adr/0022-keys-split-from-content.md) |
 | 23 | Module versions are rows; published versions immutable (lane C proposal, built by lane A) | Accepted | [0023](adr/0023-immutable-module-versions.md) |
 | 24 | Lane A database: clients read through RLS and write only through checked functions; secrets in side tables (lane A, reviewed by lane C) | Accepted | [0024](adr/0024-lane-a-database-design.md) |
+| 25 | AI provider: an OpenAI-compatible gateway when set (the OHack gateway with `gpt-oss-120b` for the event), else Gemini, else no AI; `muse-spark` rejected because its prompts may be used for training and ours contain students' answers (extends 11) | Accepted | – |
+| 26 | Student login codes are reusable until an instructor resets them; one device holds the seat and moving devices moves the student's data. Trade-off: the code acts as the student's password (refines 15) | Accepted | – |
+| 27 | Removing staff takes access away and keeps the account (no account deletion); a class may be left without an instructor, with a warning | Accepted | – |
+| 28 | Find material: videos are only embedded; text is copied only from GitHub repositories under an open license, re-checked on import, with source and license on the first line | Accepted | – |
+| 29 | Deploy by `wrangler pages deploy` (direct upload) until an org owner approves the Cloudflare GitHub app; then connect Git (amends 8 for the event only) | Accepted (temporary) | – |
 
 Changed in the Nov 14 revision: reviewer magic links → Google sign-in (17); the
 read API and hint proxy moved from Supabase Edge Functions to Cloudflare Pages

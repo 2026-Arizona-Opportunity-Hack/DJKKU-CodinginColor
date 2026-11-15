@@ -748,6 +748,21 @@ instead of repeating them.
 - Tests: every link points at a real route or valid section, ids unique, steps numbered without gaps, search,
   role mapping, tabs with arrow keys, axe (0 serious on desktop and phone), both redirects.
 - Next: part 2, a cleaner and more distinct UI per role, starting with the authoring studio's next-step clarity.
+### 2026-11-15: Krishna (lane E, documentation pass for judging)
+- Done: README matches what is built: AI helpers, transcripts and notes, misconception summaries and
+  reusable login codes listed; the missing API key screen stated honestly; counts updated (29 tables,
+  71 database tests); "planned" removed from AI; how the live site is deployed. Deploy guide: direct
+  upload with wrangler, and the API key SQL that works in the SQL editor (begin/commit) plus revoke.
+  Architecture: all 11 endpoints and their privacy rules. Decisions 25 to 29 recorded.
+- Blocked: nothing.
+### 2026-11-15: Krishna (lane E, in lane D's folder; Jad to review)
+- Done: `/admin/keys`, an API keys tab in the admin console (the Guide already linked to it). Make a
+  key (name, what it may read), shown once with Copy and a warning, then gone for good; a list with
+  what each key may read, when it was made and last used, and Revoke (asks first). Uses the existing
+  `create_api_key` and `revoke_api_key`; no database change. README and deploy guide now point to the
+  screen, with SQL kept as the fallback.
+- Note for Umang: the Guide also links `/admin/classes`, `/admin/schools` and `/admin/mentors`, which do
+  not exist and redirect to the publish queue (classes and schools are on Overview).
 - Blocked: nothing.
 
 ### 2026-11-15: Umang (lane B, Explain it for my grade panel)

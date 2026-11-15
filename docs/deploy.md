@@ -187,6 +187,32 @@ Secrets are read by Functions at request time, so a **redeploy** is needed after
 When the build is green, open the **Deployments** tab. The site address (like
 `https://cic-demo.pages.dev`) is `PAGES_URL`. Now go back to Part 1, step 6.
 
+### If the GitHub connection is waiting for approval: deploy by direct upload
+
+Connecting Pages to a repository owned by a GitHub organization needs an org owner to approve the
+Cloudflare app; the dashboard shows a **request** badge until then. You can deploy without it, from
+any machine with the repo checked out (this is how the hackathon demo is deployed). Each update is
+then a manual redeploy; once the request is approved, connect Git and pushes to `main` deploy on
+their own.
+
+```bash
+npx wrangler login                                   # opens the browser once
+npx wrangler pages project create cic-demo --production-branch main
+# Cloudflare may add a suffix if the name is taken (the demo is cic-demo-6br.pages.dev).
+
+# Server secrets: type each value at the prompt, or add them in the dashboard (Part 2, step 2).
+npx wrangler pages secret put SUPABASE_URL --project-name cic-demo
+npx wrangler pages secret put SUPABASE_ANON_KEY --project-name cic-demo
+npx wrangler pages secret put SUPABASE_SERVICE_ROLE_KEY --project-name cic-demo
+
+# Build with the browser values (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in a gitignored
+# .env.production, or exported in the shell), then upload. functions/ is uploaded with it.
+VITE_DATA_SOURCE=supabase VITE_FEATURE_HINTS=true npm run build
+npx wrangler pages deploy dist --project-name cic-demo --branch main
+```
+
+Secrets are read at request time, so after adding or changing one, deploy again.
+
 ### Deep links and the `/api` routes (nothing to configure)
 
 Links like `/learn/...`, `/join/DEMO-JOIN-1234` and `/sign-in` work when someone opens them
@@ -262,19 +288,33 @@ curl -i PAGES_URL/api/v1/completion
 # add them and redeploy.
 ```
 
-Make a read API key for the nonprofit's dashboard. Run in the SQL editor, with your `ADMIN_ID`:
+Make a read API key for the nonprofit's dashboard: sign in as a CIC admin, open `/admin/keys`, give it a
+name, choose what it may read and press **Make key**. Copy the key it shows (it starts with `oh_`); it is
+shown once and only a fingerprint is stored. The same page lists every key with when it was last used,
+and **Revoke** stops one at once.
+
+Without the app (for example before the first admin exists), the same thing in the SQL editor, with
+your `ADMIN_ID`:
 
 ```sql
-select set_config('request.jwt.claims', json_build_object('sub', 'ADMIN_ID', 'role', 'authenticated')::text, false);
+begin;
+select set_config('request.jwt.claims', json_build_object('sub', 'ADMIN_ID', 'role', 'authenticated')::text, true);
 select public.create_api_key('CIC dashboard demo', array['progress','assessments']);
+commit;
 ```
+
+`begin` and `commit` keep both lines in one transaction, which the SQL editor needs (otherwise
+`create_api_key` answers "Only a CIC admin can create API keys"). `progress` allows
+`/api/v1/completion` and `assessments` allows `/api/v1/learning-gain`. To revoke one in SQL, run the
+same block with `select public.revoke_api_key('API_KEY_ID');`.
 
 Copy `raw_key` (it starts with `oh_`) from the result **now**. It is shown once and only a hash is
 stored. Then:
 
 ```bash
 curl -i -H "Authorization: Bearer RAW_KEY" PAGES_URL/api/v1/completion
-# expect: HTTP 200 with two classes (Demo Period 1: 10 students, Demo Period 3: 7 students)
+# expect: HTTP 200 with a row per class (school, term, students, average completion).
+# Classes with fewer than 5 students are hidden on purpose.
 ```
 
 ### The student path
