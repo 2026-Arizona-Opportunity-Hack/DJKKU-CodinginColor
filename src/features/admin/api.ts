@@ -69,6 +69,16 @@ const Invite = z.object({ email: z.string(), role: z.enum(STAFF_ROLES), can_auth
 export type Invite = z.infer<typeof Invite>
 export const listInvites = () => rows(getSupabase().from('staff_invites').select('email, role, can_author, created_at, accepted_at').order('created_at', { ascending: false }), Invite.array())
 
+const Removal = z.object({ classes_left_without_instructor: z.array(z.object({ id: z.string(), name: z.string() })) })
+export type Removal = z.infer<typeof Removal>
+/** What removing this person would do, without doing it: the classes left with no instructor. */
+export const previewRemoval = async (profileId: string): Promise<Removal> =>
+  Removal.parse(await rpc('remove_staff', { p_profile_id: profileId, p_dry_run: true }))
+/** Takes away staff access (the account and everything they made stay). Inviting again restores it. */
+export const removeStaff = (profileId: string) => rpc('remove_staff', { p_profile_id: profileId, p_dry_run: false })
+/** Deletes an invite nobody used yet. */
+export const cancelInvite = (email: string) => rpc('cancel_staff_invite', { p_email: email })
+
 const Staff = z.object({ id: z.string().uuid(), display_name: z.string(), role: z.enum(STAFF_ROLES), can_author: z.boolean() })
 export type Staff = z.infer<typeof Staff>
 export const listStaff = () =>

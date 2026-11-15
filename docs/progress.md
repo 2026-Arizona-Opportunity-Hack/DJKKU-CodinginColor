@@ -579,6 +579,17 @@ instead of repeating them.
 - Next: completion certificate.
 - Blocked: real Coder spotlight stories from CIC.
 
+### 2026-11-15: Umang (lane B folder, notes side panel)
+
+- Done: "Notes" in the student bar opens a notes panel next to the lesson (a docked column on wide screens, a
+  bottom sheet on phones) that stays open while the student moves between activities and follows the activity
+  they are on. Notes save by themselves a moment after typing stops, when the box loses focus, and when the
+  student moves on. Recent notes and a link to the whole notebook sit below. Replaces the box under each
+  activity (an activity page now has "Take notes on this", which opens the panel).
+- Found: the hosted Supabase project does not have the migrations from 20261115110000 onward (get_my_notes,
+  get_class_misconceptions and others return PGRST202), so the deployed notebook says "That service isn't
+  available". Fix: `npx supabase db push` against the hosted project (docs/deploy.md).
+- Blocked: the hosted migrations need someone with the database password.
 ### 2026-11-15: Daxx (real video transcripts)
 - Done: "Read the transcript" now shows the video's real transcript (its YouTube captions) with
   timestamps, instead of only the author's short summary. `GET /api/transcript?videoId=` (Pages Function,
@@ -590,6 +601,21 @@ instead of repeating them.
   author's summary shows instead. Key: `SUPADATA_API_KEY` (README, deploy.md, SECURITY.md).
 - Tests: 17 handler tests, 9 component tests (incl. axe). Real REST queries checked on local Supabase.
 - Needs: a Supadata key in Cloudflare Pages, and the migration on the hosted project.
+### 2026-11-15: Krishna (lane E; staff invites and removal, in lanes A and D, Koen and Jad to review)
+- Done: invited staff became students on their first Google sign-in. Supabase creates a Google user
+  first and confirms the email in a later update, so the insert trigger never saw a confirmed email;
+  the invite only applied when an admin invited them a second time. `20261115170000` applies the
+  invite when the email becomes confirmed (same rules, never overrides a role set by hand) and repairs
+  accounts that already hit it. The old test inserted the user already confirmed, so it missed this.
+- Done: `remove_staff` and `cancel_staff_invite` (`20261115171000`) and the buttons on the admin Staff
+  tab. Remove takes access away but keeps the account: role back to a plain account, off the classes
+  they teach, mentor assignments ended, invite removed; modules, API keys and history stay, and a new
+  invite restores them. Never yourself (so an admin always remains), staff only, CIC admins only. The
+  confirm step lists the classes that would be left with no instructor. Cancel invite deletes only an
+  unused invite. Decisions from Krishna: remove access rather than delete the account; allow removing
+  a class's only instructor, with a warning; add Cancel invite.
+- Next: `npx supabase db push --remote` for both migrations, then redeploy.
+- Blocked: nothing.
 
 ### 2026-11-15: Daxx (transcripts: English only)
 - Found with a real Supadata key on a local Wrangler run: the seed lesson (an English CS Dojo video) came

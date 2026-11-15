@@ -32,7 +32,7 @@ export function NotebookPage() {
         {(list) =>
           list.length === 0 ? (
             <EmptyState title="No notes yet">
-              <p>Under every activity there is a box to explain it in your own words. What you write shows up here.</p>
+              <p>Press Notes at the top of any lesson to write in your own words while you study. What you write shows up here.</p>
             </EmptyState>
           ) : (
             groupNotes(list).map((m) => (
