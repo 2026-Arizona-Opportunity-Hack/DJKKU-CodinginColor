@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Coding in Color Learn: The Complete Guide</title>
+<style>
+  @page { size: Letter; margin: 0.8in 0.85in 0.85in; @bottom-center { content: "Coding in Color Learn · The Complete Guide · page " counter(page); font: 9pt "Segoe UI", Arial, sans-serif; color: #5b6b63; } }
+  @page :first { @bottom-center { content: none; } }
+  :root { --green: #0a6b3d; --ink: #17211c; --muted: #4c5a53; --line: #d9e3dd; --tint: #eef6f1; --yellow: #fff4cc; --yellow-edge: #f3d36b; }
+  * { box-sizing: border-box; }
+  body { font: 10.5pt/1.5 "Segoe UI", Arial, sans-serif; color: var(--ink); margin: 0; }
+  h1, h2, h3 { font-family: "Segoe UI Semibold", "Segoe UI", Arial, sans-serif; color: var(--ink); line-height: 1.2; }
+  h1 { font-size: 22pt; margin: 0 0 6pt; color: var(--green); }
+  h2 { font-size: 15pt; margin: 18pt 0 6pt; padding-bottom: 3pt; border-bottom: 1.5pt solid var(--line); }
+  h3 { font-size: 12pt; margin: 12pt 0 4pt; }
+  p { margin: 0 0 7pt; }
+  ul, ol { margin: 0 0 8pt; padding-left: 18pt; }
+  li { margin: 0 0 3pt; }
+  a { color: var(--green); }
+  code { font: 9.5pt Consolas, monospace; background: var(--tint); padding: 0 3pt; border-radius: 3pt; }
+  table { width: 100%; border-collapse: collapse; margin: 4pt 0 10pt; font-size: 9.5pt; page-break-inside: auto; }
+  th, td { text-align: left; vertical-align: top; padding: 4pt 6pt; border-bottom: 0.75pt solid var(--line); }
+  th { background: var(--tint); font-weight: 600; }
+  tr { page-break-inside: avoid; }
+  .part { page-break-before: always; }
+  .part-label { font-size: 9pt; letter-spacing: 1.5pt; text-transform: uppercase; color: var(--green); font-weight: 700; margin-bottom: 2pt; }
+  .lead { font-size: 11.5pt; color: var(--muted); }
+  .box { border: 1pt solid var(--line); background: var(--tint); border-radius: 6pt; padding: 8pt 10pt; margin: 8pt 0 10pt; page-break-inside: avoid; }
+  .note { border: 1pt solid var(--yellow-edge); background: var(--yellow); border-radius: 6pt; padding: 7pt 10pt; margin: 8pt 0 10pt; page-break-inside: avoid; }
+  .tag { display: inline-block; font-size: 8pt; font-weight: 700; padding: 1pt 6pt; border-radius: 8pt; border: 0.75pt solid; }
+  .built { color: #0a6b3d; border-color: #0a6b3d; } .partial { color: #8a5a00; border-color: #c08a1a; } .next { color: #4c5a53; border-color: #9aa8a1; }
+  .flow { display: flex; gap: 4pt; align-items: stretch; margin: 8pt 0 12pt; page-break-inside: avoid; }
+  .flow div { flex: 1; border: 1pt solid var(--green); border-radius: 6pt; padding: 6pt; font-size: 8.5pt; background: #fff; }
+  .flow b { display: block; color: var(--green); font-size: 9pt; margin-bottom: 2pt; }
+  .arrow { flex: 0 0 auto !important; border: none !important; align-self: center; color: var(--green); font-size: 13pt; padding: 0 !important; background: none !important; }
+  .cover { height: 9.2in; display: flex; flex-direction: column; justify-content: space-between; }
+  .cover h1 { font-size: 34pt; margin-top: 1.4in; }
+  .cover .sub { font-size: 15pt; color: var(--muted); margin-bottom: 18pt; }
+  .meta td { border: none; padding: 2pt 8pt 2pt 0; font-size: 10.5pt; }
+  .meta th { background: none; border: none; padding: 2pt 12pt 2pt 0; width: 1.6in; color: var(--muted); font-weight: 600; }
+  .toc ol { list-style: none; padding: 0; }
+  .toc li { margin: 2pt 0; }
+  .toc .p { font-weight: 700; margin-top: 7pt; color: var(--green); }
+  .steps li { margin-bottom: 4pt; }
+  .cols { display: flex; gap: 14pt; } .cols > div { flex: 1; }
+  .small { font-size: 9pt; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ============ COVER ============ -->
+<section class="cover">
+  <div>
+    <div class="part-label">Coding in Color · Curriculum &amp; Student Progress Platform</div>
+    <h1>Coding in Color Learn</h1>
+    <p class="sub">The complete guide: what it is, how to use it, where it stands, and what comes next.</p>
+    <table class="meta">
+      <tr><th>Live site</th><td><a href="https://cic-demo-6br.pages.dev">cic-demo-6br.pages.dev</a></td></tr>
+      <tr><th>Demo video</th><td><a href="https://youtu.be/WXLUgQNsT7A">youtu.be/WXLUgQNsT7A</a> (4 minutes)</td></tr>
+      <tr><th>Source code</th><td><a href="https://github.com/2026-Arizona-Opportunity-Hack/DJKKU-CodinginColor">github.com/2026-Arizona-Opportunity-Hack/DJKKU-CodinginColor</a> (MIT license)</td></tr>
+      <tr><th>Built for</th><td>Coding in Color (CIC), Phoenix, Arizona. Problem statement: Curriculum &amp; Student Progress Platform (CIC Problem 1)</td></tr>
+      <tr><th>Built by</th><td>Team DJKKU at the ASU Fall Hackathon 2026, Phoenix Hackathon for Nonprofits (Opportunity Hack), November 14 to 15, 2026: Daxx, Jad, Koen, Krishna and Umang</td></tr>
+      <tr><th>Version</th><td>1.0, November 15, 2026</td></tr>
+    </table>
+  </div>
+  <div class="box">
+    <b>How to read this guide.</b> Part 1 tells the story in a few pages: the problem, what we built and how a lesson
+    travels from an idea to a measured result. Part 2 is the hands-on manual, one chapter per kind of user, with
+    numbered steps. Part 3 says honestly what is finished and what is not. Part 4 is the plan for the next version.
+    Part 5 is a short technical section for whoever runs the system. If you only have five minutes, read pages 2 to 4.
+  </div>
+</section>
+
+<!-- ============ CONTENTS ============ -->
+<section class="part toc">
+  <h2>Contents</h2>
+  <ol>
+    <li class="p">Part 1. The story</li>
+    <li>1. In one page</li><li>2. The problem we were asked to solve</li><li>3. How a lesson becomes a result</li><li>4. Who uses it</li>
+    <li class="p">Part 2. Using it, step by step</li>
+    <li>5. Getting started</li><li>6. CIC admins: run the program</li><li>7. Authors: build a module</li>
+    <li>8. Instructors: run a class</li><li>9. Students: learn</li><li>10. Reviewers: check the curriculum</li><li>11. CIC's own dashboard: the read API</li>
+    <li class="p">Part 3. Where it stands</li>
+    <li>12. What is finished</li><li>13. How polished it is</li><li>14. Safety and privacy for minors</li><li>15. Known limits and their workarounds</li>
+    <li class="p">Part 4. What comes next</li>
+    <li>16. The next version</li>
+    <li class="p">Part 5. For the technical team</li>
+    <li>17. How it is built</li><li>18. Running, deploying and cost</li><li>19. Handover checklist</li>
+    <li class="p">Appendix</li>
+    <li>A. Glossary</li><li>B. Common questions</li><li>C. Where to find more</li>
+  </ol>
+</section>
+
+<!-- ============ PART 1 ============ -->
+<section class="part">
+  <div class="part-label">Part 1 · The story</div>
+  <h2>1. In one page</h2>
+  <p class="lead">Coding in Color Learn is a free, self-paced learning platform for Coding in Color's high school coding
+  classes. It lets CIC write a lesson once, teach it in any partner school, and prove with numbers how much students learned.</p>
+
+  <div class="cols">
+    <div>
+      <h3>What it does</h3>
+      <ul>
+        <li><b>Students</b> work through modules at their own pace: video, reading, practice questions, real Python in the browser, and a pre-test and post-test. Each step unlocks after the one before it.</li>
+        <li><b>Instructors</b> see who is stuck, who has not started and what to reteach, without a spreadsheet, and print a one-page impact report.</li>
+        <li><b>CIC staff</b> write and publish lessons in the browser, find videos and readings in seconds, and let AI draft the tests.</li>
+        <li><b>CIC's own dashboard</b> pulls completion and learning gain per school through a keyed API.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Where it stands</h3>
+      <ul>
+        <li><b>Live</b> at <a href="https://cic-demo-6br.pages.dev">cic-demo-6br.pages.dev</a>, on the free tiers of Supabase and Cloudflare: <b>$0 a month</b>, no credit card.</li>
+        <li><b>About 800 automated tests</b> run on every change, including 71 that check the database's access rules role by role on a real database.</li>
+        <li><b>Accessibility</b> is checked automatically: the build fails if Lighthouse scores a page below 95.</li>
+        <li><b>Students' privacy</b> is built in: a first name and last initial only, no email, no password.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box"><b>The measure that matters: learning gain.</b> Every module has a pre-test and a post-test with matched
+  questions. Learning gain is the post-test score minus the pre-test score, per student, per concept and per class. In the demo
+  data, one class went from 29% to 74% on the same questions: a gain of 46 points. This is the number CIC needs for grant reports,
+  and the platform calculates it on its own.</div>
+</section>
+
+<section>
+  <h2>2. The problem we were asked to solve</h2>
+  <p>Coding in Color teaches coding to high school students, many from groups under-represented in tech, through classes at
+  partner schools, camps and an AI Academy. Before this platform, lessons lived in slides and documents, progress lived in
+  spreadsheets, and showing funders what students learned meant counting by hand.</p>
+  <p>CIC asked for one place to do four things:</p>
+  <ol>
+    <li><b>Write curriculum once</b> and reuse it in every class, with versions, so a lesson can improve without disrupting a class in the middle of it.</li>
+    <li><b>Let students learn at their own pace</b>, on school Chromebooks or a phone at home, without accounts or emails for minors.</li>
+    <li><b>Show instructors who needs help</b> while there is still time to help them.</li>
+    <li><b>Measure learning</b>, not just attendance, and report it per school.</li>
+  </ol>
+  <p>All four are built and working. Section 12 lists every feature and its status.</p>
+</section>
+
+<section>
+  <h2>3. How a lesson becomes a result</h2>
+  <p>The whole system follows one path. Every chapter in Part 2 is one stop on it.</p>
+  <div class="flow">
+    <div><b>1. Write</b>An author builds a module: lessons, videos, readings, practice and Python. AI drafts the pre-test and post-test.</div>
+    <div class="arrow">→</div>
+    <div><b>2. Publish</b>A CIC admin reviews it and publishes it. Published versions are locked.</div>
+    <div class="arrow">→</div>
+    <div><b>3. Set up</b>An instructor creates a class, adds students and assigns the module.</div>
+    <div class="arrow">→</div>
+    <div><b>4. Learn</b>Students sign in with a code, take the pre-test, work through the lessons and take the post-test.</div>
+    <div class="arrow">→</div>
+    <div><b>5. Act</b>The instructor sees who is stuck and what to reteach, and helps.</div>
+    <div class="arrow">→</div>
+    <div><b>6. Report</b>Learning gain per student, class and school, printed or pulled by CIC's dashboard.</div>
+  </div>
+  <p>Two rules hold the path together. First, <b>one module, many classes</b>: CIC writes a module once and any class at any
+  partner school can use it, while each class keeps its own progress and results. Second, <b>versions never change under a
+  class</b>: when CIC improves a module, it publishes a new version, and classes already using the old one keep it until an
+  instructor switches them.</p>
+</section>
+
+<section>
+  <h2>4. Who uses it</h2>
+  <table>
+    <tr><th style="width:20%">Who</th><th style="width:28%">How they sign in</th><th>What they can do</th></tr>
+    <tr><td><b>Visitor</b></td><td>No account</td><td>Try the free lessons. Progress stays on the device and can be kept by registering.</td></tr>
+    <tr><td><b>Student</b></td><td>A personal login code from the instructor, or the class link and their name</td><td>Learn in their class, take notes, get hints, see their own growth and certificates.</td></tr>
+    <tr><td><b>Instructor</b></td><td>Google, after a CIC admin invites them</td><td>Run their own classes only: roster, codes, modules, dashboard, reports.</td></tr>
+    <tr><td><b>Author</b></td><td>An instructor with authoring turned on</td><td>Write modules and submit them for review.</td></tr>
+    <tr><td><b>CIC admin</b></td><td>Google, invited</td><td>Everything: publish, invite and remove staff, see every class and school, make API keys.</td></tr>
+    <tr><td><b>Reviewer</b></td><td>Google, invited</td><td>Read published curriculum only. No student data and no answer keys.</td></tr>
+  </table>
+  <p class="small">The database also contains a <b>mentor</b> role (a volunteer who sees only assigned students). It has no screens yet, so it is not offered in this version; see Part 4.</p>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<section class="part">
+  <div class="part-label">Part 2 · Using it, step by step</div>
+  <h2>5. Getting started</h2>
+  <p>Open <a href="https://cic-demo-6br.pages.dev">cic-demo-6br.pages.dev</a> in any modern browser: a school Chromebook,
+  a laptop or a phone. Nothing needs installing. The <b>Guide</b> link in the menu lists every feature for your role and
+  takes you straight to it; it is the fastest way to find anything in this chapter.</p>
+  <table>
+    <tr><th style="width:30%">You are</th><th>To get in</th></tr>
+    <tr><td>A student with a code</td><td>Go to <b>Sign in</b>, type the code from your instructor in the student box. No email, no password.</td></tr>
+    <tr><td>A student with a class link</td><td>Open the link or scan the QR code your instructor shows, then choose your name.</td></tr>
+    <tr><td>A visitor</td><td>Choose <b>Try a free lesson</b> on the home page. No account needed.</td></tr>
+    <tr><td>Staff (instructor, author, admin, reviewer)</td><td>Go to <b>Sign in</b>, choose <b>Sign in with Google</b> and use the Google account CIC invited.</td></tr>
+  </table>
+  <div class="note"><b>The first CIC admin</b> is set up once, by whoever deploys the system (Part 5, section 18). After that,
+  every other staff member is invited from the admin console.</div>
+</section>
+
+<section>
+  <h2>6. CIC admins: run the program</h2>
+  <p>As a CIC admin you see everything and can use every other role's screens too. The <b>Admin</b> menu has four tabs.</p>
+  <h3>Invite staff</h3>
+  <ol class="steps">
+    <li>Open <b>Admin → Overview</b> and find <b>Invite staff</b>.</li>
+    <li>Type their Google email, choose a role (Instructor, External reviewer or CIC admin) and, for an instructor who will write modules, tick <b>Allow curriculum authoring</b>.</li>
+    <li>Press <b>Invite staff</b>. They get the role the first time they sign in with Google using that email. If they had signed in before, it applies at once.</li>
+  </ol>
+  <h3>Staff a class and see every program</h3>
+  <p><b>Overview</b> shows the number of partner schools, classes and staff, and a table of every class with its school, term
+  and instructors. A class with nobody teaching it is marked <b>No instructor</b>. Use <b>Class staffing</b> to add an instructor to any class.</p>
+  <h3>Change a role or remove access</h3>
+  <ol class="steps">
+    <li>Open <b>Admin → Staff</b>. Each person has a role menu and, for instructors, an authoring switch.</li>
+    <li>To take someone's access away, press <b>Remove access</b>. The confirmation lists any class that would be left without an instructor.</li>
+    <li>Press <b>Yes, remove access</b>. They lose every staff screen at once. Their account, the modules they wrote and their history stay, and inviting them again gives access back.</li>
+  </ol>
+  <p>Under <b>Invitations</b>, <b>Cancel invite</b> withdraws an invite nobody has used, for example one sent to the wrong address.</p>
+  <h3>Publish curriculum</h3>
+  <ol class="steps">
+    <li>Open <b>Admin → Publish queue</b>. Modules an author submitted are under <b>Waiting for review</b>.</li>
+    <li>Read the module. Press <b>Publish</b> to make it available to every class, or <b>Send back</b> to return it to the author as a draft.</li>
+    <li>If something is missing (for example a lesson with no activities), the system says exactly what to fix and does not publish.</li>
+  </ol>
+  <h3>Give CIC's dashboard a key</h3>
+  <ol class="steps">
+    <li>Open <b>Admin → API keys</b>, name the key (for example "CIC dashboard") and choose what it may read: completion, learning gain or both.</li>
+    <li>Press <b>Make key</b> and copy it. <b>It is shown only once</b>; store it in the dashboard's secret settings.</li>
+    <li>The list shows when each key was last used. <b>Revoke</b> stops a key at once.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>7. Authors: build a module</h2>
+  <p>A module is a short course: a pre-test, lessons made of activities, and a post-test. Open <b>Author</b> to see your modules and their status (draft, waiting for review or published).</p>
+  <ol class="steps">
+    <li><b>Start.</b> Press <b>New module</b>, give it a title and a short summary.</li>
+    <li><b>Add lessons and activities.</b> In each lesson, choose an activity type and press <b>Add activity</b>:
+      <ul>
+        <li><b>Video</b> (a YouTube link, shown without tracking cookies) and <b>Reading</b> (formatted text).</li>
+        <li><b>Check</b>, <b>Worksheet</b> and <b>Exit ticket</b>: multiple choice, short answer, fill in the blank and ordering questions, each with an explanation and up to three written hints.</li>
+        <li><b>Python code</b> (students predict, run and change real code until the checks pass) and <b>Parsons problems</b> (put lines of code in order).</li>
+      </ul>
+      Tag activities with a <b>concept</b> (such as "loops") so instructors can see mastery per concept.</li>
+    <li><b>Find material fast.</b> In a lesson press <b>Find material</b>, type a topic, choose sources (YouTube, freeCodeCamp, Harvard CS50, GitHub) and languages, and press <b>Add as video</b> or <b>Add README as reading</b>. Videos are embedded, never copied; GitHub text is copied only when its license allows it, with the source and license written at the top.</li>
+    <li><b>Let AI draft the tests.</b> Under <b>Pre-test and post-test</b>, press <b>Draft both tests with AI</b>. It writes matched pairs of questions from the module's material. Check and edit every question: the drafts are a starting point, not the final word.</li>
+    <li><b>Preview.</b> Press <b>Preview as student</b> on any activity to see it exactly as a student will, with no answers showing.</li>
+    <li><b>Submit.</b> Press <b>Save draft</b>, then <b>Submit for review</b>. The module locks until a CIC admin publishes it or sends it back.</li>
+  </ol>
+  <p><b>To change a published module</b>, open it and press <b>New version</b>. This makes an editable copy; classes using the old version are not affected.</p>
+</section>
+
+<section>
+  <h2>8. Instructors: run a class</h2>
+  <h3>Set up a class (about ten minutes)</h3>
+  <ol class="steps">
+    <li><b>Create the class.</b> Open <b>Instructor → New class</b>, name it and choose its partner school.</li>
+    <li><b>Add students.</b> Paste their names (first name and last initial only) and print the sheet of personal login codes. Each code is shown once, so print or save it then.</li>
+    <li><b>Or share the class link.</b> Show the link or QR code; students open it and choose their name. Only names nobody has claimed are listed. Make a new link after class so the old one stops working.</li>
+    <li><b>Assign modules.</b> Choose the published modules the class takes, in order, and when each opens.</li>
+    <li><b>Late joiners.</b> Use <b>Starting point</b> to place a student who joins mid-course at the right module.</li>
+  </ol>
+  <h3>During the course</h3>
+  <ul>
+    <li><b>Class dashboard:</b> average progress, who is stuck (and why: wrong answers, time or days away), who has not started, mastery per concept, learning gain, and a <b>Students</b> list.</li>
+    <li><b>Live class view:</b> a projector-friendly grid of every student and activity that refreshes every 20 seconds.</li>
+    <li><b>What to reteach:</b> the questions most students got wrong first, and the wrong answers they chose.</li>
+    <li><b>One student in depth:</b> click a name for their status, every activity, each pre-test question beside its post-test twin, mastery against the class, the mistake they keep making, an activity calendar, and suggested next steps. From there you can reset their login code, allow a test retake, download a CSV, print, or copy a drafted note to their family (you send it yourself).</li>
+    <li><b>Impact report:</b> a one-page, printable learning-gain report for the class, ready for a funder.</li>
+  </ul>
+  <div class="note"><b>A student lost their code or took someone else's name?</b> Open the student's page and press <b>Reset login code</b>. The new code replaces the old one, and the student keeps all their progress.</div>
+</section>
+
+<section>
+  <h2>9. Students: learn</h2>
+  <ol class="steps">
+    <li><b>Sign in</b> with your code, or the class link and your name. The same code works on another device; your progress moves with you.</li>
+    <li><b>Start here</b> shows your next step, and a catch-up plan if you missed class.</li>
+    <li><b>Take the pre-test.</b> It is not graded; it shows where you start. Then the lessons open, one step at a time. <b>Your path</b> shows every lesson and why a locked one is locked.</li>
+    <li><b>Learn.</b> Watch videos (with a transcript), read, answer questions and write real Python. After a wrong answer, <b>Get a hint</b> points the way without giving the answer. <b>Explain it for my grade</b> rewrites a reading in words for your grade.</li>
+    <li><b>Take notes</b> in the panel beside the lesson. Only you see them; <b>My notebook</b> collects them for revision.</li>
+    <li><b>Take the post-test</b> at the end. <b>My progress</b> shows how much you grew, and you can print a certificate for each finished module.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>10. Reviewers: check the curriculum</h2>
+  <p>Reviewers (for example a partner school or an external expert) open <b>Review</b> to read every published module
+  exactly as students see it, with each pre-test question beside its post-test twin. Reviewers cannot see any student data or
+  any answer key, and cannot change anything.</p>
+
+  <h2>11. CIC's own dashboard: the read API</h2>
+  <p>CIC's existing reporting tools can pull numbers directly, with a key from <b>Admin → API keys</b>:</p>
+  <table>
+    <tr><th style="width:38%">Address</th><th>What it returns</th></tr>
+    <tr><td><code>/api/v1/completion</code></td><td>Per class, labelled by school and term: number of students and average completion.</td></tr>
+    <tr><td><code>/api/v1/learning-gain</code></td><td>Per class and module, overall and per concept: pre-test and post-test averages, gain and normalized gain.</td></tr>
+  </table>
+  <p>Both answer in JSON, or CSV for a spreadsheet (add <code>?format=csv</code>). Groups with fewer than 5 students are hidden to
+  protect minors, and no student is ever named. Full documentation with examples is at <code>/api/docs</code> on the live site.</p>
+</section>
+
+<!-- ============ PART 3 ============ -->
+<section class="part">
+  <div class="part-label">Part 3 · Where it stands</div>
+  <h2>12. What is finished</h2>
+  <p><span class="tag built">Built</span> works end to end on the live site and is covered by automated tests.
+  <span class="tag partial">Partial</span> works, with a limit noted. <span class="tag next">Next</span> planned for the next version.</p>
+  <table>
+    <tr><th style="width:26%">Area</th><th>What is included</th><th style="width:11%">Status</th></tr>
+    <tr><td>Sign-in</td><td>Student codes (reusable on any device until reset), class link and QR code, Google for staff, invites that apply on first sign-in</td><td><span class="tag built">Built</span></td></tr>
+    <tr><td>Student learning</td><td>Module path with unlock rules, video with transcript, reading, four question types with hints, Python code activities, Parsons problems, notes, notebook, progress, certificates, catch-up plan, free lessons for visitors</td><td><span class="tag built">Built</span></td></tr>
+    <tr><td>Authoring</td><td>Module editor, concepts, preview, Find material (YouTube, freeCodeCamp, CS50, GitHub), AI-drafted tests, submit for review, versions</td><td><span class="tag built">Built</span></td></tr>
+    <tr><td>Publishing</td><td>Publish queue with automatic checks, locked published versions, send back</td><td><span class="tag built">Built</span></td></tr>
+    <tr><td>Classes</td><td>Create, roster import, login sheets, class link, assign modules, late joiners, code reset, retakes</td><td><span class="tag built">Built</span></td></tr>
+    <tr><td>Insight</td><td>Class dashboard, stuck and not-started lists, concept mastery, what to reteach, live class view, per-student page, impact report</td><td><span class="tag built">Built</span></td></tr>
+    <tr><td>Administration</td><td>Invite, change role, remove access, cancel invites, class staffing, overview, API keys</td><td><span class="tag built">Built</span></td></tr>
+    <tr><td>Reporting API</td><td>Completion and learning gain, JSON or CSV, keyed, small groups hidden, documented</td><td><span class="tag built">Built</span></td></tr>
+    <tr><td>AI helpers</td><td>Hints, explain for my grade, test drafts, attention insights</td><td><span class="tag partial">Partial</span> the AI key ends with the event (section 15)</td></tr>
+    <tr><td>Mentors</td><td>Access rules exist in the database; no screens</td><td><span class="tag next">Next</span></td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>13. How polished it is</h2>
+  <ul>
+    <li><b>Tested on every change.</b> About 800 automated tests: screens (including keyboard and screen-reader checks), the server functions, and 71 database tests that try every role against the access rules on a real database. A change cannot be merged unless all of them pass, along with type checks, a secret scan and a browser smoke test.</li>
+    <li><b>Accessible.</b> Every screen is usable by keyboard, with labelled controls, visible focus and enough contrast. The build fails if Lighthouse scores a page below 95 for accessibility.</li>
+    <li><b>Every screen handles the awkward cases</b>: loading, empty ("No students on the roster yet"), errors with a <b>Try again</b> button, and plain messages from the database such as "That login code is not valid. Ask your instructor for a new one."</li>
+    <li><b>Works on school devices</b>: Chromebooks, phones and slow connections. Videos have transcripts for schools that block YouTube.</li>
+    <li><b>Deployed publicly</b> on free infrastructure, with a written, tested deployment guide.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>14. Safety and privacy for minors</h2>
+  <ul>
+    <li><b>Minimal data.</b> For a student the system stores a first name and last initial, the class and the school. No email, no password, no birthday, no photo.</li>
+    <li><b>Access enforced by the database.</b> Every request is checked by row-level security: an instructor sees only their own classes, a reviewer sees no student data, and nobody but the database ever sees an answer key.</li>
+    <li><b>AI sees as little as possible.</b> A hint request sends only the question and the student's answer. Attention insights send only anonymous numbers. If AI fails, the student gets a written hint instead.</li>
+    <li><b>People send messages, not the system.</b> The note to a student's family is drafted by the system and copied and sent by the instructor.</li>
+    <li><b>No secrets in the code.</b> Keys live in the hosting settings; an automatic scan blocks any change that contains one.</li>
+    <li><b>Reporting protects small groups.</b> The API hides any group of fewer than 5 students and never names a student.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>15. Known limits and their workarounds</h2>
+  <table>
+    <tr><th style="width:34%">Limit</th><th>What to do</th></tr>
+    <tr><td>The AI helpers run on the hackathon's AI key, which stops after the event (Sunday, November 15, 6 PM Arizona time).</td><td>Add a free Gemini key (or another AI service) in the hosting settings. Until then, hints are the instructor's written ones and the other AI helpers say AI is unavailable.</td></tr>
+    <tr><td>A student's code is effectively their password: someone who sees the printed slip could use it.</td><td>Reset that student's code from their page; the old code stops working and their progress stays.</td></tr>
+    <tr><td>The class link lets anyone with it choose an unclaimed name.</td><td>Show it only in class and make a new link afterwards. Fix a wrong claim with a code reset.</td></tr>
+    <tr><td>Python activities cannot ask for typed input.</td><td>Write the value into the code instead (for example <code>name = "Alex"</code>).</td></tr>
+    <tr><td>Free plan limits: about 100 YouTube searches a day, 100 new video transcripts a month.</td><td>Searches and transcripts are cached, so each is fetched once. Upgrade only if CIC outgrows them.</td></tr>
+    <tr><td>The live demo holds sample classes and published demo codes.</td><td>Remove the demo data before real students use the system (section 19).</td></tr>
+  </table>
+</section>
+
+<!-- ============ PART 4 ============ -->
+<section class="part">
+  <div class="part-label">Part 4 · What comes next</div>
+  <h2>16. The next version</h2>
+  <p>In order of value to CIC, based on what CIC asked for and what we learned building it:</p>
+  <table>
+    <tr><th style="width:4%">#</th><th style="width:30%">Deliverable</th><th>Why it matters</th></tr>
+    <tr><td>1</td><td>Handover to CIC's accounts and a long-term AI key</td><td>The hosting, database and Google sign-in run under team accounts today, and the hackathon AI key ends after the event (section 19).</td></tr>
+    <tr><td>2</td><td>Spanish interface</td><td>Students and families read the site in the language they are most comfortable in.</td></tr>
+    <tr><td>3</td><td>Works offline on spotty Wi-Fi</td><td>School networks drop; students keep learning and their work syncs when the connection returns.</td></tr>
+    <tr><td>4</td><td>Short review warm-ups</td><td>Bring back older lessons so skills stick between modules.</td></tr>
+    <tr><td>5</td><td>Mentor screens</td><td>The database already limits a mentor to assigned students; screens let CIC volunteers follow their mentees.</td></tr>
+    <tr><td>6</td><td>Simpler, colour-coded screens for each role</td><td>Less to scan for staff who use the system once a week.</td></tr>
+    <tr><td>7</td><td>Automatic data deletion on CIC's schedule</td><td>Keep minors' data only as long as CIC needs it, with a runbook for deletion requests.</td></tr>
+    <tr><td>8</td><td>Limits on repeated code guessing and API calls</td><td>Slows down anyone trying codes or overusing the API.</td></tr>
+    <tr><td>9</td><td>Google Classroom sync, class-wide CSV, typed Python input, a student PIN, a slides activity</td><td>Fits CIC into schools' existing tools and closes the smaller gaps in section 15.</td></tr>
+    <tr><td>10</td><td>Real Coder spotlight stories, keepalive and nightly backups</td><td>Role models students can see themselves in, and a database that never pauses or loses data.</td></tr>
+    </table>
+</section>
+
+<!-- ============ PART 5 ============ -->
+<section class="part">
+  <div class="part-label">Part 5 · For the technical team</div>
+  <h2>17. How it is built</h2>
+  <p>This section is short on purpose. The repository's <code>docs/architecture.md</code> and <code>docs/decisions.md</code> have the full detail and the reason behind each choice.</p>
+  <table>
+    <tr><th style="width:24%">Part</th><th>What we used, and why</th></tr>
+    <tr><td>Website</td><td>React and TypeScript, built with Vite, styled with Tailwind. A single-page app: fast on Chromebooks and phones.</td></tr>
+    <tr><td>Database and sign-in</td><td>Supabase (Postgres and Auth). The rules (who sees what, grading, unlocking) live in the database itself, so the browser can never skip them.</td></tr>
+    <tr><td>Hosting and server functions</td><td>Cloudflare Pages, plus small server functions for the reporting API, AI, Find material and transcripts.</td></tr>
+    <tr><td>Python in the browser</td><td>Pyodide: real Python running on the student's device, nothing to install.</td></tr>
+    <tr><td>Outside services</td><td>An AI service (the hackathon gateway or Google Gemini), YouTube and GitHub (Find material), Supadata (video transcripts). All optional; the system works without them.</td></tr>
+    <tr><td>Quality</td><td>GitHub Actions run every test, type check, secret scan, browser test and accessibility check on each change.</td></tr>
+  </table>
+  <div class="flow">
+    <div><b>Browser</b>The website students and staff use</div><div class="arrow">↔</div>
+    <div><b>Supabase</b>Database and sign-in, with access rules on every row</div><div class="arrow">↔</div>
+    <div><b>Server functions</b>Reporting API, AI, Find material, transcripts</div><div class="arrow">↔</div>
+    <div><b>Outside services</b>AI, YouTube, GitHub, Supadata</div>
+  </div>
+</section>
+
+<section>
+  <h2>18. Running, deploying and cost</h2>
+  <ul>
+    <li><b>Cost:</b> $0 a month with no credit card: Supabase free plan, Cloudflare Pages free, GitHub Actions free. The first paid step, if CIC outgrows the free plans, is Supabase Pro at about $25 a month.</li>
+    <li><b>Deploy:</b> <code>docs/deploy.md</code> in the repository walks through creating the Supabase project, the Cloudflare Pages site, Google sign-in, the first admin and a check that everything works, step by step. It also covers deploying by direct upload when the GitHub connection is waiting for approval, which is how the demo is deployed.</li>
+    <li><b>Settings:</b> the browser needs only the public Supabase address and key. Server secrets (the Supabase service key, and optional AI, YouTube, GitHub and Supadata keys) live in Cloudflare's settings, never in the code. <code>.env.example</code> lists every one.</li>
+    <li><b>Run it on a laptop:</b> install Node 22.12 or newer and Docker, then follow "Run it locally" in the README. With no database configured, the site runs in a demo mode with sample data.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>19. Handover checklist</h2>
+  <table>
+    <tr><th style="width:5%">✓</th><th style="width:34%">Item</th><th>Detail</th></tr>
+    <tr><td>☐</td><td>Move the Cloudflare Pages project</td><td>To a CIC-owned Cloudflare account, and connect the GitHub repository so each change deploys on its own.</td></tr>
+    <tr><td>☐</td><td>Move the Supabase project</td><td>Transfer it to a CIC organization; keep the database password in CIC's password manager.</td></tr>
+    <tr><td>☐</td><td>Move the Google Cloud project</td><td>It holds Google sign-in and the YouTube key. Publish the sign-in screen so it is not limited to test users.</td></tr>
+    <tr><td>☐</td><td>Set a long-term AI key</td><td>The hackathon AI key ends after the event.</td></tr>
+    <tr><td>☐</td><td>Switch to Supabase's new API keys</td><td>Before the legacy keys are retired in early 2027; test the reporting API and hints with them.</td></tr>
+    <tr><td>☐</td><td>Remove the demo data</td><td>Delete the sample classes and students, which have published demo codes, before real students join.</td></tr>
+    <tr><td>☐</td><td>Name the first CIC admin and review staff</td><td>Remove team members' access once CIC's own staff are set up.</td></tr>
+    <tr><td>☐</td><td>Keep the free database awake</td><td>Open the site at least weekly, or add the keepalive job (Part 4, item 7).</td></tr>
+  </table>
+</section>
+
+<!-- ============ APPENDIX ============ -->
+<section class="part">
+  <div class="part-label">Appendix</div>
+  <h2>A. Glossary</h2>
+  <table>
+    <tr><th style="width:24%">Term</th><th>Meaning</th></tr>
+    <tr><td>Module</td><td>A short course: a pre-test, lessons and a post-test, about one topic.</td></tr>
+    <tr><td>Lesson, activity</td><td>A lesson is a group of activities; an activity is one step (a video, a reading, a set of questions, a Python task).</td></tr>
+    <tr><td>Concept</td><td>A skill an activity or question practises, such as "loops". Mastery and reteach suggestions are per concept.</td></tr>
+    <tr><td>Pre-test, post-test, pair</td><td>The same skills tested at the start and end; each pre-test question has a matching post-test question (its pair).</td></tr>
+    <tr><td>Learning gain</td><td>Post-test score minus pre-test score, in points.</td></tr>
+    <tr><td>Normalized gain</td><td>How much of the possible improvement a student made: a student who goes from 50% to 75% has a normalized gain of 0.5.</td></tr>
+    <tr><td>Seat, login code</td><td>A seat is a student's place on a class roster. A login code signs a student into their seat.</td></tr>
+    <tr><td>Class link</td><td>A link or QR code that lets students choose their own unclaimed seat.</td></tr>
+    <tr><td>Version</td><td>A published module is a locked version; changes make a new version.</td></tr>
+    <tr><td>Row-level security</td><td>Database rules that decide, for every row, who may read or change it.</td></tr>
+  </table>
+
+  <h2>B. Common questions</h2>
+  <p><b>A staff member signed in but sees "not invited".</b> The invite must use the exact Google email they sign in with. Invite that address from <b>Admin → Overview</b>.</p>
+  <p><b>Google says "access blocked".</b> The sign-in screen in Google Cloud is still in testing mode. Add the person as a test user, or publish the sign-in screen.</p>
+  <p><b>A student is "stuck".</b> They answered the same activity wrong several times, spent much longer than classmates, or have not been active for a few school days. Open their page for the details and a suggested next step.</p>
+  <p><b>Can a student use a phone at home?</b> Yes. The same code works on any device and their progress moves with them; the last device used holds the seat.</p>
+  <p><b>Can we change a module while a class is using it?</b> Make a new version. The class keeps its version until you assign the new one, so nothing changes mid-course.</p>
+
+  <h2>C. Where to find more</h2>
+  <ul>
+    <li><b>README</b> (repository home page): what it is, how to run it, every setting.</li>
+    <li><b>docs/deploy.md</b>: deploying from scratch, step by step. <b>docs/architecture.md</b> and <b>docs/decisions.md</b>: how it is built and why.</li>
+    <li><b>SECURITY.md</b>: the security model. <b>/api/docs</b> on the live site: the reporting API.</li>
+    <li><b>Demo video</b>: <a href="https://youtu.be/WXLUgQNsT7A">youtu.be/WXLUgQNsT7A</a>.</li>
+    <li><b>The Guide</b> in the app: every feature by role, linked to the screen.</li>
+  </ul>
+</section>
+
+</body>
+</html>
