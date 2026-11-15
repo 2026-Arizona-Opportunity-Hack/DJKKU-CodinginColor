@@ -4,9 +4,10 @@ import { ExternalLink } from 'lucide-react'
 import { parseYouTubeId, youtubeEmbedUrl } from '@shared/authoring/schemas'
 
 import { safeUrl } from './safeUrl'
+import { VideoTranscript } from './VideoTranscript'
 
 /**
- * Privacy-enhanced YouTube embed (B8) with a transcript and a plain link as fallbacks.
+ * Privacy-enhanced YouTube embed (B8) with the real transcript (see VideoTranscript) and a plain link as fallbacks.
  * The embed URL is re-parsed with lane C's parser, so only https YouTube ids reach the iframe.
  */
 export function VideoEmbed({ embedUrl, title, transcript }: { embedUrl: string; title: string; transcript?: string | null }) {
@@ -34,12 +35,8 @@ export function VideoEmbed({ embedUrl, title, transcript }: { embedUrl: string; 
         Video not playing? Open it on YouTube <ExternalLink aria-hidden="true" className="size-4" />
         <span className="sr-only">(opens in a new tab)</span>
       </a>
-      {transcript && (
-        <details className="rounded-md border p-3">
-          <summary className="min-h-11 cursor-pointer content-center font-medium">Read the transcript</summary>
-          <p className="mt-2 whitespace-pre-line">{transcript}</p>
-        </details>
-      )}
+      {/* The real transcript from the video's captions; the author's text is the fallback. */}
+      <VideoTranscript videoId={videoId} fallback={transcript} />
     </div>
   )
 }

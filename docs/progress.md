@@ -590,3 +590,14 @@ instead of repeating them.
   get_class_misconceptions and others return PGRST202), so the deployed notebook says "That service isn't
   available". Fix: `npx supabase db push` against the hosted project (docs/deploy.md).
 - Blocked: the hosted migrations need someone with the database password.
+### 2026-11-15: Daxx (real video transcripts)
+- Done: "Read the transcript" now shows the video's real transcript (its YouTube captions) with
+  timestamps, instead of only the author's short summary. `GET /api/transcript?videoId=` (Pages Function,
+  logic in `shared/transcript/handler.ts`) asks Supadata (`mode=native`, captions only, no paid AI jobs)
+  and caches every answer in `video_transcripts` (migration `20261115161700_lane_b_video_transcripts.sql`,
+  service role only), so each video costs one of the free plan's 100 monthly requests, ever. Only videos
+  in a published lesson are fetched, so the quota cannot be spent on random ids. The player loads it
+  only when the student opens the section; if it is unavailable (no captions, no key, quota) the
+  author's summary shows instead. Key: `SUPADATA_API_KEY` (README, deploy.md, SECURITY.md).
+- Tests: 17 handler tests, 9 component tests (incl. axe). Real REST queries checked on local Supabase.
+- Needs: a Supadata key in Cloudflare Pages, and the migration on the hosted project.
