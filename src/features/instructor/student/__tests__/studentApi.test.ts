@@ -98,6 +98,14 @@ describe('loadStudent', () => {
     expect(input.submissions[0]).toMatchObject({ activityId: 'a1', isCorrect: false, results: {}, attemptNo: 1 })
   })
 
+  it('loads a class that has a Python code activity (the page used to refuse it as "unexpected")', async () => {
+    const code = { id: 'a2', position: 1, kind: 'code', title: 'Make a loop', required: true, concept_id: 'loops', content: { starter: 'x = 1' } }
+    const [cm] = BASE.class_modules
+    fake({ ...BASE, class_modules: [{ ...cm, modules: { ...cm!.modules, lessons: [{ ...cm!.modules.lessons[0]!, activities: [...cm!.modules.lessons[0]!.activities, code] }] } }] })
+    const { input } = await loadStudent(CLASS, SEAT)
+    expect(input.modules[0]!.lessons[0]!.activities.map((x) => x.kind)).toEqual(['check', 'code'])
+  })
+
   it('does not read any per-student table for a seat nobody has claimed', async () => {
     const { calls } = fake({ ...BASE, class_members: [{ ...MEMBER, profile_id: null, claimed_at: null }] })
     const { input } = await loadStudent(CLASS, SEAT)

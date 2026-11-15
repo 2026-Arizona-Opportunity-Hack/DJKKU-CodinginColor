@@ -16,7 +16,7 @@ const STATUS_TONE: Record<StatusKind, string> = {
 }
 const SEVERITY: Record<StudentReport['nextSteps'][number]['severity'], string> = { high: 'Urgent', medium: 'Worth doing', info: 'Good to know' }
 const STATE: Record<ActivityRow['state'], string> = { completed: 'Done', in_progress: 'In progress', not_started: 'Not started' }
-const KIND: Record<ActivityRow['kind'], string> = { video: 'Video', reading: 'Reading', check: 'Check', worksheet: 'Worksheet', exit: 'Exit question' }
+const KIND: Record<ActivityRow['kind'], string> = { video: 'Video', reading: 'Reading', check: 'Check', worksheet: 'Worksheet', exit: 'Exit question', code: 'Code (Python)' }
 const OUTCOME: Record<PairOutcome, string> = { learned: 'Learned', kept: 'Already knew', missing: 'Still missing', slipped: 'Slipped', incomplete: 'Incomplete' }
 
 const th = 'border-b px-3 py-2 text-left font-semibold'
