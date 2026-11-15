@@ -35,7 +35,7 @@ Roles: **guest** (not signed in), **student** (incl. a signed-in anonymous sessi
 | `list_open_modules()` | guest, student | `[{module_id,title,summary,lessons:[{lesson_id,title,activities:[{activity_id,title,kind}]}]}]` |
 | `import_guest_progress(p_payload)` | independent | `{imported}`. Only video/reading "viewed" credit is accepted. |
 
-**Response shapes** for `submit_answer`: video and reading send `{"viewed": true}`. Check,
+**Response shapes** for `submit_answer`: video and reading send `{"viewed": true}`. A code activity sends `{"code": "...", "passed": n, "total": n, "prediction"?: "..."}` (code up to 10 KB; `total` must equal the number of checks) and completes when every check passes. The code runs in the student's browser, so code activities are practice; learning is measured by the pre-test and post-test. Check,
 worksheet and exit send `{"answers": {"<question_id>": R}}` with every question present, where
 R is `{choice_id}` (mcq), `{text}` (short answer, reflection), `{blanks:[...]}` or `{order:[ids]}`.
 `submit_assessment` sends `{"<question_id>": R}` for every item.

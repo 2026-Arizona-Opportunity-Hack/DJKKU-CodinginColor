@@ -170,7 +170,7 @@ describe('B10 own progress', () => {
       assessments: { 'pre-basics': { score_pct: 33 }, 'post-basics': { score_pct: 100 } },
     })
     const { container } = renderRoute(<ProgressPage />, { path: '/learn/:classId/progress', url: `/learn/${CLASS_ID}/progress`, api })
-    expect(await screen.findByText(/completed/)).toHaveTextContent("You've completed 3 of 9 activities.")
+    expect(await screen.findByText(/completed/)).toHaveTextContent("You've completed 3 of 10 activities.")
     expect(screen.getByText('+67 points')).toBeInTheDocument()
     expect(screen.getAllByText('Not taken')).toHaveLength(2) // module 2 pre and post
     await expectNoSeriousA11yViolations(container)
