@@ -7,7 +7,7 @@ numbers how much students learned.
 | | |
 |---|---|
 | **Live site** | **<https://cic-demo-6br.pages.dev>** |
-| **Demo video** | **[YouTube: TODO, add the link after upload](https://www.youtube.com/)** |
+| **Demo video** | **[Watch the demo on YouTube](https://youtu.be/WXLUgQNsT7A)** (4 minutes) |
 | **Complete guide (PDF)** | **[docs/handbook/CIC-Learn-Complete-Guide.pdf](docs/handbook/CIC-Learn-Complete-Guide.pdf)**: the story, a step-by-step manual for every role, status, roadmap and handover |
 | **Nonprofit** | [Coding in Color](https://www.ohack.dev/nonprofit/YIXYdYCoxIZC08uQ5DL3) |
 | **Problem statement** | [Curriculum & Student Progress Platform (CIC Problem 1)](https://www.ohack.dev/project/d09466fadf1b11f18e63deadc507a848) |
