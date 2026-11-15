@@ -49,7 +49,7 @@ before it, and instructors see who is stuck, who has not started and how much ea
 (post-test minus pre-test), without a spreadsheet. CIC staff write the lessons, tests and hints in the
 browser, and CIC's own dashboard can pull class numbers through a keyed read API.
 
-**Live demo:** TODO: paste the Cloudflare Pages address here once deployed (for example `https://cic-demo.pages.dev`).
+**Live demo:** <https://cic-demo-6br.pages.dev> (Cloudflare Pages, on the hosted Supabase project).
 Setup steps for whoever deploys it are in [docs/deploy.md](docs/deploy.md).
 
 ## Team
@@ -92,6 +92,8 @@ local setup below.
 | Reviewer view | Read-only walkthrough of published modules, no answer keys, no student data | `src/features/reviewer/` |
 | Learning gain and analytics | Post minus pre, normalized gain, stuck and not-started lists, concept mastery and "reteach tomorrow", all as SQL views. A page per student (from the class roster): status, progress against the class, every activity, each pre/post question pair, mastery against the class, repeated wrong choices, activity calendar, hints, struggles and suggested next steps, with reset login code, allow a retake, CSV and a drafted note | `shared/authoring/gain.ts`, `supabase/migrations/`, `src/features/instructor/student/` |
 | Read API for CIC | `GET /api/v1/completion` and `/api/v1/learning-gain`, key and scope checked, groups under 5 hidden, JSON or CSV | `functions/api/v1/`, `shared/api/`, docs at `/api/docs` |
+| Code activities | Python runs in the browser (no install, no account): predict, run, then change the starter code until the visible checks pass. Parsons problems: put lines of code in order | `src/features/player/code/`, `shared/authoring/` |
+| Classroom tools | Live class view for the projector, a catch-up plan for students who missed class, starting a late joiner at a later module, and a one-page learning-gain report for funders | `src/features/instructor/` |
 | Database | 26 tables, row-level security everywhere, 46 per-role tests on a real Postgres | `supabase/` |
 
 **Not yet**
@@ -99,7 +101,8 @@ local setup below.
 - A live AI hint has not been tried with a real Gemini key yet (the function and the written fallback are built and tested).
 - Mentor view (assigning mentors works; mentors have no screen yet).
 - A class-wide learning-gain table with CSV export (each student's page has its own CSV).
-- Student PIN, `slides` and in-browser Python activity kinds, and unlocking ahead for one student.
+- Student PIN and a `slides` activity kind.
+- `input()` in the in-browser Python (code activities set values in the code instead).
 - Keepalive and nightly backup jobs.
 
 The honest, detailed status of every workflow is in [docs/design/system-design-v3.md](docs/design/system-design-v3.md)
@@ -210,13 +213,20 @@ the Cloudflare Pages dashboard, or your shell.
 
 ## Links
 
-- Live demo: TODO (see above)
+- Live demo: <https://cic-demo-6br.pages.dev>
 - API reference: `/api/docs` on the deployed site (source: [docs/openapi.yaml](docs/openapi.yaml))
 - Demo video: TODO: add the link after recording
 - Design and docs: [docs/](docs/), start with [docs/architecture.md](docs/architecture.md); decisions in [docs/adr/](docs/adr/README.md)
 - Security: [SECURITY.md](SECURITY.md)
 
 ## After the hackathon
+
+Before handing this to Coding in Color:
+
+- **Move the Cloudflare Pages project to CIC's account.** It was deployed from a team member's personal account by direct upload (the GitHub connection was waiting on an org owner's approval). Once CIC connects the repo, every push to `main` deploys on its own.
+- **Switch to Supabase's new API keys before early 2027,** when the legacy `anon` and `service_role` keys are retired. Test the read API and hints with the new secret key; the functions send it as a bearer token today.
+- **Give hints a long-term AI key.** The OHack AI gateway key ends with the event; set `GEMINI_API_KEY` (free tier) or another gateway. Without one, hints use the written ladder.
+- **Keepalive.** A free Supabase project pauses after a week without use.
 
 Winning teams finish the project with the nonprofit. The [Definition of Done](https://www.ohack.dev/about/completion) (deployed, nonprofit sign-off, docs, open source) is tracked on your team page. Keep the repo public and the README honest; recruiters do read these.
 
