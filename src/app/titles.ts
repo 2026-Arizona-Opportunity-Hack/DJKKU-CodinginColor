@@ -16,6 +16,7 @@ const RULES: [RegExp, string][] = [
   [/^\/author\/[^/]+/, 'Edit module'],
   [/^\/author/, 'Authoring studio'],
   [/^\/instructor\/new/, 'New class'],
+  [/^\/instructor\/[^/]+\/live/, 'Live class view'],
   [/^\/instructor\/[^/]+\/report/, 'Impact report'],
   [/^\/instructor/, 'Instructor'],
   [/^\/admin\/publish/, 'Admin: publish queue'],

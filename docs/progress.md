@@ -461,3 +461,16 @@ instead of repeating them.
   (same signature and grants). DB test added (fails on the old function, passes now). Note: `behind_by`
   still compares completed counts with the class median, so a placed student can show as "behind";
   worth a decision with Umang.
+
+### 2026-11-15: Umang (lane D, live class view)
+- Done: `/instructor/:classId/live`, linked as "Live class view" from the class page, for the projector or the
+  teacher's laptop during class. A "Needs help now" panel (who is stuck, on which activity, and why in plain
+  words), then a grid of every signed-in student against every required activity in order, each cell an icon and
+  a word (Done, Working, Stuck, Not started) so color is never the only signal, with "N here, M done" per activity.
+  Refreshes every 20 seconds, with Pause. Names show as initials by default so the screen can be projected
+  without singling anyone out; "Show full names" switches them on. Reads `progress`, `v_class_progress` and
+  `v_stuck` through row-level security. Checked on a local Supabase as a real instructor of Demo Period 1:
+  10 students across 7 activities, the seeded stuck student flagged on step 6, nothing visible for a class
+  you do not teach.
+- Next: catch-up plan for students who missed class.
+- Blocked: nothing.

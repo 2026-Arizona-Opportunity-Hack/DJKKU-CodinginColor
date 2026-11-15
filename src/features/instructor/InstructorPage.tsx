@@ -4,6 +4,7 @@ import { ClassHome } from './ClassHome'
 import { ClassPicker } from './ClassPicker'
 import { CreateClassForm } from './CreateClassForm'
 import { ImpactReport } from './ImpactReport'
+import { LiveView } from './LiveView'
 import { InstructorDashboard } from './InstructorDashboard'
 import { useClasses } from './hooks'
 import { StudentPage } from './student/StudentPage'
@@ -42,6 +43,7 @@ export function InstructorPage() {
         <Route index element={<FirstClass />} />
         <Route path="new" element={<CreateClassForm />} />
         <Route path=":classId" element={<ClassHome />} />
+        <Route path=":classId/live" element={<LiveView />} />
         <Route path=":classId/students/:studentId" element={<StudentPage />} />
         <Route path=":classId/report" element={<ImpactReport />} />
       </Routes>
