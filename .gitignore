@@ -29,3 +29,6 @@ target/
 .DS_Store
 Thumbs.db
 *.log
+.lighthouseci
+playwright-report/
+test-results/

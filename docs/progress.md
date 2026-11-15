@@ -279,6 +279,19 @@ instead of repeating them.
 - Next: 8b documentation.
 - Blocked: nothing.
 
+### 2026-11-15: Umang (all lanes, polish 9b)
+- Done: the app is named "Coding in Color Learn" with a text logo and a title per route ("Activity | Coding
+  in Color Learn"). Placeholder palette kept in `src/index.css` with a TODO naming what to change when CIC
+  sends its colors (all pairs already meet WCAG AA). Nav links, sign out and the sign-in "Browse lessons" link
+  are at least 44px tall; the skip link is more visible. Admin, author and reviewer demo-mode screens now have
+  an h1 (they had none). Checked every route at 360px with a real browser: no sideways scroll, one h1 each, no
+  axe problems (radio and checkbox rows are 44px tall). Lighthouse CI added (`lighthouse.yml`, action pinned
+  by commit SHA, config in `lighthouserc.cjs`): accessibility is 100 on `/`, `/sign-in`, `/learn/explore` and
+  `/review` when run locally (performance 63 to 95, best practices 100, SEO 82), and the job fails below 95.
+  Playwright smoke test (`e2e/`, `npm run test:e2e`, `e2e.yml`) in demo mode: landing to sign-in, guest explore,
+  opening a lesson, skip link and axe, and no sideways scroll on a phone. All data pages already had loading,
+  empty and error states.
+- Next: fill in CIC's colors; performance (the JavaScript bundle is large) if there is time.
 ### 2026-11-15: Umang (lane E, AI hints 9a)
 - Done: `POST /api/hint` (Cloudflare Pages Function; logic in `shared/hint/` so it is tested without
   Cloudflare). It checks the body (zod, 4 KB), asks Supabase Auth who the student's token belongs to, and

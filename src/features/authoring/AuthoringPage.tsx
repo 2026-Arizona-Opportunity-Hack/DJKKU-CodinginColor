@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router'
+import { DemoNote } from '@/components/DemoNote'
 import { isDemoMode, useMe } from '@/lib/session'
 import { ModuleEditor } from './ModuleEditor'
 import { ModuleList } from './ModuleList'
@@ -6,7 +7,7 @@ import { ModuleList } from './ModuleList'
 /** `/author`: CIC admins and instructors with authoring rights. The database enforces this too. */
 export function AuthoringPage() {
   const me = useMe()
-  if (isDemoMode()) return <p role="status">Demo mode: connect Supabase to author modules.</p>
+  if (isDemoMode()) return <DemoNote title="Authoring studio">Demo mode: connect Supabase to author modules.</DemoNote>
   if (me.isPending) return <p role="status">Loading…</p>
   const allowed = me.data?.role === 'cic_admin' || me.data?.can_author === true
   return (

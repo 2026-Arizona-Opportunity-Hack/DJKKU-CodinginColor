@@ -1,0 +1,29 @@
+name: Lighthouse
+
+# Builds the site in demo mode (no database) and checks four public pages. Accessibility must be 95 or
+# above. The action is pinned to a commit SHA (v12), not a tag, so it cannot change under us.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    name: Lighthouse accessibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: treosh/lighthouse-ci-action@3e7e23fb74242897f95c0ba9cabad3d0227b9b18 # v12
+        with:
+          configPath: ./lighthouserc.cjs
+          uploadArtifacts: true

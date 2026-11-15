@@ -145,7 +145,7 @@ export function SignInPage() {
             <Button type="submit" size="lg" disabled={busy || demo}>{busy ? 'Signing in…' : 'Sign in'}</Button>
           </form>
           <p className="mt-4 text-sm">
-            No code? <Link className="underline" to="/learn/explore">Browse lessons without an account</Link>
+            No code? <Link className="inline-flex min-h-11 items-center underline" to="/learn/explore">Browse lessons without an account</Link>
           </p>
         </CardContent>
       </Card>
