@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { use, useId, useState } from 'react'
 import { Controller, useFieldArray, type Control } from 'react-hook-form'
 import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import type { AuthoredQuestion } from '@shared/authoring/schemas'
 import type { ModuleFV } from './formTypes'
 import { errorMessages, newQuestion, QUESTION_LABEL, QUESTION_TYPES, type QuestionType } from './questionDefaults'
+import { IssuesContext } from './issues'
 import { QuestionEditor } from './QuestionEditor'
 
 type Props = {
@@ -25,13 +26,18 @@ export function QuestionList({ control, name, max, defaultConcept, readOnly, err
   const { fields, append, remove, move } = useFieldArray({ control, name: path })
   const [type, setType] = useState<QuestionType>('mcq')
   const list = errors as Record<string, unknown> | undefined
+  const issues = use(IssuesContext)
   const listLevel = list && (typeof list.message === 'string' || list.root) ? 'Add at least one question.' : ''
 
   return (
     <div className="flex flex-col gap-3">
       <ol className="flex flex-col gap-3">
         {fields.map((field, k) => {
-          const messages = errorMessages(list?.[k])
+          const qid = (field as unknown as AuthoredQuestion).content?.id
+          const messages = [
+            ...errorMessages(list?.[k]),
+            ...issues.filter((m) => qid && m.includes(`question "${qid}"`)).map((m) => m.replace(/^.*question "[^"]*": /, '')),
+          ]
           return (
             <li key={field.id} className="flex flex-col gap-3 rounded-md border p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">

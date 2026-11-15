@@ -13,7 +13,16 @@ export type ActivityFV = {
   questions?: AuthoredQuestion[]
 }
 export type LessonFV = { title: string; activities: ActivityFV[] }
-export type ModuleFV = { title: string; summary: string; status?: 'draft' | 'submitted' | 'published'; lessons: LessonFV[] }
+export type ItemFV = { pairKey: string; conceptId?: string | null; question: AuthoredQuestion }
+export type TestFV = { kind: 'pre' | 'post'; items: ItemFV[] }
+export type ModuleFV = {
+  title: string
+  summary: string
+  status?: 'draft' | 'submitted' | 'published'
+  lessons: LessonFV[]
+  pre?: TestFV | null
+  post?: TestFV | null
+}
 
 export const KIND_LABEL: Record<ActivityKind, string> = {
   video: 'Video',

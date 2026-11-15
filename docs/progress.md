@@ -228,3 +228,19 @@ instead of repeating them.
   updated, its tests unchanged and passing), plus a new presentational `QuestionPreview`.
 - Next: 6b part 2: pre-test and post-test builder, submit for review, publish.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane C, authoring studio 6b part 2)
+- Done: pre-test and post-test builder (one tab each; items reuse the question editor without
+  reflection; pair key per item, filled in as p1, p2...; live pairing warnings from `pairWarnings`;
+  "Copy pre-test into post-test" with new question ids and the same pair keys). "Submit for review"
+  saves first, then calls `submit_module`; blocking problems are listed at the top and next to the
+  question or test item they name, and the module stays a draft. On success the editor says
+  "Submitted. A CIC admin will publish it." and locks. CIC admins also get "Publish now" (also on a
+  submitted module). Checked on a local Supabase end to end: an author saved a module with video,
+  reading, check (multiple choice and short answer), exit reflection and 2-item pre and post tests,
+  reloaded it unchanged, submitted, an admin published, the instructor created a class, imported a
+  roster and assigned it, and a student who claimed the code saw it with the pre-test available.
+- Found: `_validate_module` crashes with "malformed array literal" when a module has no tests (or no
+  lessons), so submit fails with a generic error. Fixed in a separate migration PR.
+- Next: that migration; then the admin publish queue (Prompt 7).
+- Blocked: nothing.

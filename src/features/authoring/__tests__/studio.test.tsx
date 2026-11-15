@@ -6,6 +6,14 @@ import type { AuthoredAssessment, AuthoredModule } from '@shared/authoring/schem
 import { AuthoringPage } from '../AuthoringPage'
 import { expectNoSeriousA11yViolations, renderAt } from '../test/harness'
 
+/** Types short or special-key text, and pastes plain text (much faster than one key at a time). */
+async function typeIn(el: HTMLElement, text: string) {
+  if (text.includes('{')) return userEvent.type(el, text)
+  await userEvent.click(el)
+  await userEvent.paste(text)
+}
+
+
 const m = vi.hoisted(() => ({
   listMyModules: vi.fn(), loadModule: vi.fn(), saveDraft: vi.fn(), newVersion: vi.fn(), listConcepts: vi.fn(), upsertConcept: vi.fn(),
   me: { data: { role: 'cic_admin', can_author: false } as { role: string; can_author: boolean } | undefined, isPending: false },
@@ -118,24 +126,24 @@ describe('the editor', () => {
     m.saveDraft.mockResolvedValue(ID)
     m.loadModule.mockResolvedValue(loaded({ title: 'My Module', summary: '' }))
     const { container, router } = open('/author/new')
-    await userEvent.type(await screen.findByLabelText('Module title'), 'My Module')
-    await userEvent.type(screen.getByLabelText('Lesson 1 title'), 'Basics')
+    await typeIn(await screen.findByLabelText('Module title'), 'My Module')
+    await typeIn(screen.getByLabelText('Lesson 1 title'), 'Basics')
 
     await userEvent.click(screen.getByRole('button', { name: 'Add activity' })) // video is the default kind
     const video = activityCards()[0]!
-    await userEvent.type(within(video).getByLabelText('Title'), 'Watch')
+    await typeIn(within(video).getByLabelText('Title'), 'Watch')
     const link = within(video).getByLabelText('YouTube link')
-    await userEvent.type(link, 'https://example.com/nope')
+    await typeIn(link, 'https://example.com/nope')
     expect(within(video).getByText(/not a YouTube link we can use/)).toBeInTheDocument()
     await userEvent.clear(link)
-    await userEvent.type(link, YT)
+    await typeIn(link, YT)
     expect(within(video).getByText(/Video found \(dQw4w9WgXcQ\)/)).toBeInTheDocument()
 
     await userEvent.selectOptions(screen.getByLabelText('Activity type'), 'reading')
     await userEvent.click(screen.getByRole('button', { name: 'Add activity' }))
     const reading = activityCards()[1]!
-    await userEvent.type(within(reading).getByLabelText('Title'), 'Read')
-    await userEvent.type(within(reading).getByLabelText('Reading (markdown)'), 'Some text')
+    await typeIn(within(reading).getByLabelText('Title'), 'Read')
+    await typeIn(within(reading).getByLabelText('Reading (markdown)'), 'Some text')
     await userEvent.click(within(reading).getByRole('switch', { name: 'Required' }))
     await expectNoSeriousA11yViolations(container)
 
@@ -174,7 +182,7 @@ describe('the editor', () => {
     await userEvent.click(screen.getAllByRole('button', { name: 'Move activity 3 up' })[0]!)   // lesson One: B, C, A
     await userEvent.click(screen.getByRole('button', { name: 'Move lesson 1 down' }))          // lessons: Two, One
     await userEvent.click(screen.getAllByRole('button', { name: 'Delete activity 1' })[1]!)    // lesson One loses B
-    await userEvent.type(screen.getByLabelText('Lesson 1 title'), '!')
+    await typeIn(screen.getByLabelText('Lesson 1 title'), '!')
     await userEvent.click(screen.getByRole('button', { name: 'Save draft' }))
     await waitFor(() => expect(m.saveDraft).toHaveBeenCalled())
     const sent = m.saveDraft.mock.calls[0]![0]
@@ -190,7 +198,7 @@ describe('the editor', () => {
     expect(await screen.findByRole('heading', { name: 'Question 1' })).toBeInTheDocument()
     expect(screen.getByLabelText('Question text')).toHaveValue('What does a loop do?')
     expect(screen.getByLabelText('Module title')).toHaveValue('Loops')
-    await userEvent.type(screen.getByLabelText('Module title'), ' 2')
+    await typeIn(screen.getByLabelText('Module title'), ' 2')
     await userEvent.click(screen.getByRole('button', { name: 'Save draft' }))
     await waitFor(() => expect(m.saveDraft).toHaveBeenCalled())
     const check = m.saveDraft.mock.calls[0]![0].lessons[0].activities[1]
@@ -204,7 +212,7 @@ describe('the editor', () => {
     m.loadModule.mockResolvedValue(loaded())
     open(`/author/${ID}`)
     const title = await screen.findByLabelText('Module title')
-    await userEvent.type(title, ' changed')
+    await typeIn(title, ' changed')
     await userEvent.click(screen.getByRole('button', { name: 'Save draft' }))
     expect(await screen.findByText(/Only the owner can edit a draft module/)).toBeInTheDocument()
     expect(title).toHaveValue('Loops changed')
@@ -214,7 +222,7 @@ describe('the editor', () => {
   it('warns before leaving with unsaved changes, and lets you keep editing or leave', async () => {
     m.loadModule.mockResolvedValue(loaded())
     const { router } = open(`/author/${ID}`)
-    await userEvent.type(await screen.findByLabelText('Module title'), ' x')
+    await typeIn(await screen.findByLabelText('Module title'), ' x')
     void router.navigate('/elsewhere')
     expect(await screen.findByText('You have unsaved changes. Leave without saving?')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Keep editing' }))
@@ -250,7 +258,7 @@ describe('the editor', () => {
     open(`/author/${ID}`)
     const video = (await screen.findAllByRole('heading', { level: 4 }))[0]!.closest('li') as HTMLElement
     await userEvent.selectOptions(within(video).getByLabelText('Concept'), '__new__')
-    await userEvent.type(within(video).getByLabelText('Concept name'), 'Conditionals')
+    await typeIn(within(video).getByLabelText('Concept name'), 'Conditionals')
     m.listConcepts.mockResolvedValue([{ id: 'conditionals', name: 'Conditionals' }])
     await userEvent.click(within(video).getByRole('button', { name: 'Add concept' }))
     expect(m.upsertConcept).toHaveBeenCalledWith('Conditionals')
