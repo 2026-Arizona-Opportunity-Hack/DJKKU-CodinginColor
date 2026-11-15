@@ -122,3 +122,10 @@ instead of repeating them.
   view names; Cloudflare Pages deploy.
 - Blocked: CIC's answers on the dashboard; Cloudflare access to the org repo.
 
+### 2026-11-14: Krishna (lane E)
+- Done: replaced the student sign-in placeholder with personal-code sign-in, name-only
+  registration, optional roster-code claim and guest access. Added student context and
+  guest enrollment RPCs with database tests; documented the email-free setup.
+- Next: apply the new migration to the hosted Supabase project.
+- Blocked: nothing.
+

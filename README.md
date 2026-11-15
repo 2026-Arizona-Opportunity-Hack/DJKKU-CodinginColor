@@ -73,6 +73,11 @@ Other commands: `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`
 `.env.example`. Contributing, lane ownership and how to add a feature or endpoint:
 the "Stack, commands and layout" section of [AGENTS.md](AGENTS.md).
 
+Student access is email-free: students use their personal login code, create an
+account with a display name, or continue as a guest. Supabase anonymous sign-ins
+must be enabled; see [Supabase setup](supabase/README.md). Lost codes are reset
+by an instructor, admin, or assigned mentor.
+
 ## Links
 
 - Live demo:

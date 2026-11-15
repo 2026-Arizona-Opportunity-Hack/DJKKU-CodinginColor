@@ -5,8 +5,8 @@ tables through row-level security and write only by calling these functions.** E
 checks `auth.uid()` and the caller's role itself. Source of truth: `supabase/migrations/`
 (if this file and the SQL disagree, the SQL is right). Tested by `supabase/tests/db.test.ts`.
 
-Call from supabase-js with `supabase.rpc('name', { p_arg: value })`. Every function returns
-jsonb (one object or array), `uuid` or `void`. Errors come back as a Postgres error whose
+Call from supabase-js with `supabase.rpc('name', { p_arg: value })`. Functions return
+jsonb (one object or array), table rows, `uuid` or `void`. Errors come back as a Postgres error whose
 `message` is written for people ("This activity is locked: Take the pre-test first").
 
 Roles: **guest** (not signed in), **student** (incl. a signed-in anonymous session),
@@ -18,6 +18,8 @@ Roles: **guest** (not signed in), **student** (incl. a signed-in anonymous sessi
 | Function | Who | Returns |
 |---|---|---|
 | `claim_login_code(p_code)` | student | `{class_id, class_name, display_name}`. Binds this device to the roster seat. A code works once. |
+| `student_login_context()` | student, independent | One row with `{profile_id, role, display_name, class_id, class_name, is_guest}` for the signed-in student. |
+| `guest_sign_in(p_display_name?)` | anonymous student | `{class_id, display_name}`. Adds the anonymous session to CIC Open; repeatable for the same open-class membership. |
 | `list_join_roster(p_join_code)` | guest, student | `[{member_id, label}]` of UNCLAIMED seats |
 | `claim_roster_seat(p_join_code, p_member_id)` | student | `{class_id, class_name, display_name}` |
 | `self_register(p_display_name)` | student | `{class_id, login_code}`. Name only, no email. Joins CIC Open. |

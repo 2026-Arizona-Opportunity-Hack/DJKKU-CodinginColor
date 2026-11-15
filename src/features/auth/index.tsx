@@ -1,7 +1,7 @@
 import type { FeatureModule } from '@/lib/feature'
 import { SignInPage } from './SignInPage'
 
-// M1: login-code entry for students, Google sign-in for staff, reviewers and mentors.
+// Student sign-in, self-registration and guest access.
 export const auth: FeatureModule = {
   id: 'auth',
   label: 'Sign in',

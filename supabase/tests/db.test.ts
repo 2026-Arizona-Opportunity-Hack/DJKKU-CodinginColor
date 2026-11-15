@@ -34,10 +34,10 @@ const q = async <T = Row>(sql: string, params: unknown[] = []) => (await client.
 const one = async <T = unknown>(sql: string, params: unknown[] = []) => (await q<{ r: T }>(sql, params))[0]!.r
 
 /** Run as a user (or as anon with uid null). RLS and auth.uid() behave as in production. */
-async function as(uid: string | null) {
+async function as(uid: string | null, anonymous = false) {
   await client.query('reset role')
   await client.query(`set local role ${uid ? 'authenticated' : 'anon'}`)
-  await client.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify(uid ? { sub: uid, role: 'authenticated' } : { role: 'anon' })])
+  await client.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify(uid ? { sub: uid, role: 'authenticated', is_anonymous: anonymous } : { role: 'anon' })])
 }
 const asSuper = () => client.query('reset role')
 
@@ -279,6 +279,42 @@ describe.skipIf(!up)('the student journey, end to end', () => {
     await as(other)
     await fails('select public.claim_login_code($1)', [roster[0]!.login_code], /not valid/)
     await fails('select public.claim_login_code($1)', ['0000-0000-0000-0000'], /not valid/)
+  })
+
+  it('student login context returns the claimed class to an anonymous student session', async () => {
+    const { student, class_id } = await setup()
+    await as(student, true)
+    const context = await one<{ profile_id: string; role: string; class_id: string; class_name: string; is_guest: boolean }>(
+      'select row_to_json(c) as r from public.student_login_context() c',
+    )
+    expect(context).toMatchObject({
+      profile_id: student,
+      role: 'student',
+      class_id,
+      class_name: 'Test class',
+      is_guest: true,
+    })
+  })
+
+  it('guest sign-in enrolls in CIC Open, is repeatable, and rejects non-anonymous sessions', async () => {
+    const guest = await mkUser()
+    await as(guest, true)
+    const first = await one<{ class_id: string; display_name: string }>(
+      `select row_to_json(g) as r from public.guest_sign_in('Guest') g`,
+    )
+    expect(first).toEqual({ class_id: OPEN_CLASS, display_name: 'Guest' })
+
+    await as(guest, true)
+    const again = await one<{ class_id: string; display_name: string }>(
+      `select row_to_json(g) as r from public.guest_sign_in('Ignored') g`,
+    )
+    expect(again).toEqual(first)
+    expect(await q('select id from class_members where profile_id = $1', [guest])).toHaveLength(1)
+    expect(await one<string>('select role as r from profiles where id = $1', [guest])).toBe('independent_student')
+
+    const regular = await mkUser('student', { email: 'student@example.org' })
+    await as(regular)
+    await fails('select * from public.guest_sign_in()', [], /anonymously through Supabase Auth/)
   })
 
   it('follows the unlock rules: pre-test first, strict order, post-test last', async () => {

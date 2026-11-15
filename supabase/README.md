@@ -8,9 +8,9 @@ listed in [docs/contracts/database-api.md](../docs/contracts/database-api.md).
 ```
 supabase/
   config.toml     local stack settings (anonymous sign-in on, email sign-in off)
-  migrations/     applied in order: schema, core functions, student RPCs, staff RPCs, policies + views
+  migrations/     applied in order: schema, core functions, student/staff RPCs, policies + views, student login context
   seed.sql        DEMO data only: a real-looking module and two fake classes
-  tests/db.test.ts  per-role tests against a real local Supabase (35 tests)
+  tests/db.test.ts  per-role tests against a real local Supabase
 ```
 
 ## Run it locally (needs Docker; everything is free)
@@ -24,6 +24,14 @@ npx supabase stop              # when you are done
 `supabase start` prints the local URL and the demo `anon` and `service_role` keys; put them in
 `.env` as `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` (see `.env.example`). Those local keys
 are public demo keys, not secrets. After a change to any migration, run `db reset` again.
+Set `VITE_DATA_SOURCE=supabase` in `.env` to have the player and student sign-in use this
+database; `.env.example` defaults the player to mock data.
+
+Students sign in without email or passwords. A student enters a personal login code to
+claim a roster seat; creating an account asks only for a display name and can optionally
+claim that code, or joins CIC Open and shows a new personal code once. Guests use Supabase
+anonymous sign-in and are added to CIC Open. Lost codes must be reset by an instructor,
+admin, or assigned mentor; there is no student password-reset flow.
 
 ## Demo data (fake, safe to show)
 
@@ -46,8 +54,9 @@ invites staff, assigns mentors and makes API keys. The per-role proof is in `tes
    `supabase db push`, or paste each file into the SQL editor). Do **not** run `seed.sql` on a
    project that holds real students; load it only into a separate demo project.
 2. Authentication > Providers: turn **Google** on (client id and secret from Google Cloud
-   Console), turn **Anonymous sign-ins** on, turn **Email** off. Under Rate Limits keep the
-   anonymous sign-in limit low (30 per hour per IP is the default).
+   Console), turn **Anonymous sign-ins** on, and leave **Email** off to keep student accounts
+   email-free. Under Rate Limits keep the anonymous sign-in limit low (30 per hour per IP is
+   the default).
 3. Create the first admin by hand: sign in once with Google, then in the SQL editor run
    `update public.profiles set role = 'cic_admin' where id = '<your user id>';`.
    After that the admin console invites everyone else with `invite_staff`.
