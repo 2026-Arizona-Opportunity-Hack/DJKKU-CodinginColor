@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import '@/features/auth/test/setup'
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fakeSupabase, ME, renderAt } from '@/features/auth/test/harness'
@@ -16,6 +16,20 @@ const open = (role: string | null, url = '/', extra: Record<string, unknown> = {
 const nav = () => screen.getByRole('navigation', { name: 'Main' })
 
 beforeEach(() => vi.stubEnv('VITE_SUPABASE_URL', 'http://localhost:54321'))
+
+describe('page frame', () => {
+  it('sets the tab title from the route and shows the app name as the home link', async () => {
+    open('student', '/learn/c1/progress', { class_id: 'c1', class_name: 'P1' })
+    expect(await screen.findByRole('link', { name: 'Coding in Color Learn, home' })).toHaveAttribute('href', '/')
+    expect(document.title).toBe('My progress | Coding in Color Learn')
+  })
+
+  it('makes every nav link at least 44px tall for thumbs', async () => {
+    open(null)
+    await screen.findByRole('link', { name: 'Sign in' })
+    for (const link of within(nav()).getAllByRole('link')) expect(link.className).toContain('min-h-11')
+  })
+})
 
 describe('role-aware nav', () => {
   it('hides Admin from a student and shows Learn', async () => {

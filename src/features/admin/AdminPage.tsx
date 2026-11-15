@@ -1,4 +1,5 @@
 import { Navigate, NavLink, Route, Routes } from 'react-router'
+import { DemoNote } from '@/components/DemoNote'
 import { isDemoMode, useMe } from '@/lib/session'
 import { OverviewTab } from './OverviewTab'
 import { PublishQueue } from './PublishQueue'
@@ -13,7 +14,7 @@ const TABS = [
 /** `/admin/<tab>`: the CIC admin console. Only CIC admins; the database enforces it too. */
 export function AdminPage() {
   const me = useMe()
-  if (isDemoMode()) return <p role="status">Demo mode: connect Supabase to use the admin console.</p>
+  if (isDemoMode()) return <DemoNote title="Admin console">Demo mode: connect Supabase to use the admin console.</DemoNote>
   if (me.isPending) return <p role="status">Loading…</p>
   if (me.data?.role !== 'cic_admin') return <p role="alert">This page is for CIC admins.</p>
   return (

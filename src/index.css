@@ -2,6 +2,12 @@
 
 /* ---- Design tokens (shadcn/ui convention), added by lane B; shared by all lanes. ---- */
 /*
+ * TODO(CIC palette): CIC has not sent its brand colors yet. These are a placeholder palette (indigo
+ * on white) that meets WCAG AA contrast. When CIC sends theirs, change ONLY the values in :root below
+ * (--primary, --ring, --secondary, --accent and their foregrounds) and re-check each text/background pair
+ * is at least 4.5:1. Every component reads these variables, so nothing else needs to change.
+ */
+/*
  * Design tokens (shadcn/ui convention). Colors chosen for >= 4.5:1 text contrast
  * on their paired background. Status never relies on color alone: every status
  * also has an icon and a text label.

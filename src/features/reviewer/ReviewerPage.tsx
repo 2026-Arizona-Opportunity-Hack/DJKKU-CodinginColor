@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router'
+import { DemoNote } from '@/components/DemoNote'
 import { isDemoMode, useMe } from '@/lib/session'
 import { ModuleList } from './ModuleList'
 import { ModuleView } from './ModuleView'
@@ -6,7 +7,7 @@ import { ModuleView } from './ModuleView'
 /** `/review`: a read-only view of published curriculum for external reviewers (and CIC admins). */
 export function ReviewerPage() {
   const me = useMe()
-  if (isDemoMode()) return <p role="status">Demo mode: connect Supabase to review published modules.</p>
+  if (isDemoMode()) return <DemoNote title="Curriculum review">Demo mode: connect Supabase to review published modules.</DemoNote>
   if (me.isPending) return <p role="status">Loading…</p>
   if (me.data?.role !== 'reviewer' && me.data?.role !== 'cic_admin') return <p role="alert">This page is for curriculum reviewers.</p>
   return (
