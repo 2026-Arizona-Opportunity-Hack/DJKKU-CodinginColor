@@ -12,7 +12,7 @@ const m = vi.hoisted(() => {
   }
   return {
     api: {
-      listSubmitted: vi.fn(), listPublished: vi.fn(), publishModule: vi.fn(), sendBack: vi.fn(), listInvites: vi.fn(), listStaff: vi.fn(), inviteStaff: vi.fn(), setRole: vi.fn(),
+      listSubmitted: vi.fn(), listPublished: vi.fn(), publishModule: vi.fn(), sendBack: vi.fn(), listInvites: vi.fn(), listStaff: vi.fn(), setRole: vi.fn(),
       ModuleProblems,
       STAFF_ROLES: ['instructor', 'mentor', 'reviewer', 'cic_admin'],
       ROLE_LABEL: { instructor: 'Instructor', mentor: 'Mentor', reviewer: 'Reviewer', cic_admin: 'CIC admin' },
@@ -103,32 +103,16 @@ describe('publish queue', () => {
 })
 
 describe('staff', () => {
-  it('invites with the right arguments and explains when the role is given', async () => {
-    m.api.inviteStaff.mockResolvedValue(null)
-    const { container } = renderAt(<AdminPage />, { url: '/admin/staff' })
-    await userEvent.type(await screen.findByLabelText('Email'), 'New@School.org')
-    expect(screen.getByText('They get this role the first time they sign in with Google using this email.')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Can author modules' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Send invite' }))
-    expect(m.api.inviteStaff).toHaveBeenCalledWith('New@School.org', 'instructor', true)
-    expect(await screen.findByText('Invited new@school.org.')).toBeInTheDocument()
-    await userEvent.selectOptions(screen.getByLabelText('Role'), 'reviewer')
-    expect(screen.queryByRole('checkbox', { name: 'Can author modules' })).toBeNull() // only instructors can author
-    await expectNoSeriousA11yViolations(container)
-  })
-
-  it('shows invites as Joined or waiting, and the database error for a bad invite', async () => {
+  it('shows invitations as Joined or waiting, and points to the invite form on Overview', async () => {
     m.api.listInvites.mockResolvedValue([
       { email: 'a@x.org', role: 'instructor', can_author: true, created_at: '2026-11-14T00:00:00Z', accepted_at: '2026-11-14T01:00:00Z' },
       { email: 'b@x.org', role: 'reviewer', can_author: false, created_at: '2026-11-14T00:00:00Z', accepted_at: null },
     ])
-    m.api.inviteStaff.mockRejectedValue(new Error('Enter a valid email address'))
-    renderAt(<AdminPage />, { url: '/admin/staff' })
+    const { container } = renderAt(<AdminPage />, { url: '/admin/staff' })
     expect(within(await screen.findByRole('row', { name: /a@x.org/ })).getByText('Joined')).toBeInTheDocument()
     expect(within(screen.getByRole('row', { name: /b@x.org/ })).getByText('Waiting for first sign-in')).toBeInTheDocument()
-    await userEvent.type(screen.getByLabelText('Email'), 'a@b.co')
-    await userEvent.click(screen.getByRole('button', { name: 'Send invite' }))
-    expect(await screen.findByText('Enter a valid email address')).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'Overview' })).toHaveLength(2) // the tab and the pointer in the text
+    await expectNoSeriousA11yViolations(container)
   })
 
   it('changes a role or the author switch with the right arguments, and locks your own row', async () => {

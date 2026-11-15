@@ -3,12 +3,14 @@ import { isDemoMode, useMe } from '@/lib/session'
 import { ApiKeysTab } from './ApiKeysTab'
 import { ClassesTab } from './ClassesTab'
 import { MentorsTab } from './MentorsTab'
+import { OverviewTab } from './OverviewTab'
 import { PublishQueue } from './PublishQueue'
 import { SchoolsTab } from './SchoolsTab'
 import { StaffTab } from './StaffTab'
 
 const TABS = [
   { path: 'publish', label: 'Publish queue', element: <PublishQueue /> },
+  { path: 'overview', label: 'Overview', element: <OverviewTab /> },
   { path: 'staff', label: 'Staff', element: <StaffTab /> },
   { path: 'classes', label: 'Classes', element: <ClassesTab /> },
   { path: 'schools', label: 'Schools', element: <SchoolsTab /> },
