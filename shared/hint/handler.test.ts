@@ -64,6 +64,11 @@ describe('who may ask', () => {
     expect(calls).toHaveLength(0)
   })
 
+  it('answers 413 for an oversized body before parsing it', async () => {
+    expect((await run({ activity_id: ACT, response: { text: 'x'.repeat(20_000) } })).status).toBe(413)
+    expect(calls).toHaveLength(0)
+  })
+
   it('answers 401 with no token, and with a token Supabase does not know', async () => {
     expect((await run(undefined, null)).status).toBe(401)
     world.authOk = false

@@ -53,7 +53,7 @@ function Where() {
 export function renderAt(element: ReactElement, { path, url, extra = [] }: { path: string; url: string; extra?: RouteObject[] }) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, networkMode: 'always' } } })
   const router = createMemoryRouter([{ path, element }, ...extra, { path: '*', element: h(Where) }], { initialEntries: [url] })
-  return { queryClient, ...render(h(QueryClientProvider, { client: queryClient }, h(RouterProvider, { router }))) }
+  return { queryClient, router, ...render(h(QueryClientProvider, { client: queryClient }, h(RouterProvider, { router }))) }
 }
 
 /** 0 serious or critical axe violations. Contrast is skipped (jsdom has no layout); Lighthouse covers it. */

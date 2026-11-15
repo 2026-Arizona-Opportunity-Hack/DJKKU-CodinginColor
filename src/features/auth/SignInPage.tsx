@@ -26,10 +26,14 @@ export function SignInPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { hash } = useLocation()
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const me = useMe()
   // Prefill only: a link preview or prefetch must never use up a code by itself.
   const [code, setCode] = useState(params.get('code') ?? '')
+  // The code is a password: once it is in the box, take it out of the address bar and history (S-36).
+  useEffect(() => {
+    if (params.has('code')) setParams((p) => { p.delete('code'); return p }, { replace: true })
+  }, [params, setParams])
   const [codeError, setCodeError] = useState<string | null>(null)
   const [staffError, setStaffError] = useState<string | null>(null)
   const [notInvited, setNotInvited] = useState<string | null>(null)

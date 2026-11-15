@@ -40,12 +40,14 @@ describe('student login code', () => {
     expect(sb.auth.signInAnonymously).not.toHaveBeenCalled()
   })
 
-  it('pre-fills the code from ?code= without submitting it', () => {
+  it('pre-fills the code from ?code= without submitting it, then takes it out of the URL', async () => {
     const sb = fakeSupabase()
     show(sb)
-    open(`/sign-in?code=${LOGIN}`)
+    const { router } = open(`/sign-in?code=${LOGIN}`)
     expect(screen.getByLabelText('Your login code')).toHaveValue(LOGIN)
     expect(sb.rpc).not.toHaveBeenCalledWith('claim_login_code', expect.anything())
+    await waitFor(() => expect(router.state.location.search).toBe(''))
+    expect(screen.getByLabelText('Your login code')).toHaveValue(LOGIN)
   })
 
   it('shows a friendly message for a wrong code and keeps the session (no sign out)', async () => {

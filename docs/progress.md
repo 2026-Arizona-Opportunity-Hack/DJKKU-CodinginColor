@@ -634,3 +634,13 @@ instead of repeating them.
   Fixes opened: #59 (headers), #60 (privacy page, SECURITY.md), #61 (login code in URL, hint body cap).
 - Next: owner runs `npx supabase db push` on the hosted project (S-92), then re-run the probe on production.
 - Blocked: S-92 and the dashboard-only rows (OWNER in the audit).
+### 2026-11-15: Umang (lane E files, security headers S-50, S-51, S-59)
+
+- Done: `public/_headers` sets a Content-Security-Policy (only the origins the app uses: Supabase, jsDelivr for
+  Pyodide, the YouTube no-cookie player, YouTube thumbnails), nosniff, Referrer-Policy, Permissions-Policy,
+  X-Frame-Options DENY with frame-ancestors 'none', and HSTS, and drops Cloudflare's default wildcard CORS on static
+  files. The API docs page gets a separate policy for Scalar. `functions/api/_middleware.ts` adds nosniff, no-store,
+  no-referrer and frame denial to every JSON API response, since `_headers` does not reach Functions. Tested by
+  serving the exact policy in Playwright: video, Python and every main route ran with zero CSP violations.
+- Next: re-run the header scan on the live URL after deploy.
+- Blocked: nothing.
