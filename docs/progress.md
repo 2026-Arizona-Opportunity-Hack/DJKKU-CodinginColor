@@ -659,3 +659,19 @@ instead of repeating them.
   links unclaimed ones by seat id (the page accepts either); two unclaimed students with the same name
   get one seat each. No database change.
 - Blocked: nothing.
+
+### 2026-11-15: Daxx (transcript follows the video; page-length fix)
+- Fixed: opening "Read the transcript" made the page about 21,000 px tall on a phone. The hidden "At"
+  labels before each timestamp are absolutely positioned and escaped the scroll box, which was not
+  `relative`. The box is now the positioning context and has no such labels; the page grows only by
+  the box itself (844 -> 1150 px).
+- Done: the transcript follows the video. The embed uses `enablejsapi=1` and the player reports its time
+  by postMessage (no YouTube JS loaded; only messages from our own frame and a YouTube origin are read;
+  the handshake repeats until the player answers). Caption lines are kept as YouTube timed them (old
+  400-character cache rows refetch once), grouped into paragraphs of about 320 characters or 30 s. The
+  line being spoken is highlighted (`aria-current`) and kept in view by scrolling the box, never the
+  page. Scrolling the transcript pauses following; "Back to the current line" resumes. Timestamps play
+  the video from that moment (embed now allows `autoplay`).
+- Checked in a browser with a real video on a local Wrangler run: 9/9 (line moves with speech, box
+  scrolls, page does not, pause and resume). Tests: player hook (message checks, handshake), transcript
+  component, grouping and active-line search.
