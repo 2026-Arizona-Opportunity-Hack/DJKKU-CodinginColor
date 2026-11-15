@@ -10,6 +10,7 @@ import { NoteHome } from './NoteHome'
 import { StudentActions } from './StudentActions'
 import { StudentReportView } from './StudentReportView'
 import { loadStudent } from './studentApi'
+import { AttentionInsight } from './AttentionInsight'
 
 /**
  * `/instructor/:classId/students/:studentId`: everything about one student in one class.
@@ -44,17 +45,22 @@ function LiveStudent({ classId, studentKey: key }: { classId: string; studentKey
         <StudentReportView
           report={d.report}
           actions={
-            <>
-            <StudentActions
-              report={d.report}
-              classId={classId}
-              memberId={d.memberId}
-              profileId={d.profileId}
-              onChanged={() => void queryClient.invalidateQueries({ queryKey: studentKey(classId, key) })}
-            />
-            <NoteHome report={d.report} />
-            </>
-          }
+              <>
+                <StudentActions
+                  report={d.report}
+                  classId={classId}
+                  memberId={d.memberId}
+                  profileId={d.profileId}
+                  onChanged={() =>
+                    void queryClient.invalidateQueries({
+                      queryKey: studentKey(classId, key),
+                    })
+                  }
+                />
+                <NoteHome report={d.report} />
+                <AttentionInsight report={d.report} />
+              </>
+            }
         />
       )}
     </QueryStatus>
