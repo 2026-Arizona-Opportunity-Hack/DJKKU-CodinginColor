@@ -254,6 +254,17 @@ instead of repeating them.
 - Next: 7b: Classes, Schools, API keys, Mentors tabs.
 - Blocked: nothing.
 
+### 2026-11-15: Umang (lane E, docs 8b)
+- Done: documentation pass. README rewritten (what it is, live URL placeholder, team table with
+  handles we could confirm and a TODO for Koen's, "Try it" per role, built and not-yet features, the
+  architecture diagram, run locally, cost, and every environment variable cross-checked against
+  `.env.example` and `functions/_lib/env.ts`). New `SECURITY.md` (what we collect about minors, how
+  access is enforced, secrets, known limits, a reporting placeholder). `docs/architecture.md` no longer
+  says nothing is built, points to the v3 design, fixes the lanes table and matches the real tree. New
+  `docs/adr/README.md`. API reference at `/api/docs` (Scalar pinned to 1.78.1 with an integrity hash;
+  spec copy kept equal to `docs/openapi.yaml` by a test). A test now fails on any broken relative link in
+  the markdown files (`docs/progress.md` is skipped: it is append-only) and on em dashes in the docs we wrote.
+- Next: fill in the TODOs (live URL, Koen's handle, security contact, demo video link).
 ### 2026-11-15: Umang (lane E, reviewer view 8a)
 - Done: `/review` is the read-only curriculum view for reviewers (and CIC admins; everyone else sees
   "This page is for curriculum reviewers."). Published modules with lesson and activity counts, the
