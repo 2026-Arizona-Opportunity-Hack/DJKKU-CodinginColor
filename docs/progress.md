@@ -704,3 +704,12 @@ instead of repeating them.
   studio tests, 1 DB test that saves an AI-shaped draft through `save_module_draft`.
 - Next: try it on the deployed site on the imported YouTube and GitHub modules.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane C, tests on a published module)
+
+- Done: a published module is locked (database triggers), so the test builder hides editing and the AI button.
+  It used to still say "Draft them with AI or add them by hand", which an author could not do. Now it explains
+  why the version is locked and offers "Make a new version to add tests" right there (it copies everything into
+  an editable draft where the AI button works); a module waiting for review says to ask an admin to send it back.
+  The new version still needs admin publishing, and instructors assign it to their classes.
+- Blocked: nothing.

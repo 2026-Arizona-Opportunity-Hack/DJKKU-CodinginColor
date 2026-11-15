@@ -21,6 +21,11 @@ export type TestBuilderProps = {
   getValues: UseFormGetValues<ModuleFV>
   errors: FieldErrors<ModuleFV>
   readOnly: boolean
+  /** Why the module is read-only, so the builder can say what to do instead. */
+  status?: 'draft' | 'submitted' | 'published'
+  /** Makes an editable draft copy of a published module ("New version"). */
+  onNewVersion?: () => void
+  newVersionPending?: boolean
 }
 
 const nextPairKey = (items: ItemFV[]) => {
@@ -96,7 +101,7 @@ function TestItems({ kind, control, register, setValue, errors, readOnly }: Test
 /** Pre-test and post-test, one tab each. Items with the same pair key are compared for learning gain. */
 export function TestBuilder(props: TestBuilderProps) {
   const id = useId()
-  const { control, setValue, getValues, readOnly } = props
+  const { control, setValue, getValues, readOnly, status, onNewVersion, newVersionPending } = props
   const [tab, setTab] = useState<Kind>('pre')
   const pre = useWatch({ control, name: 'pre' }) as TestFV | null | undefined
   const post = useWatch({ control, name: 'post' }) as TestFV | null | undefined
@@ -106,7 +111,11 @@ export function TestBuilder(props: TestBuilderProps) {
       ? pairWarnings(pre as AuthoredAssessment, post as AuthoredAssessment)
       : pre || post
         ? [`There is no ${pre ? 'post-test' : 'pre-test'} yet, so this module will show no learning gain.`]
-        : ['This module has no pre-test or post-test yet, so it will show no learning gain. Draft them with AI or add them by hand.']
+        : [
+            readOnly
+              ? 'This module has no pre-test or post-test, so it shows no learning gain.'
+              : 'This module has no pre-test or post-test yet, so it will show no learning gain. Draft them with AI or add them by hand.',
+          ]
 
   function copyPreToPost() {
     if (!pre) return
@@ -128,6 +137,26 @@ export function TestBuilder(props: TestBuilderProps) {
         measure learning gain, so they should test the same skill in different words.
       </p>
       {!readOnly && <AiDraft setValue={setValue} getValues={getValues} onDrafted={() => setTab('pre')} />}
+      {readOnly && status === 'published' && (
+        <div className="flex flex-col items-start gap-2 rounded-md border p-3">
+          <p className="text-sm">
+            A published version is locked so classes using it never change mid-course. To add or change its tests, make a new
+            version: it copies everything into an editable draft, where you can draft both tests with AI. After a CIC admin
+            publishes it, instructors assign the new version to their classes.
+          </p>
+          {onNewVersion && (
+            <Button type="button" disabled={newVersionPending} onClick={onNewVersion}>
+              {newVersionPending ? 'Copying…' : 'Make a new version to add tests'}
+            </Button>
+          )}
+        </div>
+      )}
+      {readOnly && status === 'submitted' && (
+        <p className="rounded-md border p-3 text-sm">
+          This module is waiting for review, so its tests can't change. Ask a CIC admin to send it back to draft, then draft both
+          tests with AI.
+        </p>
+      )}
       <div role="tablist" aria-label="Tests" className="flex gap-1">
         {(['pre', 'post'] as const).map((k) => (
           <Button key={k} type="button" role="tab" id={`${id}-tab-${k}`} aria-selected={tab === k} aria-controls={`${id}-panel-${k}`} variant={tab === k ? 'default' : 'outline'} onClick={() => setTab(k)}>

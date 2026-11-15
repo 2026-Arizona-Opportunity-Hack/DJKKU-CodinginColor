@@ -57,3 +57,21 @@ describe('pre-test and post-test builder', () => {
     await expectNoSeriousA11yViolations(container)
   })
 })
+
+describe('tests on a published module', () => {
+  it('explains that a published version is locked and makes a new version to add tests', async () => {
+    const ID = '30000000-0000-4000-8000-000000000002'
+    m.loadModule.mockResolvedValue({
+      id: ID, slug: 'ai-roadmap', version: 1, keysHidden: false, pre: null, post: null,
+      module: { title: 'AI roadmap', summary: '', status: 'published', lessons: [{ title: 'L', activities: [{ kind: 'reading', title: 'R', required: true, conceptId: 'loops', body: 'Text' }] }] },
+    })
+    m.newVersion.mockResolvedValue('30000000-0000-4000-8000-000000000003')
+    const { router } = renderAt(<AuthoringPage />, { url: `/author/${ID}` })
+    expect(await screen.findByText(/has no pre-test or post-test, so it shows no learning gain/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Draft both tests with AI' })).not.toBeInTheDocument()
+    expect(screen.getByText(/A published version is locked so classes using it never change/)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Make a new version to add tests' }))
+    await waitFor(() => expect(m.newVersion).toHaveBeenCalledWith(ID))
+    await waitFor(() => expect(router.state.location.pathname).toBe('/author/30000000-0000-4000-8000-000000000003'))
+  })
+})
