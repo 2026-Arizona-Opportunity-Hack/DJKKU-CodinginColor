@@ -265,4 +265,16 @@ instead of repeating them.
   spec copy kept equal to `docs/openapi.yaml` by a test). A test now fails on any broken relative link in
   the markdown files (`docs/progress.md` is skipped: it is append-only) and on em dashes in the docs we wrote.
 - Next: fill in the TODOs (live URL, Koen's handle, security contact, demo video link).
+### 2026-11-15: Umang (lane E, reviewer view 8a)
+- Done: `/review` is the read-only curriculum view for reviewers (and CIC admins; everyone else sees
+  "This page is for curriculum reviewers."). Published modules with lesson and activity counts, the
+  concepts they cover and a title search. `/review/:moduleId` walks one module in order with every
+  activity rendered as a student sees it (the shared components in `src/components/learning/`),
+  then the pre-test and post-test grouped by pair key so alignment can be judged. A banner on every page
+  says "Read-only. Answer keys and student data are hidden by design." The page never calls
+  `get_activity_keys`, `get_assessment_keys` or any write function, and content with a key field in it
+  is refused rather than shown (tests check this on a mocked client). Checked on a local Supabase as a
+  real reviewer: 1 module, 3 lessons, 7 activities, 5 pairs, no key field anywhere, a key request refused
+  ("Not allowed to read these answer keys") and no progress rows visible.
+- Next: 8b documentation.
 - Blocked: nothing.
