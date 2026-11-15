@@ -1,9 +1,10 @@
 # Architecture
 
-How the system fits together. Status: **design**. Nothing here is built yet;
-update this file as the code lands so it stays true. Why each piece was chosen
-is in [decisions](decisions.md); what it costs us is in [tradeoffs](tradeoffs.md); how to run and extend it is
-in the "Stack, commands and layout" section of [AGENTS.md](../AGENTS.md).
+How the system fits together. The current, reconciled design, with the status of every
+workflow, is [design/system-design-v3.md](design/system-design-v3.md); this file is the shorter
+tour of the pieces. Most of it is built (the README lists what is and is not). Why each piece was
+chosen is in [decisions](decisions.md); what it costs us is in [tradeoffs](tradeoffs.md); how to
+run and extend it is in the "Stack, commands and layout" section of [AGENTS.md](../AGENTS.md).
 
 ## Overview
 
@@ -48,8 +49,10 @@ Function that rate-limits by IP to block spam sign-ups.
 Views read by both the dashboard and the read API, so numbers always agree:
 `v_class_progress`, `v_stuck`, `v_learning_gain`, `v_concept_mastery`.
 
-The authoritative schema is the SQL in `supabase/` (lane A, Koen). If this
-file and the SQL differ, the SQL is right.
+The authoritative schema is the SQL in `supabase/migrations/`. If this file and the SQL differ,
+the SQL is right. The calls the app can make are listed in
+[contracts/database-api.md](contracts/database-api.md), and the design reasons are in
+[ADR 0024](adr/0024-lane-a-database-design.md).
 
 ## Roles
 
@@ -103,11 +106,11 @@ visible to CIC admin, and outbound notes are drafted by the system and sent by a
 
 | Lane | Owner | Owns |
 |---|---|---|
-| A | Koen | Schema, RLS, `submit_answer`, key isolation, views, seed |
+| A | Koen | Schema, RLS, key isolation, views, seed. Koen wrote the first drafts; Umang consolidated them into the current migrations, functions and tests (PR #11) and added `get_me` and class staffing |
 | B | Daxx | Student player, unlock UX, late-joiner card, mobile |
-| C | Umang | Authoring studio, test builder, learning gain screens |
+| C | Umang | Authoring studio, test builder, learning gain logic. Also built sign-in, the instructor class setup, parts of the admin console and the reviewer view |
 | D | Jad | Roster import, instructor dashboard, admin console, stuck lists |
-| E | Krishna | Read API and docs, reviewer view, hints function, deploy, README |
+| E | Krishna | Read API and its docs, hints function (not built yet), deploy, CI, `docs/` |
 
 ## Extending the system
 
@@ -153,22 +156,29 @@ Lane E's reading of the plan. Confirm with Koen (lane A) and fix here if wrong.
 - A second consumer is possible (the brief's Problem 2 funder packet pulling outcomes),
   so the API should be usable by code other than CIC's dashboard.
 
-## Repo layout (planned; update as it is created)
+## Repo layout
 
 ```
-docs/                   requirements, architecture, decisions, tradeoffs, audits, progress
-docs/design/            copy of the team design plan
-src/app/                app shell: router, layout, the feature list (features.ts)
+docs/                   requirements, architecture, decisions (adr/), tradeoffs, audits, progress, deploy
+docs/design/            the team design (system-design-v3.md is current; system-design.md is the first plan)
+docs/contracts/         database-api.md: every function and view the app calls
+docs/openapi.yaml       the read API contract (a copy is served at /api/docs)
+src/app/                app shell: router, role-aware layout, home page, the feature list (features.ts)
 src/features/<name>/    one folder per feature, mapped to the lanes:
-  player/               lane B (M4)         authoring/  lane C (M3, M5)
-  instructor/ admin/    lane D (M7; M2, M8) reviewer/   lane E (M9)
-  auth/                 M1 sign-in
-src/components/         shared UI (shadcn/ui goes in src/components/ui)
-src/lib/                shared helpers: feature contract, Supabase client
-shared/                 code used by both browser and functions: roles, zod schemas
-functions/api/          Pages Functions, one file per endpoint (health now; read API, hints next)
-functions/_lib/         helpers for the functions (env bindings)
-supabase/               migrations, RLS, seed, per-role tests (lane A; layout in its README)
-lane-d-logic/           Jad's stuck-student heap and roster checker; move into
-                        src/features/instructor and admin when wired in (ask Jad)
+  auth/                 sign-in, class join link
+  player/               student player (lane B)
+  authoring/            authoring studio (lane C)
+  instructor/ admin/    class setup and dashboard; admin console (lane D, with additions)
+  reviewer/             read-only curriculum view
+src/components/         shared UI (shadcn/ui in ui/), learning/ (student-view pieces used by the
+                        player, the studio preview and the reviewer view), Dialog, QueryStatus
+src/lib/                shared helpers: feature contract, Supabase client, session (who is signed in)
+shared/                 code used by both browser and functions: roles, class and login-code rules,
+                        authoring/ (zod schemas, learning gain, CSV), api/ (read API handlers and types)
+functions/api/          Pages Functions, one file per endpoint (health, v1/completion, v1/learning-gain)
+functions/_lib/         helpers for the functions (env bindings, dependencies)
+public/api/docs/        the static API reference page served at /api/docs
+supabase/               migrations, seed, config and the per-role tests (layout in its README)
+lane-d-logic/           Jad's early stuck-student and roster logic, kept for reference
+.github/workflows/      ci.yml (lint, types, tests, build, gitleaks), db-tests.yml, pr-lint.yml
 ```

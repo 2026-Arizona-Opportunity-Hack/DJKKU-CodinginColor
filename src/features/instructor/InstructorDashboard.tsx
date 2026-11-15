@@ -308,6 +308,9 @@ const classGain =
                           ? `${student.minutes_on_activity} minutes on activity`
                           : `${student.days_inactive} school days inactive`}
                     </p>
+                    <p className="text-sm text-gray-600">
+                      Hints used: {student.hints_used}
+                    </p>
                   </div>
 
                   <p className="text-sm text-gray-600">

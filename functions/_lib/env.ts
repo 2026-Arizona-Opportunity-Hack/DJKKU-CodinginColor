@@ -8,6 +8,8 @@
  */
 export interface Env {
   SUPABASE_URL: string
+  /** The public anon key. Used to ask Supabase Auth who a student's token belongs to (not a secret). */
+  SUPABASE_ANON_KEY: string
   /** Bypasses RLS. Functions using it must enforce their own access rules. */
   SUPABASE_SERVICE_ROLE_KEY: string
   /** Free-tier Gemini key for the hint proxy. Optional: hints fall back to written ones. */

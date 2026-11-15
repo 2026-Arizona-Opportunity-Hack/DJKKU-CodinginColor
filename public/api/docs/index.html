@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coding in Color read API</title>
+    <style>
+      body { margin: 0; font-family: system-ui, sans-serif; }
+      .intro { max-width: 60rem; margin: 0 auto; padding: 1rem 1.5rem; }
+      .intro pre { overflow-x: auto; background: #f3f4f6; padding: 0.75rem; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <header class="intro">
+      <h1>Coding in Color read API</h1>
+      <p>
+        Aggregated class and cohort numbers for CIC's own dashboard. A CIC admin creates a key in the
+        admin console (it is shown once). Send it as a bearer token:
+      </p>
+      <pre>curl -H "Authorization: Bearer YOUR_KEY" https://YOUR-SITE.pages.dev/api/v1/completion</pre>
+      <p>Without a key the answer is <code>401</code>. The full reference is below.</p>
+    </header>
+    <!-- Scalar API reference, pinned to an exact version and checked with an integrity hash.
+         The spec is public/api/docs/openapi.yaml, a copy of docs/openapi.yaml (a test keeps them equal). -->
+    <script id="api-reference" data-url="/api/docs/openapi.yaml"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/@scalar/api-reference@1.78.1/dist/browser/standalone.js"
+      integrity="sha384-HVpqul+lojb2wwVK554SYr5rD2XqgJZqkYKGl4MyZarBSg+rHR9F0x1LVgzgj7JZ"
+      crossorigin="anonymous"
+    ></script>
+    <noscript>
+      <p class="intro">
+        This page needs JavaScript to draw the reference. The same contract is in plain text at
+        <a href="/api/docs/openapi.yaml">/api/docs/openapi.yaml</a>.
+      </p>
+    </noscript>
+  </body>
+</html>

@@ -1,0 +1,238 @@
+openapi: 3.1.0
+info:
+  title: Coding in Color learning platform, read API
+  version: 1.0.0-draft
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    **DRAFT.** Aggregated program data for CIC's org dashboard. We build and host it; the
+    dashboard calls it. We do not call anyone.
+
+    What is decided (brief, plan and the database design) and what is a guess:
+    - Decided: key-authenticated, aggregated rows only, groups under 5 students hidden,
+      keys created by a CIC admin and scoped to `progress` and/or `assessments`.
+    - Our proposals, to confirm with CIC: flat JSON plus optional CSV, the field names,
+      the key in a header.
+    - Unknown: what the dashboard is built with. Until CIC says, a `cohort` means school
+      plus term, for example "Maryvale 2026 Fall".
+
+    **Privacy.** Only class-level aggregates are returned, never a student. A class with
+    fewer than 5 students is left out entirely, and for learning gain a class is left out
+    when fewer than 5 students have both a pre and a post score. A cohort is added up from
+    the classes that are shown, so a hidden class never feeds any total and cannot be worked
+    out by subtracting one row from another.
+
+    **Keys.** Send `Authorization: Bearer <key>`. A CIC admin creates a key in the admin
+    console and picks its scopes; it is shown once and can be revoked. Keep it secret and
+    out of URLs. A key with the `progress` scope may call `/api/v1/completion`; one with the
+    `assessments` scope may call `/api/v1/learning-gain`.
+
+    **CSV.** `format=csv` has the same columns as the JSON rows. A missing number is an
+    empty cell, never `0`. Text cells are escaped so a value can never start a spreadsheet
+    formula. The `as_of` time is in the `X-As-Of` header.
+servers:
+  - url: /
+    description: Same host as the app
+security:
+  - bearerKey: []
+tags:
+  - name: Data
+    description: Aggregated program numbers. Needs a key.
+  - name: Health
+    description: Liveness check. No key.
+paths:
+  /api/v1/completion:
+    get:
+      tags: [Data]
+      summary: Module completion by class or cohort
+      description: Needs a key with the `progress` scope.
+      operationId: getCompletion
+      parameters:
+        - $ref: '#/components/parameters/groupBy'
+        - $ref: '#/components/parameters/cohort'
+        - $ref: '#/components/parameters/format'
+      responses:
+        '200':
+          description: One row per class, or per cohort.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CompletionResponse' }
+              example:
+                as_of: '2026-11-15T17:30:00.000Z'
+                api_version: v1
+                rows:
+                  - cohort: Maryvale 2026 Fall
+                    class: Period 3
+                    students: 24
+                    avg_completion_pct: 62.5
+            text/csv:
+              schema: { type: string }
+        '400': { $ref: '#/components/responses/InvalidParameter' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /api/v1/learning-gain:
+    get:
+      tags: [Data]
+      summary: Learning gain (post minus pre) by class or cohort, per module and concept
+      description: |
+        Needs a key with the `assessments` scope. Only students with both a pre and a post
+        score feed the numbers; the others are counted in `incomplete_count`, never as zero.
+        A row with `concept: null` is the overall test, not one concept.
+        `normalized_gain` is (post - pre) / (100 - pre) from the class means, or null when
+        `pre_pct` is 100.
+      operationId: getLearningGain
+      parameters:
+        - $ref: '#/components/parameters/groupBy'
+        - $ref: '#/components/parameters/cohort'
+        - $ref: '#/components/parameters/format'
+      responses:
+        '200':
+          description: One row per class (or cohort), module and concept.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LearningGainResponse' }
+              example:
+                as_of: '2026-11-15T17:30:00.000Z'
+                api_version: v1
+                rows:
+                  - cohort: Maryvale 2026 Fall
+                    class: Period 3
+                    module: Variables and Loops
+                    concept: Loops
+                    complete_count: 18
+                    incomplete_count: 6
+                    pre_pct: 41.2
+                    post_pct: 73.5
+                    gain_points: 32.3
+                    normalized_gain: 0.549
+            text/csv:
+              schema: { type: string }
+        '400': { $ref: '#/components/responses/InvalidParameter' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Is the service up? No key needed.
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: Service is up.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, service]
+                properties:
+                  ok: { type: boolean }
+                  service: { type: string }
+components:
+  securitySchemes:
+    bearerKey:
+      type: http
+      scheme: bearer
+      description: A key created by a CIC admin, for example `oh_...`.
+  parameters:
+    groupBy:
+      name: group_by
+      in: query
+      description: '`class` gives one row per class; `cohort` adds the classes of each cohort together.'
+      schema: { type: string, enum: [class, cohort], default: class }
+    cohort:
+      name: cohort
+      in: query
+      description: Only this cohort, matched ignoring case, for example `Maryvale 2026 Fall`.
+      schema: { type: string, maxLength: 120 }
+    format:
+      name: format
+      in: query
+      description: Response format. CSV has the same columns as the JSON rows.
+      schema: { type: string, enum: [json, csv], default: json }
+  schemas:
+    CompletionRow:
+      type: object
+      required: [cohort, class, students, avg_completion_pct]
+      properties:
+        cohort: { type: string, description: School plus term. }
+        class: { type: [string, 'null'], description: Null when grouped by cohort. }
+        students: { type: integer, minimum: 5 }
+        avg_completion_pct:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Average completion of required activities.
+    LearningGainRow:
+      type: object
+      required: [cohort, class, module, concept, complete_count, incomplete_count, pre_pct, post_pct, gain_points, normalized_gain]
+      properties:
+        cohort: { type: string }
+        class: { type: [string, 'null'], description: Null when grouped by cohort. }
+        module: { type: string }
+        concept: { type: [string, 'null'], description: Null for the overall test. }
+        complete_count: { type: integer, minimum: 5, description: Students with both a pre and a post score. }
+        incomplete_count: { type: integer, minimum: 0 }
+        pre_pct: { type: number, description: 'Mean pre score, 0 to 100.' }
+        post_pct: { type: number, description: 'Mean post score, 0 to 100.' }
+        gain_points: { type: number, description: 'Points: post minus pre.' }
+        normalized_gain: { type: [number, 'null'] }
+    CompletionResponse:
+      type: object
+      required: [as_of, api_version, rows]
+      properties:
+        as_of: { type: string, format: date-time }
+        api_version: { type: string, const: v1 }
+        rows:
+          type: array
+          items: { $ref: '#/components/schemas/CompletionRow' }
+    LearningGainResponse:
+      type: object
+      required: [as_of, api_version, rows]
+      properties:
+        as_of: { type: string, format: date-time }
+        api_version: { type: string, const: v1 }
+        rows:
+          type: array
+          items: { $ref: '#/components/schemas/LearningGainRow' }
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string, enum: [unauthorized, forbidden, invalid_parameter, unavailable, internal] }
+            message: { type: string }
+  responses:
+    Unauthorized:
+      description: The key is missing, wrong or revoked. These look the same on purpose.
+      headers:
+        WWW-Authenticate:
+          schema: { type: string }
+          description: Always `Bearer`.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: unauthorized, message: A valid API key is required. } }
+    Forbidden:
+      description: The key is valid but does not have the scope this endpoint needs.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: forbidden, message: This key is not allowed to read progress data. } }
+    InvalidParameter:
+      description: A query parameter is not allowed or not valid. Unknown parameters are rejected.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: invalid_parameter, message: 'Unknown parameter: from.' } }
+    Unavailable:
+      description: The data source is down or the server is not configured. Try again later.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: unavailable, message: The data is temporarily unavailable. Try again later. } }
