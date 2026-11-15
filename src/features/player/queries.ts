@@ -60,11 +60,12 @@ export function useNextActivity(classId: string | undefined) {
   })
 }
 
-export function useActivity(activityId: string, guest = false) {
+export function useActivity(activityId: string, guest = false, enabled = true) {
   const api = useStudentApi()
   return useQuery({
     queryKey: guest ? keys.openActivity(activityId) : keys.activity(activityId),
     queryFn: () => (guest ? api.getOpenActivity(activityId) : api.getActivity(activityId)),
+    enabled,
   })
 }
 

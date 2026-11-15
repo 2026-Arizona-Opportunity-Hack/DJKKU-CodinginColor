@@ -579,6 +579,17 @@ instead of repeating them.
 - Next: completion certificate.
 - Blocked: real Coder spotlight stories from CIC.
 
+### 2026-11-15: Umang (lane B folder, notes side panel)
+
+- Done: "Notes" in the student bar opens a notes panel next to the lesson (a docked column on wide screens, a
+  bottom sheet on phones) that stays open while the student moves between activities and follows the activity
+  they are on. Notes save by themselves a moment after typing stops, when the box loses focus, and when the
+  student moves on. Recent notes and a link to the whole notebook sit below. Replaces the box under each
+  activity (an activity page now has "Take notes on this", which opens the panel).
+- Found: the hosted Supabase project does not have the migrations from 20261115110000 onward (get_my_notes,
+  get_class_misconceptions and others return PGRST202), so the deployed notebook says "That service isn't
+  available". Fix: `npx supabase db push` against the hosted project (docs/deploy.md).
+- Blocked: the hosted migrations need someone with the database password.
 ### 2026-11-15: Daxx (real video transcripts)
 - Done: "Read the transcript" now shows the video's real transcript (its YouTube captions) with
   timestamps, instead of only the author's short summary. `GET /api/transcript?videoId=` (Pages Function,
