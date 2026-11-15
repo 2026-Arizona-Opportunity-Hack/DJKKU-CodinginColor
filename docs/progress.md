@@ -601,3 +601,14 @@ instead of repeating them.
   author's summary shows instead. Key: `SUPADATA_API_KEY` (README, deploy.md, SECURITY.md).
 - Tests: 17 handler tests, 9 component tests (incl. axe). Real REST queries checked on local Supabase.
 - Needs: a Supadata key in Cloudflare Pages, and the migration on the hosted project.
+
+### 2026-11-15: Umang (lane E files, security headers S-50, S-51, S-59)
+
+- Done: `public/_headers` sets a Content-Security-Policy (only the origins the app uses: Supabase, jsDelivr for
+  Pyodide, the YouTube no-cookie player, YouTube thumbnails), nosniff, Referrer-Policy, Permissions-Policy,
+  X-Frame-Options DENY with frame-ancestors 'none', and HSTS, and drops Cloudflare's default wildcard CORS on static
+  files. The API docs page gets a separate policy for Scalar. `functions/api/_middleware.ts` adds nosniff, no-store,
+  no-referrer and frame denial to every JSON API response, since `_headers` does not reach Functions. Tested by
+  serving the exact policy in Playwright: video, Python and every main route ran with zero CSP violations.
+- Next: re-run the header scan on the live URL after deploy.
+- Blocked: nothing.
