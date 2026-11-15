@@ -82,6 +82,9 @@ We would rather list these than hide them.
   script many sign-ins. A captcha could be added.
 - **Signing out an anonymous student loses their seat**, because a login code works once. The
   instructor can issue a new code.
+- **Code activities are graded in the browser.** Python runs on the student's device (Pyodide), so a student
+  who edits the page could report passing checks they did not pass. Code activities are practice; learning
+  gain comes only from the pre-test and post-test, which are graded in the database.
 - **AI hints are planned, not built.** When they are, only the question text and the student's answer
   go to the provider under an opaque id, never a name or school. A free-tier provider may use prompts
   to improve its models, so treat anything sent as non-private.

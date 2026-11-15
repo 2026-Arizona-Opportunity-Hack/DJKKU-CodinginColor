@@ -15,7 +15,8 @@ export type QuestionType = Question['type']
 export type { ActivityKind }
 
 export const QUESTION_TYPES = ['mcq', 'short_answer', 'fill_blank', 'ordering', 'reflection'] as const satisfies readonly QuestionType[]
-export const ACTIVITY_KINDS = activityKind.options
+// 'code' (Python in the browser) is rendered by the code runner, which lands in its own change.
+export const ACTIVITY_KINDS = activityKind.options.filter((k) => k !== 'code')
 
 export const SHORT_ANSWER_MAX = 500
 export const REFLECTION_MAX = 2000

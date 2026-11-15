@@ -423,3 +423,32 @@ describe('fromDraftRows', () => {
     expect(fromDraftRows({ ...rows, module: { ...rows.module, status: 'published' } }).module.status).toBe('published');
   });
 });
+
+describe('code activities (Python in the browser)', () => {
+  const code = {
+    kind: 'code', title: 'Make it count', required: true, conceptId: 'loops',
+    prompt: 'Change the loop so it prints 1 to 5.', starter: 'for i in range(3):\n    print(i)',
+    predict: 'What will this print before you change it?', tests: ['assert total == 15'],
+  } as const;
+
+  it('is a strict activity kind with a prompt, starter code, an optional prediction and visible checks', () => {
+    expect(authoredActivity.safeParse(code).success).toBe(true);
+    expect(authoredActivity.safeParse({ ...code, predict: undefined }).success).toBe(true);
+    expect(authoredActivity.safeParse({ ...code, tests: Array(11).fill('assert True') }).success).toBe(false);
+    expect(authoredActivity.safeParse({ ...code, prompt: '' }).success).toBe(false);
+    expect(authoredActivity.safeParse({ ...code, solution: 'x' }).success).toBe(false);
+  });
+
+  it('becomes {prompt, starter, predict, tests} content with no keys, and loads back the same', () => {
+    const module = { title: 'C', summary: '', status: 'draft', lessons: [{ title: 'L', activities: [code] }] } as unknown as AuthoredModule;
+    const payload = toDraftPayload({ moduleId: null, module, pre: null, post: null });
+    const a = payload.lessons[0]!.activities[0]!;
+    expect(a).toMatchObject({ kind: 'code', concept_id: 'loops', keys: [], content: { prompt: code.prompt, starter: code.starter, predict: code.predict, tests: code.tests } });
+    const back = fromDraftRows({
+      module: { title: 'C', summary: '', status: 'draft' }, lessons: [{ id: 'l', position: 0, title: 'L' }],
+      activities: [{ id: 'x', lesson_id: 'l', position: 0, kind: 'code', title: a.title, content: a.content, required: true, concept_id: 'loops' }],
+      assessments: [], assessmentItems: [], activityKeys: {}, assessmentKeys: {},
+    });
+    expect(back.module.lessons[0]!.activities[0]).toEqual(code);
+  });
+});

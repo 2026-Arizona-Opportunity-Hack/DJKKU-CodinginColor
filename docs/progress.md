@@ -354,3 +354,17 @@ instead of repeating them.
   Checked on a local Supabase as a real instructor; a class you do not teach says so plainly.
 - Next: Parsons problems.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lanes A and C, code activities 6a: data)
+- Done: the data layer for Python-in-the-browser activities. New migration
+  `20261115120000_lane_a_code_activities.sql`: a `code` activity kind with content `{prompt, starter, predict?,
+  tests[]}` (up to 10 visible `assert` checks, starter up to 10 KB), and `submit_answer` accepts
+  `{code, passed, total, prediction?}`, checks the counts match the activity, completes only when every check
+  passes, and otherwise says "1 of 2 checks pass. Read the first failing check and run your code again."
+  Shared schema, `toDraftPayload` and `fromDraftRows` support it (round-trip tested). Found and fixed on the way:
+  the content-shape CHECK passed when a field was missing (a NULL result passes a CHECK), so a video with no
+  embed URL was accepted; it is now wrapped in `coalesce(..., false)` for every kind, with a DB test. SECURITY.md
+  and the contract say plainly that code is graded in the browser, so it is practice, not the measure of learning.
+  The studio picker and the player pick up the new kind in the next two changes.
+- Next: 6b, the Pyodide runner in the player.
+- Blocked: nothing.
