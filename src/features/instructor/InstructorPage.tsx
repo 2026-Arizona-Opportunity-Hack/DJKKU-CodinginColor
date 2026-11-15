@@ -3,6 +3,7 @@ import { isDemoMode } from '@/lib/session'
 import { ClassHome } from './ClassHome'
 import { ClassPicker } from './ClassPicker'
 import { CreateClassForm } from './CreateClassForm'
+import { ImpactReport } from './ImpactReport'
 import { InstructorDashboard } from './InstructorDashboard'
 import { useClasses } from './hooks'
 
@@ -27,6 +28,7 @@ export function InstructorPage() {
         <Route index element={<FirstClass />} />
         <Route path="new" element={<CreateClassForm />} />
         <Route path=":classId" element={<ClassHome />} />
+        <Route path=":classId/report" element={<ImpactReport />} />
       </Routes>
     </div>
   )
