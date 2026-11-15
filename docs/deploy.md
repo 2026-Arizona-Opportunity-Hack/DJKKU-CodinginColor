@@ -146,13 +146,13 @@ Click **Save**. Without this, Google sign-in bounces back to the wrong address.
    | `VITE_SUPABASE_URL` | `SUPABASE_URL` |
    | `VITE_SUPABASE_ANON_KEY` | `ANON_KEY` |
    | `VITE_DATA_SOURCE` | `supabase` |
-   | `VITE_FEATURE_HINTS` | `false` |
+   | `VITE_FEATURE_HINTS` | `true` (shows "Get a hint" after a wrong answer; written hints work without a Gemini key) |
 
 6. Click **Save and Deploy**. The first build takes a couple of minutes. The repo's `.nvmrc`
    only says `22`, which can resolve to a version older than 22.12, so `NODE_VERSION` is what
    guarantees a new enough Node.
 
-### 2. Add the secrets for the API (Functions only)
+### 2. Add the secrets for the API and hints (Functions only)
 
 Open the project > **Settings** > **Variables and Secrets** > **Add**. For each, set the type to
 **Secret** (encrypted, never shown again), and add it for **Production** and for **Preview**:
@@ -160,8 +160,9 @@ Open the project > **Settings** > **Variables and Secrets** > **Add**. For each,
 | Name | Value |
 |---|---|
 | `SUPABASE_URL` | `SUPABASE_URL` |
+| `SUPABASE_ANON_KEY` | `ANON_KEY` (the hint function uses it to ask Supabase who a student's token belongs to; it is the same public key as in step 1) |
 | `SUPABASE_SERVICE_ROLE_KEY` | `SERVICE_ROLE_KEY` |
-| `GEMINI_API_KEY` | later, only when hints are built (leave it out for now) |
+| `GEMINI_API_KEY` | Optional. A free key from Google AI Studio (no billing). Without it every hint comes from the instructor's written ladder. |
 
 Also add the five build variables from step 1 to the **Preview** environment if the dashboard
 shows Production and Preview separately, so preview deploys work too.
