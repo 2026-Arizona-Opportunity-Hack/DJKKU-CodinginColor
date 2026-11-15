@@ -29,7 +29,7 @@ export function ModuleEditor() {
   if (loaded.isPending) return <p role="status">Loading the module…</p>
   if (loaded.isError) {
     return (
-      <div role="alert" className="flex flex-col items-start gap-2 text-red-700">
+      <div role="alert" className="flex flex-col items-start gap-2 text-destructive">
         <p>{loaded.error.message}</p>
         <Button variant="outline" onClick={() => void loaded.refetch()}>Try again</Button>
       </div>
@@ -118,7 +118,7 @@ function EditorForm({
       </div>
 
       {blocker.state === 'blocked' && (
-        <div role="alert" className="flex flex-wrap items-center gap-3 rounded-md border border-amber-500 bg-amber-50 p-3 text-amber-950">
+        <div role="alert" className="flex flex-wrap items-center gap-3 rounded-md border border-tint-yellow-edge bg-tint-yellow p-3 text-tint-yellow-fg">
           <p className="font-medium">You have unsaved changes. Leave without saving?</p>
           <Button type="button" variant="outline" onClick={() => blocker.proceed()}>Leave without saving</Button>
           <Button type="button" onClick={() => blocker.reset()}>Keep editing</Button>

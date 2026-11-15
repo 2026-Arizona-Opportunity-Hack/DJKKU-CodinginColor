@@ -40,7 +40,7 @@ export function SubmitForReview({ moduleId, dirty, onSubmitted }: Props) {
   return (
     <div className="flex flex-col gap-2">
       {confirming ? (
-        <div role="group" aria-labelledby={`${id}-ask`} className="flex flex-wrap items-center gap-3 rounded-md border border-amber-500 bg-amber-50 p-3 text-amber-950">
+        <div role="group" aria-labelledby={`${id}-ask`} className="flex flex-wrap items-center gap-3 rounded-md border border-tint-yellow-edge bg-tint-yellow p-3 text-tint-yellow-fg">
           <p id={`${id}-ask`} className="font-medium">
             Submit for review? You can't edit it while a CIC admin reviews it. They publish it or send it back to you.
           </p>

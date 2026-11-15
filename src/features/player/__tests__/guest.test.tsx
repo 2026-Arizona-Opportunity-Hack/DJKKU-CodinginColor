@@ -4,7 +4,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { ApiError } from '@/features/player/errors'
+import { ApiError, fromRpcError } from '@/features/player/errors'
 import { GUEST_STORAGE_KEY, markGuestCompleted, readGuestProgress } from '@/features/player/guestProgress'
 import { log } from '@/lib/log'
 import { expectNoSeriousA11yViolations, MAYA, mockApi, renderRoute } from '@/features/player/test/render'
@@ -38,7 +38,8 @@ describe('B3 guest progress storage', () => {
 describe('B3 guest mode pages', () => {
   it('lists open modules and shows device progress', async () => {
     markGuestCompleted('act-vars-video')
-    const { container } = renderRoute(<ExplorePage />, { path: '/explore', url: '/explore' })
+    // A real guest: no session (the mock otherwise starts signed in as the demo student).
+    const { container } = renderRoute(<ExplorePage />, { path: '/explore', url: '/explore', api: mockApi({ me: null }) })
     expect(await screen.findByRole('heading', { name: 'Python basics' })).toBeInTheDocument()
     expect(screen.queryByText('Functions')).not.toBeInTheDocument() // not published as open
     expect(screen.getByText(/1 activity done/)).toBeInTheDocument()
@@ -46,7 +47,7 @@ describe('B3 guest mode pages', () => {
   })
 
   it('lets a guest finish an activity with no account, saved on the device', async () => {
-    const api = mockApi()
+    const api = mockApi({ me: null })
     const submit = vi.spyOn(api, 'submitAnswer')
     const { container } = renderRoute(<GuestActivityPage />, { path: '/explore/a/:activityId', url: '/explore/a/act-vars-read', api })
     await userEvent.click(await screen.findByRole('button', { name: "I've read it" }))
@@ -54,6 +55,56 @@ describe('B3 guest mode pages', () => {
     expect(readGuestProgress().completed['act-vars-read']).toBeDefined()
     expect(submit).not.toHaveBeenCalled()
     await expectNoSeriousA11yViolations(container)
+  })
+})
+
+describe('open lessons for a signed-in student (no guest prompts)', () => {
+  it('explore offers Start here instead of "Save my progress", and hides device-only badges', async () => {
+    markGuestCompleted('act-vars-video') // left over from guest browsing on this device
+    const { container } = renderRoute(<ExplorePage />, { path: '/explore', url: '/explore', api: mockApi({ me: MAYA }) })
+    expect(await screen.findByRole('heading', { name: 'Python basics' })).toBeInTheDocument()
+    expect(await screen.findByText('Open lessons for practice')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go to Start here' })).toHaveAttribute('href', '/learn')
+    expect(screen.getByText(/Signed in as/)).toBeInTheDocument()
+    expect(screen.queryByText("You're browsing as a guest")).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Save my progress' })).toBeNull()
+    expect(screen.queryByText('Done')).toBeNull() // guest progress is not their progress
+    await expectNoSeriousA11yViolations(container)
+  })
+
+  it('finishing an open activity says it is practice, never "Save my progress"', async () => {
+    const api = mockApi({ me: MAYA })
+    const submit = vi.spyOn(api, 'submitAnswer')
+    renderRoute(<GuestActivityPage />, { path: '/explore/a/:activityId', url: '/explore/a/act-vars-read', api })
+    expect(await screen.findByText(/Reading · Practice/)).toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: "I've read it" }))
+    expect(await screen.findByText('Practice done')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go to Start here' })).toBeInTheDocument()
+    expect(screen.queryByText('Saved on this device')).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Save my progress' })).toBeNull()
+    expect(submit).not.toHaveBeenCalled() // open lessons stay ungraded, as for guests
+  })
+
+  it('an open lesson that is also class work says so and points to Start here (no endless loading)', async () => {
+    const api = mockApi({ me: MAYA })
+    vi.spyOn(api, 'getOpenActivity').mockRejectedValue(new ApiError('locked'))
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    renderRoute(<GuestActivityPage />, { path: '/explore/a/:activityId', url: '/explore/a/act-vars-read', api })
+    expect(await screen.findByText('This lesson is part of your class')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go to Start here' })).toHaveAttribute('href', '/learn')
+  })
+
+  it('the database wording for a locked activity is recognised as "locked" (so it is not retried)', () => {
+    const err = fromRpcError({ message: 'This activity is locked: Take the pre-test first', code: 'P0001' }, 'req-1')
+    expect(err.code).toBe('locked')
+    expect(fromRpcError({ message: 'Something else went wrong', code: 'P0001' }, 'req-2').code).toBe('unknown')
+  })
+
+  it('a guest still sees the guest version', async () => {
+    renderRoute(<ExplorePage />, { path: '/explore', url: '/explore', api: mockApi({ me: null }) })
+    expect(await screen.findByText("You're browsing as a guest")).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Save my progress' })).toBeInTheDocument()
+    expect(screen.queryByText('Open lessons for practice')).toBeNull()
   })
 })
 

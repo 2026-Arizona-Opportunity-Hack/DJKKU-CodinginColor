@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { nextStep } from '../outline'
+import { needsPretest, nextStep, overallTally } from '../outline'
 import type { ClassOutline, ItemStatus, OutlineModule } from '../types'
 
 const act = (id: string, status: ItemStatus) => ({ activity_id: id, title: id, kind: 'video' as const, position: 1, required: true, status })
@@ -55,5 +55,27 @@ describe('nextStep', () => {
   it('ignores a next activity the outline does not know, and falls through to the post-test', () => {
     const o = outline(mod(1, 'done', [['a1', 'done']], 'available'))
     expect(nextStep(o, next('ghost'))).toMatchObject({ kind: 'posttest' })
+  })
+})
+
+describe('a late joiner placed at module 2 (module 1 skipped)', () => {
+  const placed = outline(
+    mod(1, 'skipped', [['a1', 'skipped'], ['a2', 'skipped']], 'skipped'),
+    mod(2, 'available', [['b1', 'locked']], 'locked'),
+  )
+
+  it('starts at the module 2 pre-test, never at skipped work', () => {
+    expect(nextStep(placed, null)).toMatchObject({ kind: 'pretest', assessment_id: 'pre2', module: { title: 'Module 2' } })
+  })
+
+  it('a skipped module owes no pre-test', () => {
+    expect(needsPretest(placed.modules[0]!)).toBe(false)
+    expect(needsPretest(placed.modules[1]!)).toBe(true)
+  })
+
+  it('progress counts skipped work as neither done nor missing', () => {
+    expect(overallTally(placed)).toEqual({ done: 0, total: 1, pct: 0 })
+    const later = outline(mod(1, 'skipped', [['a1', 'skipped']], 'skipped'), mod(2, 'done', [['b1', 'done']], 'available'))
+    expect(overallTally(later)).toEqual({ done: 1, total: 1, pct: 100 })
   })
 })

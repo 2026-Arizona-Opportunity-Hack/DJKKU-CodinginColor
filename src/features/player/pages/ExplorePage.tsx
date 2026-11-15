@@ -9,16 +9,40 @@ import { StudentLayout } from '@/features/player/components/StudentLayout'
 import { KIND_LABEL, paths } from '@/features/player/outline'
 import { useOpenModules } from '@/features/player/queries'
 import { useGuestProgress } from '@/features/player/useGuestProgress'
+import { useViewer } from '@/features/player/useViewer'
 
-/** B3: published "CIC Open" modules, no account needed. Progress is kept on this device. */
+/**
+ * B3: published "CIC Open" modules, no account needed. Guests keep progress on this device.
+ * Signed in, it is practice: no guest prompts, no device-only "Done" badges, a way back to class work.
+ */
 export function ExplorePage() {
   const modules = useOpenModules()
   const [progress] = useGuestProgress()
+  const viewer = useViewer()
   const doneCount = Object.keys(progress.completed).length
 
   return (
-    <StudentLayout>
+    <StudentLayout me={viewer.me}>
       <h1 className="text-2xl font-bold">Explore lessons</h1>
+      {viewer.me && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Open lessons for practice</CardTitle>
+            <CardDescription>
+              Anyone can try these. They aren't checked or added to your class progress
+              {viewer.student ? '; your class work is under Start here.' : '.'}
+            </CardDescription>
+          </CardHeader>
+          {viewer.student && (
+            <CardContent className="flex flex-wrap gap-2">
+              <Button asChild>
+                <Link to={paths.home}>Go to Start here</Link>
+              </Button>
+            </CardContent>
+          )}
+        </Card>
+      )}
+      {viewer.guest && (
       <Card>
         <CardHeader>
           <CardTitle>You're browsing as a guest</CardTitle>
@@ -35,6 +59,7 @@ export function ExplorePage() {
           </Button>
         </CardContent>
       </Card>
+      )}
       <QueryView query={modules} label="Loading lessons">
         {(list) =>
           list.length === 0 ? (
@@ -59,12 +84,12 @@ export function ExplorePage() {
                           <li key={a.activity_id}>
                             <Link
                               to={paths.guestActivity(a.activity_id)}
-                              className="flex min-h-11 items-center gap-3 rounded-md border px-3 py-2 hover:bg-accent"
+                              className="flex min-h-11 items-center gap-3 rounded-lg border bg-white px-3 py-2 transition-colors hover:border-tint-green-edge hover:bg-tint-green/60"
                             >
-                              <span className="flex-1">
-                                {a.title} <span className="text-xs text-muted-foreground">{KIND_LABEL[a.kind]}</span>
+                              <span className="flex-1 font-display font-bold">
+                                {a.title} <span className="font-sans text-xs font-medium tracking-wide text-muted-foreground uppercase">{KIND_LABEL[a.kind]}</span>
                               </span>
-                              <StatusBadge status={progress.completed[a.activity_id] ? 'done' : 'available'} />
+                              {viewer.guest && <StatusBadge status={progress.completed[a.activity_id] ? 'done' : 'available'} />}
                             </Link>
                           </li>
                         ))}

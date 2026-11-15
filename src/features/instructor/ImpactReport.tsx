@@ -114,7 +114,7 @@ export function ImpactReport() {
   if (data.isPending) return <p role="status">Loading the report…</p>
   if (data.isError) {
     return (
-      <div role="alert" className="flex flex-col items-start gap-2 text-red-700">
+      <div role="alert" className="flex flex-col items-start gap-2 text-destructive">
         <p>We could not load the report. {data.error.message}</p>
         <Button variant="outline" onClick={() => void data.refetch()}>Try again</Button>
       </div>

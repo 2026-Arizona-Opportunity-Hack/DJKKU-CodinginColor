@@ -28,7 +28,7 @@ export function ModuleView() {
   if (module.isPending) return <p role="status">Loading the module…</p>
   if (module.isError) {
     return (
-      <div role="alert" className="flex flex-col items-start gap-2 text-red-700">
+      <div role="alert" className="flex flex-col items-start gap-2 text-destructive">
         <p>{module.error.message}</p>
         <Link className="underline" to="/review">Back to published modules</Link>
       </div>

@@ -1,5 +1,7 @@
 import type { FeatureModule } from '@/lib/feature'
-import { AuthoringPage } from './AuthoringPage'
+import { lazyPage } from '@/lib/lazyPage'
+
+const AuthoringPage = lazyPage(() => import('./AuthoringPage'), 'AuthoringPage')
 
 // Lane C (M3, M5): authoring studio, test builder, learning gain screens.
 export const authoring: FeatureModule = {

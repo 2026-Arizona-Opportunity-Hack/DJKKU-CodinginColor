@@ -1,5 +1,7 @@
 import type { FeatureModule } from '@/lib/feature'
-import { InstructorPage } from './InstructorPage'
+import { lazyPage } from '@/lib/lazyPage'
+
+const InstructorPage = lazyPage(() => import('./InstructorPage'), 'InstructorPage')
 
 // Lane D (M7): instructor dashboard, per-student progress, stuck and not-started lists.
 export const instructor: FeatureModule = {
