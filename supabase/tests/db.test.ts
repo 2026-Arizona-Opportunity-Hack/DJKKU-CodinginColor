@@ -501,6 +501,20 @@ describe.skipIf(!up)('the student journey, end to end', () => {
       expect(row).toEqual({ required_activities: 1, completed_activities: 1 })
     })
 
+    it('the catch-up plan leaves out modules the student was told to skip', async () => {
+      const { ins, class_id, roster, student } = await setup()
+      const { mod, act } = await addSecondModule(ins, class_id)
+      await as(ins)
+      await q('select public.set_start_module($1::uuid[], $2)', [[roster[0]!.member_id], mod])
+      await as(student)
+      type Plan = { steps_left: number; steps: { kind: string; activity_id: string | null; title: string }[] }
+      const plan = await one<Plan>('select public.get_catch_up($1) as r', [class_id])
+      // Only module 2's one video is left: no pre-test, activities or post-test from skipped module 1.
+      expect(plan.steps_left).toBe(1)
+      expect(plan.steps).toEqual([expect.objectContaining({ kind: 'video', activity_id: act, title: 'Watch: functions' })])
+      expect(plan.steps.some((s) => /Variables and Loops/.test(s.title))).toBe(false)
+    })
+
     it('"from the beginning" clears the placement, and a classmate is unaffected', async () => {
       const { ins, class_id, roster, student } = await setup()
       const { mod } = await addSecondModule(ins, class_id)

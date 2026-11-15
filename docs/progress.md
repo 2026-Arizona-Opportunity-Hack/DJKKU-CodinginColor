@@ -451,3 +451,13 @@ instead of repeating them.
 - Fixed: the module map said "Module 0" / "Lesson 0" (the database counts positions from 0, the mock
   from 1); it now numbers by list order (test added). The video embed set fullscreen twice
   (`allow` and `allowFullScreen`), which made browsers warn on every video page.
+
+### 2026-11-15: Daxx (catch-up plan meets late-joiner placement)
+- Found while merging main: the catch-up plan (lane A) and start-at-a-module (lane B) were built in
+  parallel. The plan listed every untaken test and unfinished activity in opened modules, so a student
+  started at module 3 was told to catch up on modules 1 and 2. Also both branches used migration number
+  20261115110000; mine is now 20261115120000.
+- Done: `20261115130000_lane_b_catch_up_skips.sql` leaves skipped modules out of `_catch_up_steps`
+  (same signature and grants). DB test added (fails on the old function, passes now). Note: `behind_by`
+  still compares completed counts with the class median, so a placed student can show as "behind";
+  worth a decision with Umang.
