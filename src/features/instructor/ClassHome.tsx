@@ -6,7 +6,7 @@ import { InstructorDashboard } from './InstructorDashboard'
 import { useClasses } from './hooks'
 import { JoinCodeCard } from './JoinCodeCard'
 import { PrintableCodes } from './PrintableCodes'
-import { QueryStatus } from './QueryStatus'
+import { QueryStatus } from '@/components/QueryStatus'
 import { RosterImport } from './RosterImport'
 
 /** Everything for one class (`/instructor/:classId`). Login codes live only in this component's memory. */

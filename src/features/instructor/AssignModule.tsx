@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
-import { QueryStatus } from './QueryStatus'
+import { QueryStatus } from '@/components/QueryStatus'
 import { assignModule, listClassModules, listPublishedModules } from './setupApi'
 
 /** What the class already has, and the published modules an instructor can add to it. */

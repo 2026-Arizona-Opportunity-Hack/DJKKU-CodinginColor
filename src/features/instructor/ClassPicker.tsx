@@ -1,7 +1,7 @@
 import { Link, useMatch, useNavigate } from 'react-router'
 import { Label } from '@/components/ui/label'
 import { useClasses } from './hooks'
-import { QueryStatus } from './QueryStatus'
+import { QueryStatus } from '@/components/QueryStatus'
 
 /** The class lives in the URL (/instructor/:classId), so a refresh or a shared link keeps it. */
 export function ClassPicker() {
