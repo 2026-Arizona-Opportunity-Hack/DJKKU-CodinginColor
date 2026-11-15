@@ -237,3 +237,19 @@ instead of repeating them.
   New DB test covers both cases (it failed before the fix). Found while testing the studio end to end.
 - Next: nothing for this; the studio's submit button relies on it.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane D, admin console 7a)
+- Done: `/admin` is now the CIC admin console, in tabs (`/admin/publish`, `/admin/staff`). Only CIC
+  admins get in ("This page is for CIC admins."). Publish queue: submitted modules with author and
+  date, Preview (read-only editor), Publish (with a confirm dialog; blocking problems from the
+  database are listed) and Send back, plus the published list. Staff: invite form (role, "Can author"
+  for instructors, explains the Google sign-in rule), invitations with Joined or waiting, and the
+  staff list with a role select and author switch (your own row is locked). Removed the duplicate
+  class creation form and module assignment from `/admin` (Jad's #16 and #17): the instructor feature
+  has both, and admins see every class at `/instructor`. Nothing in them was unique (the admin form
+  called `create_class`, which already lets an admin type a new school; a Schools tab comes in 7b).
+  Moved the shared `QueryStatus` to `src/components/` and added a shared `Dialog`. Checked on a local
+  Supabase as an admin: queue with author name, send back, publish, invite, staff list, role change,
+  own-role refusal.
+- Next: 7b: Classes, Schools, API keys, Mentors tabs.
+- Blocked: nothing.
