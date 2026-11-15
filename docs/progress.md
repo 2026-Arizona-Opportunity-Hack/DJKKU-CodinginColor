@@ -616,3 +616,12 @@ instead of repeating them.
   a class's only instructor, with a warning; add Cancel invite.
 - Next: `npx supabase db push --remote` for both migrations, then redeploy.
 - Blocked: nothing.
+
+### 2026-11-15: Daxx (transcripts: English only)
+- Found with a real Supadata key on a local Wrangler run: the seed lesson (an English CS Dojo video) came
+  back in Arabic, 2 paragraphs, because without `lang` Supadata returns the first caption track it finds,
+  here a partial translation.
+- Done: `/api/transcript` asks for `lang=en`; any other language is treated as "no transcript" (author's
+  summary shows, logged as `wrong_language`). A non-English transcript already in the cache is ignored and
+  replaced, so the live site repairs itself with no manual clean-up. Same video now: English, 61 timed
+  paragraphs over 24 minutes. 3 new tests (20 in the handler).
