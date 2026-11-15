@@ -11,6 +11,7 @@ we know is still weak. If this file and the SQL in `supabase/migrations/` disagr
 | Display name (for example "Maya R.") | So an instructor can recognize the student |
 | The school and class they belong to | So the right instructor sees them |
 | Their answers, scores, time on an activity and which activities they finished | To unlock the next step, show progress and measure learning gain |
+| Notes they choose to write in "My notebook" | So they can review in their own words. Private: only the student can read them |
 
 We do **not** collect an email address, a password, a phone number, a birth date, a photo or an
 address for students. A student signs in with a code on an anonymous Supabase session, so there
@@ -82,6 +83,10 @@ We would rather list these than hide them.
   script many sign-ins. A captcha could be added.
 - **Signing out an anonymous student loses their seat**, because a login code works once. The
   instructor can issue a new code.
+- **Notebook notes are private to the student**, including from instructors and admins: the table has no
+  client policy and the only read function returns the caller's own notes. They are kept in the database, not
+  the browser, because classroom Chromebooks are shared. Someone with database access (the service-role key) can
+  still read them, as with all data.
 - **Code activities are graded in the browser.** Python runs on the student's device (Pyodide), so a student
   who edits the page could report passing checks they did not pass. Code activities are practice; learning
   gain comes only from the pre-test and post-test, which are graded in the database.

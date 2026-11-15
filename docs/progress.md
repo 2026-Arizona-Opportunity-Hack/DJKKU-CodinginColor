@@ -508,6 +508,18 @@ instead of repeating them.
   you do not teach.
 - Next: catch-up plan for students who missed class.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lanes A and B, My notebook)
+
+- Done: under every activity a student can "Explain it in your own words" (the self-explanation effect, Chi et
+  al. 1994). It saves on Save or when they leave the box, and `/learn/:classId/notebook` collects every note by
+  module and lesson, with links back and a print button, so they can review in their own words before the
+  post-test. Linked as "My notebook" on Start here. New migration `20261115150000_lane_a_student_notes.sql`:
+  `student_notes` (RLS on, no client policy), `save_note` (trimmed, up to 2000 characters, empty deletes, only on
+  activities the student can read) and `get_my_notes` (own notes only). Notes are private, even from instructors
+  and admins, and kept in the database because classroom Chromebooks are shared. SECURITY.md and the contract
+  say so. Demo mode has the same behavior. DB tests per role, mock API, component and page tests with axe.
+- Next: 6c (studio code editor), misconception radar.
 ### 2026-11-15: Krishna (lane E, hints through the OHack AI gateway)
 - Done: hints can use an OpenAI-compatible gateway (`AI_GATEWAY_URL`, `AI_GATEWAY_KEY`, optional
   `AI_MODEL`, default `gpt-oss-120b`) instead of Gemini, so the demo has live AI hints with the team's
@@ -517,6 +529,14 @@ instead of repeating them.
   ladder on any failure (including when the OHack key expires after the event). Tested with a mocked
   gateway; the live call is checked on the deployed site.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane C, code activities 6c: studio and previews)
+
+- Done: "Code (Python)" is now in the studio's activity picker. Authors write the task (markdown), an optional
+  predict question, starter code and up to 10 visible checks (one `assert` per line). "Preview as student" and
+  the reviewer view show it read-only through a shared `src/components/learning/CodePreview.tsx`. The seed has
+  an optional code activity in the Loops lesson ("Try it: count with a loop"), so the signed-in demo shows it too.
+- Next: misconception radar.
 
 ### 2026-11-15: Umang (lanes A and D, misconception radar)
 

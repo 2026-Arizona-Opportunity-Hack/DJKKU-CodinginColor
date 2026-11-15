@@ -971,3 +971,41 @@ describe.skipIf(!up)('misconception radar', () => {
     await fails('select public.get_class_misconceptions($1)', [P1], /permission denied/)
   })
 })
+describe.skipIf(!up)('my notebook', () => {
+  type Note = { activity_id: string; activity_title: string; lesson_title: string; module_title: string; body: string }
+
+  it('saves, updates and deletes your own note, and lists it with its titles', async () => {
+    await as(SEED_STUDENT_1)
+    await q('select public.save_note($1, $2)', [ACT(2), '  A loop repeats the lines inside it.  '])
+    await q('select public.save_note($1, $2)', [ACT(1), 'A variable is a name for a value.'])
+    let notes = await one<Note[]>('select public.get_my_notes() as r')
+    expect(notes.map((n) => n.activity_id)).toEqual([ACT(1), ACT(2)]) // course order, not save order
+    expect(notes[1]).toMatchObject({ body: 'A loop repeats the lines inside it.' })
+    expect(notes[0]!.activity_title.length).toBeGreaterThan(0)
+    await q('select public.save_note($1, $2)', [ACT(1), 'Changed my mind.'])
+    await q('select public.save_note($1, $2)', [ACT(2), '   '])
+    notes = await one<Note[]>('select public.get_my_notes() as r')
+    expect(notes).toEqual([expect.objectContaining({ activity_id: ACT(1), body: 'Changed my mind.' })])
+  })
+
+  it('is private: classmates, instructors and admins cannot read it, and nobody reads the table', async () => {
+    await as(SEED_STUDENT_1)
+    await q('select public.save_note($1, $2)', [ACT(1), 'Private thought'])
+    await as(SEED_STUDENT_2)
+    expect(await one<Note[]>('select public.get_my_notes() as r')).toEqual([])
+    await fails('select * from public.student_notes', [], /permission denied/)
+    const admin = await mkUser('cic_admin')
+    await as(admin)
+    expect(await one<Note[]>('select public.get_my_notes() as r')).toEqual([])
+    await fails('select * from public.student_notes', [], /permission denied/)
+    await fails('select public.save_note($1, $2)', [ACT(1), 'x'], /Only students/)
+  })
+
+  it('refuses long notes, unknown activities and signed-out callers', async () => {
+    await as(SEED_STUDENT_1)
+    await fails('select public.save_note($1, $2)', [ACT(1), 'x'.repeat(2001)], /under 2000/)
+    await fails('select public.save_note($1, $2)', [randomUUID(), 'x'], /Activity not found/)
+    await as(null)
+    await fails('select public.get_my_notes()', [], /permission denied/)
+  })
+})

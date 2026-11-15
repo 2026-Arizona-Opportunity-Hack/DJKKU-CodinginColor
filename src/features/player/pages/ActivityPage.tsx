@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { env } from '@/features/player/env'
 import type { ActivityResponse } from '@/features/player/content'
 import { ActivityBody } from '@/features/player/components/ActivityBody'
+import { NoteBox } from '@/features/player/components/NoteBox'
 import { HintPanel } from '@/features/player/components/HintPanel'
 import { QueryView } from '@/features/player/components/QueryView'
 import { ResultMessage } from '@/features/player/components/ResultMessage'
@@ -103,6 +104,7 @@ function Player({ classId, activity, hintsEnabled }: { classId: string; activity
       {hintsEnabled && wrongOnce && !result?.completed && lastResponse && (
         <HintPanel activityId={activity.activity_id} lastResponse={lastResponse} />
       )}
+      <NoteBox key={activity.activity_id} activityId={activity.activity_id} notebookHref={paths.notebook(classId)} />
     </>
   )
 }

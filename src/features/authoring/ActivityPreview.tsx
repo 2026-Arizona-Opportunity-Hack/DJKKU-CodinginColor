@@ -1,4 +1,5 @@
 import { Reading, VideoEmbed } from '@/components/learning/ActivityContent'
+import { CodePreview } from '@/components/learning/CodePreview'
 import { QuestionPreview } from '@/components/learning/QuestionPreview'
 import { parseYouTubeId, splitQuestion, youtubeEmbedUrl } from '@shared/authoring/schemas'
 import type { ActivityFV } from './formTypes'
@@ -13,6 +14,9 @@ export function ActivityPreview({ activity }: { activity: ActivityFV }) {
     return id ? <VideoEmbed embedUrl={youtubeEmbedUrl(id)} title={activity.title || 'Video'} transcript={activity.transcript} /> : <p>Add a YouTube link to preview the video.</p>
   }
   if (activity.kind === 'reading') return activity.body?.trim() ? <Reading markdown={activity.body} /> : <p>Write the reading to preview it.</p>
+  if (activity.kind === 'code') {
+    return <CodePreview content={{ prompt: activity.prompt ?? '', starter: activity.starter ?? '', predict: activity.predict, tests: activity.tests ?? [] }} />
+  }
   const questions = activity.questions ?? []
   if (questions.length === 0) return <p>Add a question to preview it.</p>
   return (

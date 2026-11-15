@@ -83,6 +83,21 @@ export function useCatchUp(classId: string) {
   return useQuery({ queryKey: ['catchUp', classId] as const, queryFn: () => api.getCatchUp(classId) })
 }
 
+export function useMyNotes() {
+  const api = useStudentApi()
+  return useQuery({ queryKey: ['notes'] as const, queryFn: () => api.getMyNotes() })
+}
+
+export function useSaveNote(activityId: string) {
+  const api = useStudentApi()
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: string) => api.saveNote(activityId, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notes'] }),
+    onError: (e) => logFailure('student.note.fail', e, { activityId }),
+  })
+}
+
 export function useOpenModules() {
   const api = useStudentApi()
   return useQuery({ queryKey: keys.openModules, queryFn: () => api.listOpenModules() })

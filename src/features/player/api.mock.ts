@@ -19,7 +19,7 @@ import {
   type SeedAssessment,
   type SeedModule,
 } from './mockSeed'
-import type { Activity, ClassOutline, ItemStatus, OutlineModule, SubmitResult } from './types'
+import { NOTE_MAX, type Activity, type ClassOutline, type ItemStatus, type OutlineModule, type SubmitResult } from './types'
 import { getStore, safeGet, safeParse, safeSet } from './safeStorage'
 import { DisplayNameSchema } from './validation'
 
@@ -30,6 +30,7 @@ export type MockState = {
   extraCodes: Record<string, string> // login code -> display name (self-registered)
   hintsUsed: Record<string, number>
   seconds: Record<string, number>
+  notes?: Record<string, { body: string; updated_at: string }> // activity id -> the student's note
 }
 
 export const MOCK_STORAGE_KEY = 'cic.mock.v1'
@@ -327,6 +328,38 @@ export function createMockApi(opts: Options = {}): StudentApi & { readonly state
         requireMe()
         const s = Math.min(Math.max(0, Math.floor(seconds)), HEARTBEAT_SECONDS)
         update((st) => ({ ...st, seconds: { ...st.seconds, [activityId]: (st.seconds[activityId] ?? 0) + s } }))
+      }),
+
+    getMyNotes: () =>
+      delay(() => {
+        requireMe()
+        const notes = state.notes ?? {}
+        return SEED_MODULES.flatMap((m) =>
+          m.lessons.flatMap((l) =>
+            l.activities
+              .filter((a) => notes[a.activity_id])
+              .map((a) => ({
+                activity_id: a.activity_id, activity_title: a.title, kind: a.kind, lesson_title: l.title,
+                module_id: m.module_id, module_title: m.title, ...notes[a.activity_id]!,
+              })),
+          ),
+        ).sort((a, b) => a.module_title.localeCompare(b.module_title))
+      }),
+
+    saveNote: (activityId, body) =>
+      delay(() => {
+        requireMe()
+        const text = body.trim()
+        if (text.length > NOTE_MAX) throw new ApiError('invalid_response')
+        if (!findActivity(activityId)) throw new ApiError('not_found')
+        const updated_at = new Date().toISOString()
+        update((st) => {
+          const notes = { ...st.notes }
+          if (text) notes[activityId] = { body: text, updated_at }
+          else delete notes[activityId]
+          return { ...st, notes }
+        })
+        return { activity_id: activityId, body: text, updated_at: text ? updated_at : null }
       }),
 
     getCatchUp: (classId) =>

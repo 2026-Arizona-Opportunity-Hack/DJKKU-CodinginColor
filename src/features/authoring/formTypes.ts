@@ -27,8 +27,7 @@ export const KIND_LABEL: Record<ActivityKind, string> = {
   exit: 'Exit ticket',
   code: 'Code (Python)',
 }
-// 'code' joins the picker once its editor lands (the next PR); the data layer already supports it.
-export const KINDS = (Object.keys(KIND_LABEL) as ActivityKind[]).filter((k) => k !== 'code')
+export const KINDS = Object.keys(KIND_LABEL) as ActivityKind[]
 
 export function newActivity(kind: ActivityKind): ActivityFV {
   const base = { kind, title: '', required: true }
