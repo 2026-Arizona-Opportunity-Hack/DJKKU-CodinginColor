@@ -1,4 +1,5 @@
 import type { FeatureModule } from '@/lib/feature'
+import { authGuide } from './guide'
 import { lazyPage } from '@/lib/lazyPage'
 
 const JoinPage = lazyPage(() => import('./JoinPage'), 'JoinPage')
@@ -15,4 +16,5 @@ export const auth: FeatureModule = {
     { path: '/join/:joinCode', element: <JoinPage /> },
   ],
   showSignedOut: 'only',
+  guide: authGuide,
 }

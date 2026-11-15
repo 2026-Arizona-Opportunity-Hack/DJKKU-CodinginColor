@@ -1,4 +1,5 @@
 import type { FeatureModule } from '@/lib/feature'
+import { playerGuide } from './guide'
 
 import { PlayerEntry } from './PlayerEntry'
 import { PlayerError } from './PlayerError'
@@ -13,4 +14,5 @@ export const player: FeatureModule = {
   routes: [{ path: '/learn/*', element: <PlayerEntry />, errorElement: <PlayerError /> }],
   roles: ['student', 'independent_student'],
   showSignedOut: 'also', // guests can browse lessons without an account
+  guide: playerGuide,
 }
