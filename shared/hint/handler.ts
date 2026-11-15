@@ -10,6 +10,8 @@ import { normalizedAnswer, pickQuestion, readableAnswer, revealsAnswer, type Stu
 
 export const MAX_HINTS = 3
 export const MODEL = 'gemini-3.5-flash-lite' // stable, free tier; checked against the Gemini docs on 2026-11-14
+/** A hint request is an activity id and one answer: 16 KB is far more than any real one. */
+const MAX_BODY_CHARS = 16_384
 const GEMINI_URL = (model: string) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
 const AI_TIMEOUT_MS = 4000
 const MAX_HINT_CHARS = 300
@@ -61,9 +63,12 @@ export async function handleHint(request: Request, env: HintEnv, deps: HintDeps 
   const fail = (status: number, error: string) => reply(status, { error })
 
   // 1. The body.
+  // Size is checked before parsing, so an oversized body never reaches JSON.parse or zod.
   let raw: unknown
   try {
-    raw = JSON.parse(await request.text())
+    const text = await request.text()
+    if (text.length > MAX_BODY_CHARS) return fail(413, 'too_large')
+    raw = JSON.parse(text)
   } catch {
     return fail(400, 'invalid_request')
   }
