@@ -21,6 +21,7 @@ import {
 } from './mockSeed'
 import { NOTE_MAX, type Activity, type ClassOutline, type ItemStatus, type OutlineModule, type SubmitResult } from './types'
 import { getStore, safeGet, safeParse, safeSet } from './safeStorage'
+import { CONCEPT_EXAMPLES, RUBRIC, type Grade } from '@shared/simplify/rubric'
 import { DisplayNameSchema } from './validation'
 
 export type MockState = {
@@ -441,6 +442,28 @@ export function createMockApi(opts: Options = {}): StudentApi & { readonly state
         const ids = Object.keys(parsed.data.completed).filter((id) => findActivity(id)?.module.open && !isDone(id))
         update((s) => ({ ...s, done: [...s.done, ...ids] }))
         return { imported: ids.length }
+      }),
+
+    simplify: (activityId, grade) =>
+      delay(() => {
+        const found = findActivity(activityId)
+        if (!found) throw new ApiError('not_found')
+        const a = found.activity
+        if (a.kind !== 'reading' && a.kind !== 'video') throw new ApiError('invalid_response')
+        // Demo mode has no AI: a clearly labelled sample built from the real rubric's example themes.
+        const g = Math.min(12, Math.max(1, Math.round(grade))) as Grade
+        const r = RUBRIC[g]
+        const theme = Object.entries(CONCEPT_EXAMPLES).find(([k]) => a.title.toLowerCase().includes(k.replace(/s$/, '')))?.[1][r.band]
+        const material = (a.kind === 'reading' ? a.content.body : a.content.transcript ?? a.title).replace(/[#*`]/g, '').replace(/\s+/g, ' ').trim()
+        return {
+          grade: g,
+          summary: `Here is "${a.title}" explained for grade ${g}.`,
+          explanation: `${material.split('. ').slice(0, r.band === 'K-2' ? 1 : 3).join('. ').replace(/\.$/, '')}.\n\n_Demo mode: on the real site, AI rewrites the whole lesson for grade ${g} using the grade rubric (${r.vocabulary.toLowerCase()})._`,
+          example: theme ? `Think of ${theme}.` : r.examples,
+          keyTerms: r.band === 'K-2' ? [] : [{ term: a.title.replace(/^(Watch|Read): /, ''), meaning: 'the idea this lesson is about' }],
+          checkQuestion: { question: `In your own words, what is ${a.title.replace(/^(Watch|Read): /, '').toLowerCase()} about?`, answer: material.split('. ')[0] ?? a.title },
+          source: 'demo' as const,
+        }
       }),
 
     requestHint: (activityId) =>
