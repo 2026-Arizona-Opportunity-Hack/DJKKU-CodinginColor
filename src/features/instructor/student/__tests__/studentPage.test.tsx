@@ -44,7 +44,7 @@ describe('the student page', () => {
     await screen.findByRole('heading', { level: 2, name: 'Ava K.' })
     const sections = screen.getAllByRole('heading', { level: 3 }).map((e) => e.textContent)
     expect(sections).toEqual([
-      'Actions', 'Suggested next steps', 'Progress through the class', 'Learning gain', 'Concept mastery',
+      'Actions', 'Note home', 'Suggested next steps', 'Progress through the class', 'Learning gain', 'Concept mastery',
       'Accuracy and mistakes', 'Engagement', 'Hints', 'Struggles',
     ])
   })

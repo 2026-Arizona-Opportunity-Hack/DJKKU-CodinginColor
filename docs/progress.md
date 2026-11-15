@@ -538,3 +538,13 @@ instead of repeating them.
   an optional code activity in the Loops lesson ("Try it: count with a loop"), so the signed-in demo shows it too.
 - Next: misconception radar.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane D folder, note home)
+
+- Done: "Note home" on the instructor's student page. "Draft a note home" writes a short, positive-first message
+  for the family from the report (what they finished, a real gain, a strength, what is next and one way to help
+  at home, a warm line if they have been away). The instructor edits it and copies it into their own school
+  tool: nothing is sent from the app. Works in demo mode too. Research: personal messages home raised completion
+  (Kraft and Rogers 2015).
+- Next: belonging wording, completion certificate.
+- Blocked: nothing.
