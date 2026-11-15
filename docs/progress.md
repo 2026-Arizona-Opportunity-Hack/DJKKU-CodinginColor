@@ -324,4 +324,33 @@ instead of repeating them.
   Checked against a local Supabase with a real instructor session: by seat id and by profile id, an
   unclaimed seat (no per-student reads), and a class the instructor does not teach (not found).
 - Next: Find material for authors (YouTube and GitHub search, add to a lesson).
+### 2026-11-14: Krishna (lane E, Find material; UI in lane C's folder, Umang to review)
+- Done: "Find material" under each lesson in the authoring studio. An author types a topic, ticks
+  sources (YouTube, freeCodeCamp, Harvard CS50, GitHub), picks the language of the material and the
+  programming language, and adds a result to the lesson in one click: a video (embedded through
+  youtube-nocookie, never copied) or a GitHub README as a reading (only under an open license, with
+  images, badges and HTML removed, relative links made absolute, the source and license on the first
+  line, cut to the 20,000 character limit with a link to the rest). Additions land in the unsaved
+  draft like any other activity. `POST /api/sources/search` and `POST /api/sources/readme` (logic in
+  `shared/sources/`): authors only (the caller's token, then `is_author()` with that token; no service
+  role), zod-checked bodies, strict SafeSearch and embeddable-only videos, each source answers or says
+  why not (not set up, out of quota, down) without failing the others, results cached by query for a
+  day. GitHub uses best match plus "beginners" first, because sorting by stars returned famous but
+  unrelated projects. New optional secrets `YOUTUBE_API_KEY` and `GITHUB_TOKEN`. The flaky studio test
+  got a 20 second timeout. Checked through `wrangler pages dev` against local Supabase and the real
+  GitHub API: 401 without a session, 403 for a non-author, YouTube "not set up" with GitHub results,
+  422 for an unlicensed repository, 404 for a missing one, a repeat search from the cache. The live
+  YouTube call is NOT checked (no key); its shape is tested against a mocked fetch and the current docs.
+- Next: set `YOUTUBE_API_KEY` on Pages and try one real video search.
+
+### 2026-11-15: Umang (lane C, funder impact report)
+- Done: `/instructor/:classId/report`, a one-page learning-gain report a funder can read, linked as "Impact
+  report for funders" from the class page. A headline sentence written from the numbers ("7 students in Demo
+  Period 1 went from 46% on the pre-test to 80% on the post-test (+34 points). The biggest gain was in Loops:
+  +38 points." on the seed data), pre and post averages, gain and normalized gain, per-concept bars with the
+  same numbers in a table, students measured and missing a test, a note on method, Print or save as PDF, and a
+  CSV per module. Class totals only: no student name or score appears, so it is safe to share. A student
+  missing a test is counted as missing, never as zero (ADR 0020); groups under 5 are shown with a warning.
+  Checked on a local Supabase as a real instructor; a class you do not teach says so plainly.
+- Next: Parsons problems.
 - Blocked: nothing.

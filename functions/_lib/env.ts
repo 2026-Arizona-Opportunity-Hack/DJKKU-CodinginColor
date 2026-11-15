@@ -14,4 +14,8 @@ export interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string
   /** Free-tier Gemini key for the hint proxy. Optional: hints fall back to written ones. */
   GEMINI_API_KEY?: string
+  /** YouTube Data API v3 key for "Find material". Optional: without it only GitHub is searched. */
+  YOUTUBE_API_KEY?: string
+  /** GitHub token with no scopes for "Find material". Optional: 30 searches a minute instead of 10. */
+  GITHUB_TOKEN?: string
 }
