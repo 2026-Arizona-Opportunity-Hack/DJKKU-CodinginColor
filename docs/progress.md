@@ -601,3 +601,12 @@ instead of repeating them.
   author's summary shows instead. Key: `SUPADATA_API_KEY` (README, deploy.md, SECURITY.md).
 - Tests: 17 handler tests, 9 component tests (incl. axe). Real REST queries checked on local Supabase.
 - Needs: a Supadata key in Cloudflare Pages, and the migration on the hosted project.
+
+### 2026-11-15: Umang (security and QA pass, gates G-01 and G-02)
+
+- Done: ran SECURITY_QA_CHECKLIST against main. Full suite 699 tests and e2e pass. Results by ID in
+  `docs/security-audit.md` and `docs/qa-report.md`. New `scripts/security-probe.mjs` probes the REST API as a
+  stranger, an unclaimed anonymous session and a claimed student (54/54 pass locally, 17/17 on production).
+  Fixes opened: #59 (headers), #60 (privacy page, SECURITY.md), #61 (login code in URL, hint body cap).
+- Next: owner runs `npx supabase db push` on the hosted project (S-92), then re-run the probe on production.
+- Blocked: S-92 and the dashboard-only rows (OWNER in the audit).
