@@ -105,6 +105,11 @@ export function Layout() {
           <Outlet />
         )}
       </main>
+      <footer className="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 border-t px-(--spacing-gutter) py-6 text-sm text-muted-foreground print:hidden">
+        <span>Coding in Color Learn</span>
+        <Link className="inline-flex min-h-11 items-center underline" to="/privacy">Privacy</Link>
+        <a className="inline-flex min-h-11 items-center underline" href="https://github.com/2026-Arizona-Opportunity-Hack/DJKKU-CodinginColor/blob/main/SECURITY.md" rel="noopener noreferrer">Security</a>
+      </footer>
     </>
   )
 }

@@ -634,6 +634,14 @@ instead of repeating them.
   Fixes opened: #59 (headers), #60 (privacy page, SECURITY.md), #61 (login code in URL, hint body cap).
 - Next: owner runs `npx supabase db push` on the hosted project (S-92), then re-run the probe on production.
 - Blocked: S-92 and the dashboard-only rows (OWNER in the audit).
+### 2026-11-15: Umang (lanes D and E files, privacy page and SECURITY.md, S-61, S-62, S-71)
+
+- Done: a plain-language `/privacy` page (what we keep about students, who sees it, services used, retention and
+  deletion, contact), linked from a new site footer with a Security link. SECURITY.md gains a table of every service
+  that sees data and what it sees, a proposed retention rule (12 months after a class ends, CIC to confirm), "If
+  something leaks" steps, and an accurate AI hints entry (it said "planned, not built").
+- Next: security audit report.
+- Blocked: CIC to confirm the retention period and a security contact.
 ### 2026-11-15: Umang (lane E files, security headers S-50, S-51, S-59)
 
 - Done: `public/_headers` sets a Content-Security-Policy (only the origins the app uses: Supabase, jsDelivr for

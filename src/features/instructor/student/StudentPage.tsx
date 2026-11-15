@@ -74,7 +74,22 @@ function DemoStudent({ studentId }: { studentId: string }) {
   return (
     <>
       <p role="status" className="text-sm">Demo mode: this is sample data, not a real student.</p>
-      <StudentReportView report={report} actions={<><StudentActions report={report} classId="demo" memberId="demo" profileId={null} demo /><NoteHome report={report} /></>} />
+      <StudentReportView
+        report={report}
+        actions={
+          <>
+            <StudentActions
+              report={report}
+              classId="demo"
+              memberId="demo"
+              profileId={null}
+              demo
+            />
+            <NoteHome report={report} />
+            <AttentionInsight report={report} demo />
+          </>
+        }
+      />
     </>
   )
 }
