@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react'
 import { EmptyState } from '@/features/player/components/states'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { CatchUpPlan } from '@/features/player/components/CatchUpPlan'
 import { QueryView } from '@/features/player/components/QueryView'
 import { nextStep, paths } from '@/features/player/outline'
 import { useMyClasses, useNextActivity, useOutline } from '@/features/player/queries'
@@ -74,6 +75,7 @@ function ClassCard({ cls }: { cls: MyClass }) {
             </QueryView>
           )}
         </QueryView>
+        <CatchUpPlan classId={cls.class_id} />
       </CardContent>
       <CardFooter>
         <Button asChild variant="outline">
