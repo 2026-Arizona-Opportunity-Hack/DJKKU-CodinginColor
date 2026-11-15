@@ -11,6 +11,8 @@ import type { GuestProgress } from './guestProgress'
 import type {
   Activity,
   CatchUp,
+  Note,
+  SavedNote,
   Assessment,
   AssessmentResult,
   ClassOutline,
@@ -45,6 +47,8 @@ export interface StudentApi {
   heartbeat(activityId: string, seconds: number): Promise<void>
   getMyProgress(classId: string): Promise<MyProgress>
   getCatchUp(classId: string): Promise<CatchUp>
+  getMyNotes(): Promise<Note[]>
+  saveNote(activityId: string, body: string): Promise<SavedNote>
 
   // Guest mode and self-register
   listOpenModules(): Promise<OpenModule[]>
