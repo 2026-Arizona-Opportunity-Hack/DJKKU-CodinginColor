@@ -310,6 +310,20 @@ instead of repeating them.
   (no key); its shape is tested against a mocked fetch.
 - Next: 9b polish; set `GEMINI_API_KEY` on Pages and try one real hint.
 - Blocked: nothing.
+### 2026-11-14: Krishna (lane E, per-student page in lane D's folder; Jad to review)
+- Done: `/instructor/:classId/students/:studentId` (seat id or profile id), linked from a new Students
+  roster on the class page and from the stuck and not-started lists. One page per student: status (not
+  joined, not started, stuck, inactive, done, on track), completion against the class median, where they
+  are now, every activity (tries, first try right or wrong, hints, minutes against the class median),
+  learning gain with each pre/post question pair (learned, already knew, slipped, missing), concept mastery
+  against the class average, the wrong choice they keep picking, active days and a 4-week calendar, hints,
+  struggles, and suggested next steps. Actions: download CSV, print, reset login code (confirm first, the
+  new code is shown once), allow a test retake (confirm first), and a drafted note the instructor copies
+  and sends themselves. No migration: it reads the existing tables and views under row-level security.
+  Analytics are pure functions (`student/report.ts`) with their own tests; demo mode shows a sample student.
+  Checked against a local Supabase with a real instructor session: by seat id and by profile id, an
+  unclaimed seat (no per-student reads), and a class the instructor does not teach (not found).
+- Next: Find material for authors (YouTube and GitHub search, add to a lesson).
 ### 2026-11-14: Krishna (lane E, Find material; UI in lane C's folder, Umang to review)
 - Done: "Find material" under each lesson in the authoring studio. An author types a topic, ticks
   sources (YouTube, freeCodeCamp, Harvard CS50, GitHub), picks the language of the material and the

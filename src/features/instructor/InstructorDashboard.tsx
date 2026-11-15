@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 
 import {
   isInstructorDatabaseConfigured,
@@ -37,7 +38,18 @@ function formatGain(value: number | null): string {
   return `${value > 0 ? '+' : ''}${rounded} pts`
 }
 
-export function InstructorDashboard() {
+/** A student's name as a link to their page (`studentId` is a profile id or a roster seat id). */
+function StudentLink({ classId, studentId, name }: { classId: string; studentId: string | null; name: string }) {
+  if (!studentId) return <>{name}</>
+  return (
+    <Link to={`/instructor/${classId}/students/${studentId}`} className="underline underline-offset-4">
+      {name}
+    </Link>
+  )
+}
+
+/** `initialClassId` (from the URL) picks the class shown first; otherwise the first class. */
+export function InstructorDashboard({ initialClassId }: { initialClassId?: string } = {}) {
   const databaseConfigured =
     isInstructorDatabaseConfigured() && isDashboardDatabaseConfigured()
 
@@ -59,7 +71,11 @@ export function InstructorDashboard() {
         if (cancelled) return
 
         setClasses(result)
-        setClassId(result[0]?.id ?? '')
+        setClassId(
+          initialClassId && result.some((c) => c.id === initialClassId)
+            ? initialClassId
+            : (result[0]?.id ?? ''),
+        )
 
         if (result.length === 0) {
           setLoading(false)
@@ -77,7 +93,7 @@ export function InstructorDashboard() {
     return () => {
       cancelled = true
     }
-  }, [databaseConfigured])
+  }, [databaseConfigured, initialClassId])
 
   useEffect(() => {
     if (!databaseConfigured || !classId) return
@@ -172,6 +188,7 @@ export function InstructorDashboard() {
         </p>
       ) : data ? (
         <LiveDashboard
+          classId={classId}
           className={selectedClass?.name ?? 'Class'}
           data={data}
         />
@@ -181,9 +198,11 @@ export function InstructorDashboard() {
 }
 
 function LiveDashboard({
+  classId,
   className,
   data,
 }: {
+  classId: string
   className: string
   data: InstructorDashboardData
 }) {
@@ -273,6 +292,50 @@ const classGain =
         />
       </div>
 
+      <section aria-labelledby="roster-progress-heading" className="space-y-3">
+        <div>
+          <h3 id="roster-progress-heading" className="text-xl font-semibold">
+            Students
+          </h3>
+          <p className="text-sm text-gray-600">
+            Open a student to see their full progress, learning gain and next steps.
+          </p>
+        </div>
+
+        {students.length === 0 ? (
+          <p className="rounded-lg border p-4">No students on the roster yet.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border">
+            <table className="w-full border-collapse text-sm">
+              <caption className="sr-only">Every student in {className}</caption>
+              <thead className="bg-muted">
+                <tr>
+                  <th scope="col" className="border-b px-3 py-2 text-left font-semibold">Student</th>
+                  <th scope="col" className="border-b px-3 py-2 text-left font-semibold">Done</th>
+                  <th scope="col" className="border-b px-3 py-2 text-left font-semibold">Last active</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...students]
+                  .sort((a, b) => a.display_name.localeCompare(b.display_name))
+                  .map((student, index) => (
+                    <tr key={`${student.student_id ?? student.display_name}-${index}`}>
+                      <td className="border-b px-3 py-2">
+                        <StudentLink classId={classId} studentId={student.student_id} name={student.display_name} />
+                        {!student.joined && <span className="block text-xs text-gray-600">Seat not claimed</span>}
+                      </td>
+                      <td className="border-b px-3 py-2">{Math.round(student.completion_pct)}%</td>
+                      <td className="border-b px-3 py-2">
+                        {student.last_active_at ? new Date(student.last_active_at).toLocaleDateString() : 'Never'}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
       <section aria-labelledby="attention-heading" className="space-y-3">
         <div>
           <h3 id="attention-heading" className="text-xl font-semibold">
@@ -300,7 +363,9 @@ const classGain =
                   className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
-                    <p className="font-semibold">{name}</p>
+                    <p className="font-semibold">
+                      <StudentLink classId={classId} studentId={student.student_id} name={name} />
+                    </p>
                     <p className="text-sm text-gray-600">
                       {student.reasons.includes('wrong_attempts')
                         ? `${student.wrong_attempts} wrong attempts`
@@ -344,7 +409,9 @@ const classGain =
                 key={`${student.student_id ?? student.display_name}-${index}`}
                 className="rounded-lg border p-4"
               >
-                <p className="font-medium">{student.display_name}</p>
+                <p className="font-medium">
+                  <StudentLink classId={classId} studentId={student.student_id} name={student.display_name} />
+                </p>
                 <p className="text-sm text-gray-600">
                   {student.joined ? '0% complete' : 'Roster seat not claimed'}
                 </p>
@@ -490,7 +557,9 @@ function DemoDashboard() {
               className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
             >
               <div>
-                <p className="font-semibold">{student.displayName}</p>
+                <p className="font-semibold">
+                  <StudentLink classId="demo" studentId={student.studentId} name={student.displayName} />
+                </p>
                 <p className="text-sm text-gray-600">
                   {student.currentActivity}
                 </p>
@@ -531,7 +600,9 @@ function DemoDashboard() {
               key={student.studentId}
               className="rounded-lg border p-4"
             >
-              <p className="font-medium">{student.displayName}</p>
+              <p className="font-medium">
+                <StudentLink classId="demo" studentId={student.studentId} name={student.displayName} />
+              </p>
               <p className="text-sm text-gray-600">0% complete</p>
             </li>
           ))}

@@ -42,7 +42,7 @@ function ClassSections({ classId, className }: { classId: string; className: str
       <div ref={sheet}>{codes.length > 0 && <PrintableCodes className={className} codes={codes} />}</div>
       <div className="flex flex-col gap-10 print:hidden">
         <AssignModule classId={classId} />
-        <InstructorDashboard />
+        <InstructorDashboard initialClassId={classId} />
       </div>
     </div>
   )

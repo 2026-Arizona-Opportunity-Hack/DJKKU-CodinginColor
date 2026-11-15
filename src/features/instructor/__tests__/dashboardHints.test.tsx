@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CLASS_A, renderAt } from '../test/harness'
 import { InstructorDashboard } from '../InstructorDashboard'
@@ -25,8 +25,29 @@ beforeEach(() => {
 describe('stuck list', () => {
   it('shows how many hints a stuck student has used', async () => {
     renderAt(<InstructorDashboard />)
-    expect(await screen.findByText('Sam P.')).toBeInTheDocument()
-    expect(screen.getByText('3 wrong attempts')).toBeInTheDocument()
-    expect(screen.getByText('Hints used: 2')).toBeInTheDocument()
+    // The name is also in the Students roster now, so look inside the stuck list only.
+    const attention = await screen.findByRole('region', { name: 'Needs attention' })
+    expect(within(attention).getByText('Sam P.')).toBeInTheDocument()
+    expect(within(attention).getByText('3 wrong attempts')).toBeInTheDocument()
+    expect(within(attention).getByText('Hints used: 2')).toBeInTheDocument()
+  })
+})
+
+describe('links to each student', () => {
+  it('lists every student in a roster, and links names to their page', async () => {
+    renderAt(<InstructorDashboard />)
+    const roster = await screen.findByRole('region', { name: 'Students' })
+    const link = within(roster).getByRole('link', { name: 'Sam P.' })
+    expect(link).toHaveAttribute('href', `/instructor/${CLASS_A.id}/students/${STUDENT}`)
+    expect(within(roster).getByText('29%')).toBeInTheDocument()
+    const attention = screen.getByRole('region', { name: 'Needs attention' })
+    expect(within(attention).getByRole('link', { name: 'Sam P.' })).toHaveAttribute('href', `/instructor/${CLASS_A.id}/students/${STUDENT}`)
+  })
+
+  it('opens the class from the URL, not always the first class', async () => {
+    const other = { ...CLASS_A, id: '10000000-0000-4000-8000-0000000000cc', name: 'Period 9' }
+    m.listInstructorClasses.mockResolvedValue([CLASS_A, other])
+    renderAt(<InstructorDashboard initialClassId={other.id} />)
+    expect(await screen.findByRole('heading', { name: 'Period 9' })).toBeInTheDocument()
   })
 })
