@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ActivityEditor } from './ActivityEditor'
 import { FindMaterial } from './FindMaterial'
-import { KIND_LABEL, KINDS, newActivity, type ModuleFV } from './formTypes'
+import { KIND_LABEL, KINDS, coderSpotlight, newActivity, type ModuleFV } from './formTypes'
 
 type Props = {
   index: number
@@ -75,6 +75,7 @@ export function LessonEditor({ index, count, control, register, errors, readOnly
             </select>
           </div>
           <Button type="button" variant="outline" onClick={() => append(newActivity(kind))}>Add activity</Button>
+          <Button type="button" variant="outline" onClick={() => append(coderSpotlight())}>Add a Coder spotlight</Button>
           <Button type="button" variant="outline" aria-expanded={finding} aria-controls={`${id}-find`} onClick={() => setFinding((f) => !f)}>
             Find material
           </Button>
