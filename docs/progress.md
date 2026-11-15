@@ -132,3 +132,16 @@ instead of repeating them.
   returning `null` when the next step is a pre or post test.
 - Next: sign-in page (next PR) reads `get_me`; lane B checks `get_class_outline` when `next_activity` is null.
 - Blocked: nothing.
+
+### 2026-11-14: Umang (lane A, covering auth)
+- Done: built the sign-in feature (M1) in `src/features/auth/`. `/sign-in` takes a student login code
+  (anonymous session, then `claim_login_code`) or Google for staff; `/join/:joinCode` lists unclaimed names
+  and claims one. A 12-character code typed into the student box goes to the join page, 16 is a login code.
+  Shared `src/lib/session.ts` (`get_me` parsing, `useMe`, `homePathFor`, anonymous sign-in with a friendly
+  429 message). The nav now follows the role, with a "no access" page for the wrong role (RLS is still the
+  real gate), the home page sends signed-in people to their own screen, and `shared/roles.ts` now says
+  `cic_admin` like the database. Demo mode (no Supabase URL) is labelled and keeps the mock player working.
+  `supabase/config.toml` redirect URLs point at the Vite dev server. 42 new tests, including axe checks.
+- Next: the player adapter reads `get_me` (its schema needs `class_id` and `class_name` to be nullable);
+  the hosted project needs the Cloudflare Pages URL under Auth > URL Configuration.
+- Blocked: nothing.

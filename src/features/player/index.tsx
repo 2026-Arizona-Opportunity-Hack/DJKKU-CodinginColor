@@ -11,4 +11,6 @@ export const player: FeatureModule = {
   label: 'Learn',
   path: '/learn',
   routes: [{ path: '/learn/*', element: <PlayerEntry />, errorElement: <PlayerError /> }],
+  roles: ['student', 'independent_student'],
+  showSignedOut: 'also', // guests can browse lessons without an account
 }

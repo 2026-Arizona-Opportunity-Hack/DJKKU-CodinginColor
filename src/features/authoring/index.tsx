@@ -7,5 +7,6 @@ export const authoring: FeatureModule = {
   label: 'Author',
   path: '/author',
   routes: [{ path: '/author/*', element: <AuthoringPage /> }],
-  roles: ['instructor', 'admin'],
+  roles: ['instructor', 'cic_admin'],
+  needsAuthorFlag: true,
 }

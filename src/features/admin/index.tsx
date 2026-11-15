@@ -7,5 +7,5 @@ export const admin: FeatureModule = {
   label: 'Admin',
   path: '/admin',
   routes: [{ path: '/admin/*', element: <AdminPage /> }],
-  roles: ['instructor', 'admin'],
+  roles: ['cic_admin'],
 }

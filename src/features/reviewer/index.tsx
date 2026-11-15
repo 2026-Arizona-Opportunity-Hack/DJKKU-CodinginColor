@@ -7,5 +7,5 @@ export const reviewer: FeatureModule = {
   label: 'Review',
   path: '/review',
   routes: [{ path: '/review/*', element: <ReviewerPage /> }],
-  roles: ['reviewer', 'admin'],
+  roles: ['reviewer', 'cic_admin'],
 }
