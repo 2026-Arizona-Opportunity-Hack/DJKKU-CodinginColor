@@ -23,4 +23,6 @@ export interface Env {
   YOUTUBE_API_KEY?: string
   /** GitHub token with no scopes for "Find material". Optional: 30 searches a minute instead of 10. */
   GITHUB_TOKEN?: string
+  /** Supadata key for real video transcripts (/api/transcript). Optional: without it the author's summary shows. */
+  SUPADATA_API_KEY?: string
 }

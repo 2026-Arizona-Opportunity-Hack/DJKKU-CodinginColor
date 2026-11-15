@@ -67,6 +67,7 @@ The per-role proof is `supabase/tests/db.test.ts` (it runs against a real local 
   starts with `VITE_`.
 - The service-role key (which bypasses RLS) exists only as a Cloudflare Pages secret, used by the read
   API. Setup and the full variable list are in the README and [docs/deploy.md](docs/deploy.md).
+- Video transcripts: `/api/transcript` sends Supadata only the public YouTube video id of a lesson video, never anything about a student, and only for videos in a published lesson. The `SUPADATA_API_KEY` is a Cloudflare Pages secret.
 - `.env` and `.dev.vars` are gitignored, and `.env.example` holds placeholders only. CI runs gitleaks
   on every pull request.
 

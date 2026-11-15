@@ -166,6 +166,7 @@ Open the project > **Settings** > **Variables and Secrets** > **Add**. For each,
 | `AI_GATEWAY_URL`, `AI_GATEWAY_KEY` | Optional, instead of Gemini: an OpenAI-compatible gateway for hints, such as the OHack AI gateway (`https://ai.ohack.dev/v1` and the team key). The model is `gpt-oss-120b` unless `AI_MODEL` says otherwise (on the OHack gateway, muse-spark prompts may be used for training; gpt-oss's are not, so keep gpt-oss for students' answers). The OHack keys stop working after the event; hints then fall back to the written ladder. |
 | `YOUTUBE_API_KEY` | Optional, for **Find material** in the authoring studio. Without it the YouTube, freeCodeCamp and CS50 sources say "not set up" and GitHub still works. How to get one is below. |
 | `GITHUB_TOKEN` | Optional, for Find material. A fine-grained token with **no permissions** (public repositories, read-only) raises GitHub searches from 10 to 30 a minute. Without it, searches still work. |
+| `SUPADATA_API_KEY` | Optional, for real video transcripts. Sign up at https://dash.supadata.ai (free plan, 100 requests a month, no card) and copy the API key. Each lesson video is fetched once and cached in `video_transcripts`; without the key, "Read the transcript" shows the author's summary.
 
 **A YouTube key (free, about 3 minutes).** In the [Google Cloud console](https://console.cloud.google.com/),
 pick (or create) a project, open **APIs & Services** > **Library**, search **YouTube Data API v3** and
@@ -310,6 +311,7 @@ too and **Add as video** adds one.
 | `/api/v1/completion` returns 503 | `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` secret missing, or no redeploy after adding. |
 | An invited instructor sees no classes | They need `add_class_instructor` (Part 3). |
 | Find material says "not set up on this site yet" for YouTube | `YOUTUBE_API_KEY` is missing, or no redeploy after adding it. GitHub results still work. |
+| "Read the transcript" shows the teacher's summary instead of the full transcript | `SUPADATA_API_KEY` is missing (or no redeploy after adding it), the video has no captions on YouTube (remembered for a week), or the free monthly quota is used up. The Pages Function log line `"event":"transcript"` says which (`cause` / `upstream_status`). |
 | Find material says "the daily search limit is used up" | The YouTube quota (about 100 searches a day) is spent. It resets at midnight Pacific time. |
 | Find material says "Only authors can search" | The account is not a CIC admin or an instructor with authoring rights (`/admin` > Staff). |
 | `Only a CIC admin can ...` in the SQL editor | Run the `set_config` line first, in the same run, with an `ADMIN_ID` that has role `cic_admin`. |
