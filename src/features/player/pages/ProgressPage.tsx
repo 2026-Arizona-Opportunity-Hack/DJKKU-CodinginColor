@@ -4,11 +4,16 @@ import { EmptyState } from '@/features/player/components/states'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { QueryView } from '@/features/player/components/QueryView'
-import { paths } from '@/features/player/outline'
+import { paths, whole } from '@/features/player/outline'
 import { useMyProgress } from '@/features/player/queries'
 
-const pct = (n: number | null | undefined) => (n === null || n === undefined ? 'Not taken' : `${n}%`)
-const signed = (n: number | null | undefined) => (n === null || n === undefined ? '—' : `${n > 0 ? '+' : ''}${n} points`)
+// Display only: the database sends long decimals, so round here and keep the raw values in state.
+const pct = (n: number | null | undefined) => (n === null || n === undefined ? 'Not taken' : `${whole(n)}%`)
+const signed = (n: number | null | undefined) => {
+  if (n === null || n === undefined) return 'Not yet' // never shown as 0: no post-test yet is not "no growth"
+  const w = whole(n)
+  return `${w > 0 ? '+' : ''}${w} points`
+}
 
 /** B10: the student's own progress: completed activities, module progress, pre/post and gain. */
 export function ProgressPage() {
@@ -39,8 +44,8 @@ export function ProgressPage() {
                   </CardHeader>
                   <CardContent className="flex flex-col gap-3">
                     <div className="flex flex-col gap-1">
-                      <span className="text-sm">{m.pct}% of activities done</span>
-                      <Progress value={m.pct} aria-label={`${m.title}: ${m.pct}% done`} />
+                      <span className="text-sm">{whole(m.pct)}% of activities done</span>
+                      <Progress value={whole(m.pct)} aria-label={`${m.title}: ${whole(m.pct)}% done`} />
                     </div>
                     <dl className="grid grid-cols-3 gap-2 text-center">
                       {[

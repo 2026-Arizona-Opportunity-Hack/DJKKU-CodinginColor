@@ -12,12 +12,8 @@ import { ActivityContentSchema } from './content'
 export const ItemStatus = z.enum(['locked', 'available', 'done'])
 export type ItemStatus = z.infer<typeof ItemStatus>
 
-/** Who is signed in (get_me). */
-export const MeSchema = z.object({
-  class_id: z.string(),
-  class_name: z.string(),
-  display_name: z.string(),
-})
+/** Who is signed in (get_me). One definition for the whole app, in src/lib/session.ts. */
+export { MeSchema } from '@/lib/session'
 
 
 
@@ -134,7 +130,7 @@ export type OpenModule = z.infer<typeof OpenModule>
 export const ImportResult = z.object({ imported: z.number() })
 export type ImportResult = z.infer<typeof ImportResult>
 
-export const SelfRegisterResult = z.object({ login_code: z.string() })
+export const SelfRegisterResult = z.object({ class_id: z.string(), login_code: z.string() })
 export type SelfRegisterResult = z.infer<typeof SelfRegisterResult>
 
 export const HintResult = z.object({

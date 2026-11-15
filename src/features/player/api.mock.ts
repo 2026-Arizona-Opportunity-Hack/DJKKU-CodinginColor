@@ -143,12 +143,14 @@ export function createMockApi(opts: Options = {}): StudentApi & { readonly state
   const isDone = (id: string) => state.done.includes(id)
   const pretestTaken = (m: SeedModule) => m.pretest.assessment_id in state.assessments
   const moduleComplete = (m: SeedModule) => allActivities(m).every((a) => !a.required || isDone(a.activity_id))
+  // Like the database, a module only counts as finished (and opens the next one) once its post-test is taken too.
+  const moduleFinished = (m: SeedModule) => moduleComplete(m) && m.posttest.assessment_id in state.assessments
 
   /** The lock rules, as the server would apply them. */
   function outline(): ClassOutline {
     const modules: OutlineModule[] = SEED_MODULES.map((m, mi) => {
       const prevModule = mi > 0 ? SEED_MODULES[mi - 1] : undefined
-      const moduleLockedBy = prevModule && !moduleComplete(prevModule) ? prevModule.title : null
+      const moduleLockedBy = prevModule && !moduleFinished(prevModule) ? prevModule.title : null
       const pretestStatus: ItemStatus = moduleLockedBy ? 'locked' : pretestTaken(m) ? 'done' : 'available'
       let blocker: string | null = moduleLockedBy
         ? `Finish '${moduleLockedBy}' first`
@@ -234,11 +236,17 @@ export function createMockApi(opts: Options = {}): StudentApi & { readonly state
       delay(() => {
         requireMe()
         if (classId !== SEED_CLASS.class_id) throw new ApiError('not_found')
-        for (const m of outline().modules)
+        // Like the database: the first AVAILABLE required activity, and null when the next step is
+        // a pre-test or post-test (the client then reads the outline). A module is only passed
+        // once its required work is done and its post-test is taken.
+        for (const m of outline().modules) {
           for (const l of m.lessons)
             for (const a of l.activities)
-              if (a.status !== 'done' && a.required)
+              if (a.status === 'available' && a.required)
                 return { module_id: m.module_id, lesson_id: l.lesson_id, activity_id: a.activity_id }
+          const seed = SEED_MODULES.find((s) => s.module_id === m.module_id)!
+          if (!moduleFinished(seed)) return null
+        }
         return null
       }),
 
@@ -374,7 +382,7 @@ export function createMockApi(opts: Options = {}): StudentApi & { readonly state
         const n = Object.keys(state.extraCodes).length + 1
         const login_code = `GREEN-OWL-${String(40 + n)}`
         update((s) => ({ ...s, extraCodes: { ...s.extraCodes, [login_code]: displayName.trim() } }))
-        return { login_code }
+        return { class_id: 'class-open', login_code }
       }),
 
     importGuestProgress: (payload: GuestProgress) =>

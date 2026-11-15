@@ -63,17 +63,40 @@ describe('B4 self-register', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Save my progress' }))
   }
 
-  it('registers once, shows the code with a link to sign in, and keeps device progress for the merge', async () => {
+  it('registers once, copies device progress right away, and shows the code once with where it is for', async () => {
     markGuestCompleted('act-vars-video')
     const api = mockApi()
     const registerSpy = vi.spyOn(api, 'selfRegister')
+    const importSpy = vi.spyOn(api, 'importGuestProgress')
     const { container } = renderRoute(<SaveProgressPage />, { path: '/learn/explore/save', url: '/learn/explore/save', api })
     await register('Sam P.')
     expect(await screen.findByText('GREEN-OWL-41')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Sign in with this code' })).toHaveAttribute('href', '/sign-in')
+    expect(screen.getByText("Write this down. You'll need it on another device.")).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Go to my lessons' })).toHaveAttribute('href', '/learn')
     expect(registerSpy).toHaveBeenCalledTimes(1)
-    expect(readGuestProgress().completed['act-vars-video']).toBeDefined()
+    expect(importSpy).toHaveBeenCalledTimes(1)
+    expect(readGuestProgress().completed).toEqual({}) // merged, so cleared from the device
     await expectNoSeriousA11yViolations(container)
+  })
+
+  it('still shows the code if copying device progress fails, and keeps the device copy for a retry', async () => {
+    vi.spyOn(log, 'error').mockImplementation(() => {})
+    markGuestCompleted('act-vars-video')
+    const api = mockApi()
+    vi.spyOn(api, 'importGuestProgress').mockRejectedValue(new ApiError('unavailable', { requestId: 'imp-2' }))
+    renderRoute(<SaveProgressPage />, { path: '/learn/explore/save', url: '/learn/explore/save', api })
+    await register('Sam P.')
+    expect(await screen.findByText('GREEN-OWL-41')).toBeInTheDocument()
+    expect(readGuestProgress().completed['act-vars-video']).toBeDefined()
+  })
+
+  it('shows a friendly message when this device already belongs to a class', async () => {
+    vi.spyOn(log, 'error').mockImplementation(() => {})
+    const api = mockApi()
+    vi.spyOn(api, 'selfRegister').mockRejectedValue(new ApiError('already_in_class', { requestId: 'dup-1' }))
+    renderRoute(<SaveProgressPage />, { path: '/learn/explore/save', url: '/learn/explore/save', api })
+    await register('Sam P.')
+    expect(await screen.findByText(/already in a class/)).toBeInTheDocument()
   })
 
   it('rejects emails and links on the client', async () => {

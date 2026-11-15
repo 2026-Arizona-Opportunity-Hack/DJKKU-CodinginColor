@@ -32,7 +32,14 @@ export type SeedModule = {
 
 export const SEED_CLASS = { class_id: 'class-sat', class_name: 'Saturday Coders', kind: 'cohort' } as const
 /** The demo student the mock starts signed in as (login code BLUE-FOX-27 in the shared demo data). */
-export const SEED_STUDENT = { display_name: 'Maya R.', class_id: SEED_CLASS.class_id, class_name: SEED_CLASS.class_name }
+export const SEED_STUDENT = {
+  profile_id: '00000000-0000-4000-8000-00000000000a',
+  role: 'student',
+  can_author: false,
+  display_name: 'Maya R.',
+  class_id: SEED_CLASS.class_id,
+  class_name: SEED_CLASS.class_name,
+} as const
 
 const hints = ['Re-read the question and underline the key word.', 'Look back at the example in this lesson.', 'Try the simplest case first.']
 

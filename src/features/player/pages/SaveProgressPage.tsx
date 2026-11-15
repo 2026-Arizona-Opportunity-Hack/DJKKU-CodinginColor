@@ -94,7 +94,7 @@ function CodeReveal({ issued }: { issued: IssuedCode }) {
       <Card className="border-2 border-primary">
         <CardHeader>
           <CardTitle>Your personal login code</CardTitle>
-          <CardDescription>Write this down or print it. You need it to sign in.</CardDescription>
+          <CardDescription>Write this down. You'll need it on another device.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <p className="rounded-md bg-secondary p-4 text-center font-mono text-3xl font-bold tracking-widest break-all text-secondary-foreground">
@@ -105,11 +105,11 @@ function CodeReveal({ issued }: { issued: IssuedCode }) {
               Print my code
             </Button>
             <Button asChild>
-              <Link to={paths.signIn}>Sign in with this code</Link>
+              <Link to={paths.home}>Go to my lessons</Link>
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">
-            After you sign in, the lessons you finished as a guest on this device are copied to your account.
+            This device is already signed in. The lessons you finished as a guest are saved to your account.
           </p>
         </CardContent>
       </Card>

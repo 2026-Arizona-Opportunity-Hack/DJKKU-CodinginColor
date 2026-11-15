@@ -52,6 +52,21 @@ describe('B15 mock data source', () => {
     })
   })
 
+  it('matches the database: next is null while a pre-test or post-test is the next step', async () => {
+    // Pre-test not taken: every activity is locked, so there is no next activity.
+    expect(await mockApi({ me: MAYA }).nextActivity('class-sat')).toBeNull()
+    // Pre-test taken: the first activity.
+    const afterPre = mockApi({ me: MAYA, assessments: { 'pre-basics': { score_pct: 33 } } })
+    expect(await afterPre.nextActivity('class-sat')).toMatchObject({ activity_id: 'act-vars-video' })
+    // Every required activity done but the post-test not taken: null again (the next step is the post-test).
+    const all = ['act-vars-video', 'act-vars-read', 'act-vars-check', 'act-loops-sheet', 'act-loops-check', 'act-basics-exit']
+    const needsPost = mockApi({ me: MAYA, done: all, assessments: { 'pre-basics': { score_pct: 33 } } })
+    expect(await needsPost.nextActivity('class-sat')).toBeNull()
+    // Post-test taken: the next module's pre-test is up next, still null, never an activity that is locked.
+    const next = mockApi({ me: MAYA, done: all, assessments: { 'pre-basics': { score_pct: 33 }, 'post-basics': { score_pct: 90 } } })
+    expect(await next.nextActivity('class-sat')).toBeNull()
+  })
+
   it('rejects malformed responses and a second test attempt', async () => {
     const api = mockApi({ me: MAYA })
     await api.submitAssessment('pre-basics', {})

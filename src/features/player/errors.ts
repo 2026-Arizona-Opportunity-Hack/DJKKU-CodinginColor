@@ -10,6 +10,8 @@ export const ERROR_CODES = [
   'invalid_response',
   'already_taken',
   'invalid_name',
+  'already_in_class',
+  'wrong_account',
   'rate_limited',
   'unavailable',
   'unauthenticated',
@@ -25,6 +27,8 @@ const MESSAGES: Record<ErrorCode, string> = {
   invalid_response: "That answer couldn't be read. Check it and try again.",
   already_taken: "You've already taken this test.",
   invalid_name: 'Use 1 to 40 letters, with no email address or link.',
+  already_in_class: 'This device is already in a class. Sign in with your login code instead.',
+  wrong_account: 'This device is already signed in to a different account. Sign out first, then try again.',
   rate_limited: 'Too many tries right now. Wait a minute and try again.',
   unavailable: "That service isn't available right now. Try again in a minute.",
   unauthenticated: 'You are signed out. Sign in to continue.',
@@ -61,6 +65,13 @@ function isKnownCode(s: unknown): s is ErrorCode {
   return typeof s === 'string' && (ERROR_CODES as readonly string[]).includes(s)
 }
 
+/** Plain-language messages the database raises (SQLSTATE P0001), matched to our codes. */
+const DB_MESSAGES: [RegExp, ErrorCode][] = [
+  [/already belongs to a class/i, 'already_in_class'],
+  [/display name|no email/i, 'invalid_name'],
+  [/cannot (self-register|claim)/i, 'wrong_account'],
+]
+
 type PostgrestLike = { message?: string; hint?: string | null; code?: string; details?: string | null }
 
 /** Map a PostgrestError (or anything thrown by fetch) to an ApiError. */
@@ -71,6 +82,8 @@ export function fromRpcError(err: PostgrestLike | unknown, requestId: string): A
     const fromServer = [e.message, e.hint].find(isKnownCode)
     if (fromServer) return new ApiError(fromServer, { requestId, cause: err })
     // PostgREST: PGRST301/JWT problems, 42501 = insufficient privilege.
+    const known = typeof e.message === 'string' ? DB_MESSAGES.find(([re]) => re.test(e.message!)) : undefined
+    if (known) return new ApiError(known[1], { requestId, cause: err })
     if (e.code === 'PGRST301' || e.code === '42501') return new ApiError('unauthenticated', { requestId, cause: err })
     if (e.code === 'PGRST202') return new ApiError('unavailable', { requestId, cause: err })
     if (typeof e.message === 'string' && /fetch|network/i.test(e.message)) {
