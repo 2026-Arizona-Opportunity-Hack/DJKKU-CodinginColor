@@ -9,7 +9,9 @@ import { questionContent } from '@shared/authoring/schemas'
 
 import { ActivityContentSchema } from './content'
 
-export const ItemStatus = z.enum(['locked', 'available', 'done'])
+// 'skipped': the instructor started this student at a later module (set_start_module). Skipped
+// work counts as done for unlocking, stays open to review, and is never the next step.
+export const ItemStatus = z.enum(['locked', 'available', 'done', 'skipped'])
 export type ItemStatus = z.infer<typeof ItemStatus>
 
 /** Who is signed in (get_me). One definition for the whole app, in src/lib/session.ts. */

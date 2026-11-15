@@ -52,7 +52,7 @@ export function QuestionField({ question, index, disabled }: Props) {
             {question.choices.map((choice) => (
               <label
                 key={choice.id}
-                className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 has-[:checked]:border-primary has-[:checked]:bg-accent has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
+                className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border bg-white px-3 py-2 transition-colors hover:border-tint-green-edge has-[:checked]:border-primary has-[:checked]:bg-tint-green has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
               >
                 <input type="radio" value={choice.id} className="size-5 accent-primary" {...register(name)} />
                 <span>

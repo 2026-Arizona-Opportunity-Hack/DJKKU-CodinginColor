@@ -1,6 +1,8 @@
 import type { FeatureModule } from '@/lib/feature'
-import { JoinPage } from './JoinPage'
-import { SignInPage } from './SignInPage'
+import { lazyPage } from '@/lib/lazyPage'
+
+const JoinPage = lazyPage(() => import('./JoinPage'), 'JoinPage')
+const SignInPage = lazyPage(() => import('./SignInPage'), 'SignInPage')
 
 // M1: login code and class join link for students, Google sign-in for staff, mentors and reviewers.
 export const auth: FeatureModule = {

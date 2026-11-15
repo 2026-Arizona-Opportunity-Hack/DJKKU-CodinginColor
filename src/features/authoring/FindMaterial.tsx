@@ -158,7 +158,7 @@ export function FindMaterial({ id, lessonNumber, lessonTitle, activityCount, onA
       {full && <p className="text-sm font-medium">This lesson has {MAX_ACTIVITIES} activities, the most it can hold. Remove one to add more.</p>}
 
       {search.data && search.data.problems.length > 0 && (
-        <ul className="flex flex-col gap-1 rounded-md border border-amber-500 bg-amber-50 p-3 text-sm text-amber-950">
+        <ul className="flex flex-col gap-1 rounded-md border border-tint-yellow-edge bg-tint-yellow p-3 text-sm text-tint-yellow-fg">
           {search.data.problems.map((p) => <li key={p.source}>{problemText(p.source, p.error)}</li>)}
         </ul>
       )}

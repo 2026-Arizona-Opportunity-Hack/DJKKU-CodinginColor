@@ -1,0 +1,13 @@
+User-agent: *
+# Public pages: the landing page, sign-in and the no-account lesson browser.
+Allow: /$
+Allow: /sign-in
+Allow: /learn/explore
+# Signed-in screens hold no public content.
+Disallow: /learn/
+Disallow: /author
+Disallow: /instructor
+Disallow: /admin
+Disallow: /review
+Disallow: /join/
+Disallow: /api/
