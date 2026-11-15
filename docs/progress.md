@@ -538,3 +538,13 @@ instead of repeating them.
   an optional code activity in the Loops lesson ("Try it: count with a loop"), so the signed-in demo shows it too.
 - Next: misconception radar.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane B folder, completion certificate)
+
+- Done: when a student has taken a module's post-test, My progress shows "View my certificate for <module>",
+  which opens a printable certificate at `/learn/:classId/certificate/:moduleIndex`: their display name, the
+  module, the class, the date, and their pre-to-post growth when it is positive. Before the post-test the page
+  says how to earn it. Built from data the student already sees; nothing new is stored. Page titles added for
+  the certificate and the notebook.
+- Next: the larger testing pass across all new features, then the demo.
+- Blocked: nothing.
