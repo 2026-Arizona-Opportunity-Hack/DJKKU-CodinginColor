@@ -73,7 +73,7 @@ export function OverviewTab() {
     <div className="space-y-10">
       <header>
         <h2 className="text-3xl font-bold">CIC administration</h2>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           Manage partner schools, staff, and class staffing across Coding in
           Color.
         </p>
@@ -82,7 +82,7 @@ export function OverviewTab() {
       {demoMode ? (
         <div className="rounded-lg border p-5">
           <p className="font-semibold">Demo mode</p>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-sm text-muted-foreground">
             Connect Supabase and sign in as a CIC admin to manage the
             organization.
           </p>
@@ -92,7 +92,7 @@ export function OverviewTab() {
           Loading administration data...
         </p>
       ) : loadError ? (
-        <p role="alert" className="rounded-lg border p-5 text-red-700">
+        <p role="alert" className="rounded-lg border p-5 text-destructive">
           {loadError}
         </p>
       ) : (
@@ -136,7 +136,7 @@ function OrganizationOverview({
         <h2 id="overview-heading" className="text-2xl font-semibold">
           Organization overview
         </h2>
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-muted-foreground">
           CIC-wide setup visible only to administrators.
         </p>
       </div>
@@ -228,7 +228,7 @@ function InviteStaffForm() {
         <h2 id="invite-heading" className="text-2xl font-semibold">
           Invite staff
         </h2>
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-muted-foreground">
           Their role is applied when they sign in with the invited Google
           account.
         </p>
@@ -281,7 +281,7 @@ function InviteStaffForm() {
         )}
 
         {error && (
-          <p role="alert" className="text-sm font-medium text-red-700">
+          <p role="alert" className="text-sm font-medium text-destructive">
             {error}
           </p>
         )}
@@ -358,13 +358,13 @@ function ClassStaffing({
         <h2 id="staffing-heading" className="text-2xl font-semibold">
           Class staffing
         </h2>
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-muted-foreground">
           Assign an existing CIC instructor to a class.
         </p>
       </div>
 
       {classes.length === 0 || instructors.length === 0 ? (
-        <p className="rounded-lg border p-4 text-sm text-gray-600">
+        <p className="rounded-lg border p-4 text-sm text-muted-foreground">
           You need at least one class and one instructor account before
           assigning staff.
         </p>
@@ -417,7 +417,7 @@ function ClassStaffing({
           </div>
 
           {error && (
-            <p role="alert" className="text-sm font-medium text-red-700">
+            <p role="alert" className="text-sm font-medium text-destructive">
               {error}
             </p>
           )}
@@ -444,7 +444,7 @@ function ClassStaffing({
 function Metric({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-lg border p-4">
-      <p className="text-sm text-gray-600">{label}</p>
+      <p className="text-sm text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-bold">{value}</p>
     </div>
   )

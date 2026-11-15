@@ -1,70 +1,6 @@
 @import "tailwindcss";
-
-/* ---- Design tokens (shadcn/ui convention), added by lane B; shared by all lanes. ---- */
-/*
- * TODO(CIC palette): CIC has not sent its brand colors yet. These are a placeholder palette (indigo
- * on white) that meets WCAG AA contrast. When CIC sends theirs, change ONLY the values in :root below
- * (--primary, --ring, --secondary, --accent and their foregrounds) and re-check each text/background pair
- * is at least 4.5:1. Every component reads these variables, so nothing else needs to change.
- */
-/*
- * Design tokens (shadcn/ui convention). Colors chosen for >= 4.5:1 text contrast
- * on their paired background. Status never relies on color alone: every status
- * also has an icon and a text label.
- */
-:root {
-  --radius: 0.625rem;
-  --background: #ffffff;
-  --foreground: #111827;
-  --card: #ffffff;
-  --card-foreground: #111827;
-  --primary: #4338ca;
-  --primary-foreground: #ffffff;
-  --secondary: #eef2ff;
-  --secondary-foreground: #1e1b4b;
-  --muted: #f3f4f6;
-  --muted-foreground: #4b5563;
-  --accent: #e0e7ff;
-  --accent-foreground: #1e1b4b;
-  --destructive: #b91c1c;
-  --destructive-foreground: #ffffff;
-  --success: #166534;
-  --success-muted: #dcfce7;
-  --warning-muted: #fef3c7;
-  --warning: #92400e;
-  --border: #d1d5db;
-  --input: #6b7280;
-  --ring: #4338ca;
-}
-
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-success: var(--success);
-  --color-success-muted: var(--success-muted);
-  --color-warning: var(--warning);
-  --color-warning-muted: var(--warning-muted);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-}
-
+/* Design system (colour, type, spacing, radius, shadow, fonts): one file, shared by all lanes. */
+@import "./styles/tokens.css";
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -84,9 +20,109 @@
   ::after {
     border-color: var(--border);
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* Headings echo the logo's Courier wordmark. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  code,
+  kbd,
+  pre,
+  samp {
+    font-family: var(--font-mono);
+  }
+  /* Numbers in tables and stats line up, so columns are easy to scan. */
+  table,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+  a {
+    text-underline-offset: 0.2em;
+  }
+  ::selection {
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+  }
   :focus-visible {
-    outline: 2px solid var(--ring);
+    outline: 3px solid var(--ring);
     outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  /* Page backdrop: soft colour glows and a faint dot grid, fixed behind everything. Pure CSS
+     gradients (no images, no blur filter), so it costs nothing to download and little to paint. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(38rem 26rem at 88% -4%, rgb(74 222 128 / 0.28), transparent 70%),
+      radial-gradient(26rem 30rem at 104% 22%, rgb(56 189 248 / 0.22), transparent 70%),
+      radial-gradient(22rem 22rem at -6% 72%, rgb(56 189 248 / 0.2), transparent 70%),
+      radial-gradient(24rem 20rem at 12% 104%, rgb(250 204 21 / 0.24), transparent 70%),
+      radial-gradient(rgb(29 38 33 / 0.06) 1px, transparent 1.2px) 0 0 / 18px 18px;
+  }
+
+  /* Small label above a heading, in the logo's spaced Courier caps with a green-to-gold fill. */
+  .eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--primary); /* fallback where background-clip text is unsupported */
+    background: var(--gradient-eyebrow);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Secondary button / chip edge: a green-to-gold gradient border around a white fill. */
+  .gradient-edge {
+    border: 1.5px solid transparent;
+    background:
+      linear-gradient(var(--edge-fill, #fff), var(--edge-fill, #fff)) padding-box,
+      var(--gradient-edge) border-box;
+  }
+  .gradient-edge:hover {
+    --edge-fill: var(--muted);
+  }
+
+  /* Tinted cards: a coloured edge and a matching soft glow (yellow, cyan, green). */
+  .tint-card-yellow {
+    border-color: var(--tint-yellow-edge);
+    box-shadow: 0 10px 28px -14px rgb(234 179 8 / 0.55);
+  }
+  .tint-card-cyan {
+    border-color: var(--tint-cyan-edge);
+    box-shadow: 0 10px 28px -14px rgb(6 182 212 / 0.5);
+  }
+  .tint-card-green {
+    border-color: var(--tint-green-edge);
+    box-shadow: 0 10px 28px -14px rgb(22 163 74 / 0.5);
   }
 }
 

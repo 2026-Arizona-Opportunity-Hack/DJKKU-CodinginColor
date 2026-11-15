@@ -1,0 +1,166 @@
+/*
+ * Coding in Color design system. One source of truth for colour, type, spacing, radius
+ * and shadow, shared by every lane. Component code uses the Tailwind names
+ * (bg-primary, text-muted-foreground, text-2xl, shadow-sm), never raw hex values.
+ *
+ * Direction: CIC's official logo (src/assets/brand/) plus Daxx's mockup (2026-11-14): a pale
+ * mint page with soft green, blue and yellow glows and a faint dot grid, frosted white cards
+ * tinted yellow, cyan or green, a glowing green primary button and a gradient-bordered
+ * secondary one. Contrast was checked against the mint and against each glow at its peak.
+ * Headings use Courier Prime (the open-licence Courier) to echo the wordmark; body text
+ * stays in Inter because long Courier text is hard to read.
+ *
+ * Contrast (WCAG AA, checked with a script on 2026-11-14): the logo green #03924a is only
+ * 4.03:1 with white, so it is used for graphics (>= 3:1) and never behind text. Buttons and
+ * links use one shade darker, #027a3d (5.45:1). Every text pair below is >= 4.5:1.
+ */
+
+/* Fonts: self-hosted (no third-party requests), latin subset, SIL OFL 1.1 (licences beside the files).
+   Inter is preloaded in index.html; Courier Prime loads when a heading or code is on screen. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/inter-latin-var.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Courier Prime';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/courier-prime-latin-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Courier Prime';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/courier-prime-latin-700.woff2') format('woff2');
+}
+
+:root {
+  --radius: 0.5rem;
+
+  /* Brand, sampled from the logo */
+  --brand-green: #03924a; /* chevrons; graphics only (4.03:1 on white) */
+  --brand-green-light: #00c853; /* chevron bevel highlight; decorative */
+  --brand-grey: #666666; /* wordmark; 5.74:1 on white */
+
+  /* Surfaces and text */
+  --background: #f3f8f5; /* pale mint */
+  --foreground: #1d2621; /* >= 13.5:1 even over the glows */
+  --card: rgb(255 255 255 / 0.86); /* frosted: the glows show through faintly */
+  --card-foreground: #1d2621;
+
+  /* Actions */
+  --primary: #027a3d; /* 5.45:1 with white text */
+  --primary-hover: #01612f;
+  --primary-foreground: #ffffff;
+  --secondary: #e6f4ea;
+  --secondary-foreground: #0b4d2a; /* 8.8:1 */
+  --accent: #e6f4ea;
+  --accent-foreground: #0b4d2a;
+  --muted: #eef3f0;
+  --muted-foreground: #4f5752; /* >= 6.4:1 on mint, muted and white */
+
+  /* Status: always paired with an icon and a text label, never colour alone */
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+  --success: #166534;
+  --success-muted: #dcfce7;
+  --warning: #854d0e;
+  --warning-muted: #fef3c7;
+
+  /* Lines and focus */
+  --border: #dbe6df;
+
+  /* The three accent tints from the mockup (cards, icon tiles, badges). fg on tint >= 6.4:1. */
+  --tint-yellow: #fff4cc;
+  --tint-yellow-fg: #7a4f00;
+  --tint-yellow-edge: #f3d36b;
+  --tint-cyan: #dbf5fa;
+  --tint-cyan-fg: #0b5d70;
+  --tint-cyan-edge: #7fd3e6;
+  --tint-green: #def5e6;
+  --tint-green-fg: #0b5e31;
+  --tint-green-edge: #8fd6a9;
+
+  /* Gradients. Button: both stops >= 5.4:1 with white. Eyebrow text: every stop >= 4.75:1. */
+  --gradient-primary: linear-gradient(180deg, #027a3d, #01612f);
+  --gradient-eyebrow: linear-gradient(90deg, #027a3d, #3d6b1f 55%, #7a5a00);
+  --gradient-edge: linear-gradient(90deg, #0b4d2a, #2a9d5c 55%, #e0b400);
+  --input: #7a807c; /* 4.0:1 on white, above the 3:1 UI minimum */
+  --ring: #027a3d;
+}
+
+/* Static scales: these override Tailwind's defaults so every lane gets them. */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Courier Prime', 'Courier New', Courier, monospace;
+  --font-mono: 'Courier Prime', 'Courier New', Courier, monospace;
+
+  /* Fluid type: grows smoothly from a 320px phone to a 1440px laptop. Body stays 1rem. */
+  --text-lg: clamp(1.0625rem, 1.02rem + 0.2vw, 1.1875rem);
+  --text-lg--line-height: 1.5;
+  --text-xl: clamp(1.1875rem, 1.1rem + 0.4vw, 1.375rem);
+  --text-xl--line-height: 1.4;
+  --text-2xl: clamp(1.375rem, 1.2rem + 0.85vw, 1.875rem);
+  --text-2xl--line-height: 1.25;
+  --text-3xl: clamp(1.75rem, 1.45rem + 1.4vw, 2.5rem);
+  --text-3xl--line-height: 1.15;
+  --text-4xl: clamp(2.125rem, 1.6rem + 2.4vw, 3.5rem);
+  --text-4xl--line-height: 1.1;
+
+  /* Soft elevation, like the logo's floor shadow */
+  --shadow-xs: 0 1px 2px rgb(29 38 33 / 0.06);
+  --shadow-sm: 0 1px 2px rgb(29 38 33 / 0.05), 0 2px 8px -2px rgb(29 38 33 / 0.08);
+  --shadow-md: 0 2px 4px rgb(29 38 33 / 0.04), 0 12px 32px -12px rgb(29 38 33 / 0.18);
+  --shadow-glow: 0 8px 22px -8px rgb(2 122 61 / 0.6);
+
+  /* Named spacing for page rhythm (Tailwind's 0.25rem steps cover the rest) */
+  --spacing-section: clamp(2rem, 1.5rem + 2.5vw, 3.5rem);
+  --spacing-gutter: clamp(1rem, 0.75rem + 1.25vw, 2rem);
+}
+
+/* Runtime tokens, mapped to Tailwind colour and radius names (shadcn/ui convention). */
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-brand-green: var(--brand-green);
+  --color-brand-green-light: var(--brand-green-light);
+  --color-brand-grey: var(--brand-grey);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-muted: var(--success-muted);
+  --color-warning: var(--warning);
+  --color-warning-muted: var(--warning-muted);
+  --color-border: var(--border);
+  --color-tint-yellow: var(--tint-yellow);
+  --color-tint-yellow-fg: var(--tint-yellow-fg);
+  --color-tint-yellow-edge: var(--tint-yellow-edge);
+  --color-tint-cyan: var(--tint-cyan);
+  --color-tint-cyan-fg: var(--tint-cyan-fg);
+  --color-tint-cyan-edge: var(--tint-cyan-edge);
+  --color-tint-green: var(--tint-green);
+  --color-tint-green-fg: var(--tint-green-fg);
+  --color-tint-green-edge: var(--tint-green-edge);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}

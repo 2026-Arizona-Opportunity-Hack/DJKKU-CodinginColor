@@ -30,7 +30,7 @@ export function ModuleList() {
       {modules.isPending ? (
         <p role="status">Loading your modules…</p>
       ) : modules.isError ? (
-        <div role="alert" className="flex flex-col items-start gap-2 text-red-700">
+        <div role="alert" className="flex flex-col items-start gap-2 text-destructive">
           <p>We could not load your modules. {modules.error.message}</p>
           <Button variant="outline" onClick={() => void modules.refetch()}>Try again</Button>
         </div>

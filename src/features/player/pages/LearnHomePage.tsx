@@ -14,7 +14,7 @@ export function LearnHomePage() {
   const classes = useMyClasses()
   return (
     <>
-      <h1 className="text-2xl font-bold">Start here</h1>
+      <h1 className="text-3xl font-extrabold">Start here</h1>
       <QueryView query={classes} label="Loading your classes">
         {(list) =>
           list.length === 0 ? (
@@ -36,10 +36,10 @@ function ClassCard({ cls }: { cls: MyClass }) {
   const outline = useOutline(cls.class_id)
 
   return (
-    <Card>
+    <Card className="tint-card-green border">
       <CardHeader>
-        <CardDescription>Your class</CardDescription>
-        <CardTitle>{cls.class_name}</CardTitle>
+        <CardDescription className="eyebrow">Your class</CardDescription>
+        <CardTitle className="text-2xl font-bold">{cls.class_name}</CardTitle>
       </CardHeader>
       <CardContent>
         <QueryView query={next} label="Finding your next step">
@@ -61,9 +61,11 @@ function ClassCard({ cls }: { cls: MyClass }) {
                           where: `${step.module.title} · ${step.lesson.title}`,
                         }
                 return (
-                  <div className="flex flex-col gap-2">
-                    <p className="text-sm text-muted-foreground">{where}</p>
-                    <Button asChild size="lg" className="w-full justify-between whitespace-normal sm:w-auto">
+                  <div className="flex flex-col gap-3 rounded-xl border border-tint-green-edge/60 bg-tint-green/70 p-4">
+                    <p className="text-sm font-medium text-secondary-foreground">
+                      {where}
+                    </p>
+                    <Button asChild size="lg" className="w-full justify-between whitespace-normal text-left text-balance sm:w-auto sm:self-start">
                       <Link to={to}>
                         {label} <ArrowRight aria-hidden="true" />
                       </Link>
