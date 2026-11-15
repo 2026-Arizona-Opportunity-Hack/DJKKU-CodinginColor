@@ -80,7 +80,7 @@ Open **Authentication** in the left menu, then **Sign In / Providers** (older da
 
 ### 4. Turn on Google sign-in
 
-Staff, mentors and reviewers sign in with Google.
+Staff and reviewers sign in with Google.
 
 1. Go to <https://console.cloud.google.com/>, sign in, and pick or create a project.
 2. **APIs & Services** > **OAuth consent screen**. User type **External**. App name `CIC demo`,
@@ -251,7 +251,8 @@ editor tab** (select all, then Run).
 
 ### Add teammates, reviewers and instructors
 
-For each person (replace the values; role is `instructor`, `mentor`, `reviewer` or `cic_admin`):
+For each person (replace the values; role is `instructor`, `reviewer` or `cic_admin`; `mentor` exists in
+the database but has no screens in this version, so do not use it):
 
 ```sql
 select set_config('request.jwt.claims', json_build_object('sub', 'ADMIN_ID', 'role', 'authenticated')::text, false);

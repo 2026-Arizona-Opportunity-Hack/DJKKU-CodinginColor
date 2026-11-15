@@ -11,7 +11,8 @@ jsonb (one object or array), `uuid` or `void`. Errors come back as a Postgres er
 
 Roles: **guest** (not signed in), **student** (incl. a signed-in anonymous session),
 **independent** (self-registered), **instructor**, **author** (instructor with `can_author`),
-**admin** (`cic_admin`), **mentor**, **reviewer**.
+**admin** (`cic_admin`), **mentor**, **reviewer**. Mentor rules below are enforced by the database, but the
+app does not offer the role in this version (no mentor screens yet).
 
 ## Student (lane B)
 

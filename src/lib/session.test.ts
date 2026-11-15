@@ -23,7 +23,7 @@ describe('homePathFor', () => {
   it('maps every role, and signed out goes to /sign-in', () => {
     expect(homePathFor(null)).toBe('/sign-in')
     expect(Object.fromEntries(ROLES.map((r) => [r, homePathFor(me(r))]))).toEqual({
-      student: '/learn', independent_student: '/learn', mentor: '/instructor',
+      student: '/learn', independent_student: '/learn', mentor: '/sign-in',
       instructor: '/instructor', cic_admin: '/admin', reviewer: '/review',
     })
   })

@@ -121,6 +121,15 @@ describe('staff sign in with Google', () => {
     await waitFor(() => expect(sb.auth.signOut).toHaveBeenCalledTimes(1))
   })
 
+  it('tells a mentor account there are no mentor screens yet, and signs out instead of opening a page they cannot use', async () => {
+    const sb = fakeSupabase({ session: true, user: { email: 'mentor@school.org', is_anonymous: false }, rpc: { get_me: () => ({ data: ME('mentor') }) } })
+    show(sb)
+    open()
+    expect(await screen.findByText(/Mentor accounts don't have screens in this version. Ask a CIC admin to give mentor@school.org another/)).toBeInTheDocument()
+    await waitFor(() => expect(sb.auth.signOut).toHaveBeenCalled())
+    expect(screen.queryByTestId('location')).not.toBeInTheDocument() // stayed on /sign-in, never sent to /instructor
+  })
+
   it('does not sign out an anonymous student who has not claimed a seat yet', async () => {
     const sb = fakeSupabase({ session: true, user: { email: null, is_anonymous: true }, rpc: { get_me: () => ({ data: ME('student') }) } })
     show(sb)

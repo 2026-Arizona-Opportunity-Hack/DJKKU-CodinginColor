@@ -60,7 +60,9 @@ the SQL is right. The calls the app can make are listed in
 
 Six roles, one `role` column on `profiles`: student, independent student
 (homeschool), mentor (approved volunteer), instructor, CIC admin, reviewer
-(read-only). The full capability matrix is in the team plan; in short:
+(read-only). **Mentor is not offered in this version:** the database supports it (below), but there
+are no mentor screens yet, so the invite form and Guide leave it out, and a mentor account that signs
+in is told so and signed out. The full capability matrix is in the team plan; in short:
 
 - Browsing published lessons needs no account; guest progress stays on the device
   until the learner self-registers. CIC's camps use locked-down lab machines with
@@ -70,7 +72,7 @@ Six roles, one `role` column on `profiles`: student, independent student
   creates an immutable version; a class stays on the version it started with.
 - Only CIC admin manages API keys, invites reviewers and approves mentors.
 
-Mentor safeguards (volunteers working with minors): Google sign-in, CIC admin
+Mentor safeguards, built into the database for the next version (volunteers working with minors): Google sign-in, CIC admin
 approval before seeing any student, access only to assigned mentees through
 `is_mentor_of(student_id)`, all contact on-platform, mentor notes logged and
 visible to CIC admin, and outbound notes are drafted by the system and sent by a human.

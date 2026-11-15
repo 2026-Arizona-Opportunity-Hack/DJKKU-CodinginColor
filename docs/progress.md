@@ -785,3 +785,11 @@ instead of repeating them.
   reads the tab list from `AdminPage.tsx`. README and SECURITY.md say mentor screens are next.
 - Next version: mentor screens and assignment, Classes and Schools admin tabs (from #31).
 - Blocked: nothing.
+### 2026-11-15: Krishna (lane E; role check after hiding mentor, Umang's #80)
+- Checked every role against the code: signed out, student, self-registered student, instructor,
+  instructor with authoring, CIC admin and reviewer all land on a page they may use, with the right nav
+  links and Guide tabs. Mentor did not: it still went to `/instructor`, which #80 closed to mentors, so a
+  mentor saw a "not for your role" page with no links. Now a mentor who signs in is told mentor accounts
+  have no screens in this version (ask an admin for another role) and is signed out. Docs no longer
+  describe mentor as offered; the database rules stay for the next version.
+- Blocked: nothing.
