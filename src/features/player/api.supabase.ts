@@ -17,6 +17,8 @@ import { ApiError, fromHttpStatus, fromRpcError, isOnline } from './errors'
 import {
   Activity,
   CatchUp,
+  Notes,
+  SavedNote,
   Assessment,
   AssessmentResult,
   MeSchema,
@@ -131,6 +133,8 @@ export function createSupabaseApi(sb: SupabaseClient = getSupabase()): StudentAp
     },
     getMyProgress: (classId) => rpc('get_my_progress', { p_class_id: classId }, MyProgress),
     getCatchUp: (classId) => rpc('get_catch_up', { p_class_id: classId }, CatchUp),
+    getMyNotes: () => rpc('get_my_notes', {}, Notes),
+    saveNote: (activityId, body) => rpc('save_note', { p_activity_id: activityId, p_body: body }, SavedNote),
 
     listOpenModules: () => rpc('list_open_modules', {}, OpenModule.array()),
     getOpenActivity: (activityId) => rpc('get_activity', { p_activity_id: activityId }, Activity),

@@ -508,3 +508,16 @@ instead of repeating them.
   you do not teach.
 - Next: catch-up plan for students who missed class.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lanes A and B, My notebook)
+
+- Done: under every activity a student can "Explain it in your own words" (the self-explanation effect, Chi et
+  al. 1994). It saves on Save or when they leave the box, and `/learn/:classId/notebook` collects every note by
+  module and lesson, with links back and a print button, so they can review in their own words before the
+  post-test. Linked as "My notebook" on Start here. New migration `20261115150000_lane_a_student_notes.sql`:
+  `student_notes` (RLS on, no client policy), `save_note` (trimmed, up to 2000 characters, empty deletes, only on
+  activities the student can read) and `get_my_notes` (own notes only). Notes are private, even from instructors
+  and admins, and kept in the database because classroom Chromebooks are shared. SECURITY.md and the contract
+  say so. Demo mode has the same behavior. DB tests per role, mock API, component and page tests with axe.
+- Next: 6c (studio code editor), misconception radar.
+- Blocked: nothing.

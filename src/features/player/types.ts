@@ -144,6 +144,23 @@ export const CatchUp = z.object({
 })
 export type CatchUp = z.infer<typeof CatchUp>
 
+/** get_my_notes: the student's own notes, in course order. Private: no staff read path. */
+export const Note = z.object({
+  activity_id: z.string(),
+  activity_title: z.string(),
+  kind: z.string(),
+  lesson_title: z.string(),
+  module_id: z.string(),
+  module_title: z.string(),
+  body: z.string(),
+  updated_at: z.string().nullable(),
+})
+export type Note = z.infer<typeof Note>
+export const Notes = z.array(Note)
+export const SavedNote = z.object({ activity_id: z.string(), body: z.string(), updated_at: z.string().nullable() })
+export type SavedNote = z.infer<typeof SavedNote>
+export const NOTE_MAX = 2000
+
 export const ImportResult = z.object({ imported: z.number() })
 export type ImportResult = z.infer<typeof ImportResult>
 

@@ -32,6 +32,8 @@ Roles: **guest** (not signed in), **student** (incl. a signed-in anonymous sessi
 | `submit_assessment(p_assessment_id, p_responses, p_class_id?)` | student | `{score_pct, per_concept:[{concept, pct}]}`. **One shot.** |
 | `get_my_progress(p_class_id)` | student | `{completed, total, modules:[{title,pct,pre_pct,post_pct,gain}]}` |
 | `get_catch_up(p_class_id)` | student | `{steps_left, minutes_left, behind_by, steps:[{kind, activity_id, assessment_id, title, minutes}]}` (first 8 steps, in order: pre-test, activities, post-test). Minutes are the median time classmates spent once 3 have finished, else a default by kind. `behind_by` is how many required activities fewer than the class median. |
+| `save_note(p_activity_id, p_body)` | student | `{activity_id, body, updated_at}`. Saves the caller's note on an activity they can read (trimmed, up to 2000 characters); an empty body deletes it. |
+| `get_my_notes()` | student | `[{activity_id, activity_title, kind, lesson_title, module_id, module_title, body, updated_at}]`, the caller's own notes in course order. There is no staff read path: notes are private. |
 | `list_open_modules()` | guest, student | `[{module_id,title,summary,lessons:[{lesson_id,title,activities:[{activity_id,title,kind}]}]}]` |
 | `import_guest_progress(p_payload)` | independent | `{imported}`. Only video/reading "viewed" credit is accepted. |
 

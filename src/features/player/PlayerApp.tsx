@@ -11,6 +11,7 @@ import { ErrorState, PageSkeleton } from './components/states'
 import { env } from './env'
 import { loadStudentApi } from './loadApi'
 import { paths } from './outline'
+import { NotebookPage } from './pages/NotebookPage'
 import { ActivityPage } from './pages/ActivityPage'
 import { AssessmentPage } from './pages/AssessmentPage'
 import { ClassPathPage } from './pages/ClassPathPage'
@@ -59,6 +60,7 @@ function PlayerRoutes({ apiPromise }: { apiPromise: Promise<StudentApi> }) {
           <Route index element={<LearnHomePage />} />
           <Route path=":classId" element={<ClassPathPage />} />
           <Route path=":classId/progress" element={<ProgressPage />} />
+          <Route path=":classId/notebook" element={<NotebookPage />} />
           <Route path=":classId/a/:activityId" element={<ActivityPage />} />
           <Route path=":classId/test/:assessmentId" element={<AssessmentPage />} />
         </Route>

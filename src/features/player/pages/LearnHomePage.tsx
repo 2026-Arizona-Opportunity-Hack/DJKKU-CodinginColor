@@ -86,6 +86,9 @@ function ClassCard({ cls }: { cls: MyClass }) {
         <Button asChild variant="ghost">
           <Link to={paths.progress(cls.class_id)}>My progress</Link>
         </Button>
+        <Button asChild variant="ghost">
+          <Link to={paths.notebook(cls.class_id)}>My notebook</Link>
+        </Button>
       </CardFooter>
     </Card>
   )
