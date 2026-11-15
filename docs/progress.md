@@ -652,6 +652,17 @@ instead of repeating them.
   serving the exact policy in Playwright: video, Python and every main route ran with zero CSP violations.
 - Next: re-run the header scan on the live URL after deploy.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane C, restore the pre-test and post-test builder)
+
+- Found: the studio's pre/post test builder (PR #27) was merged into #26's branch after #26 had already reached
+  main, so it never shipped. Authors had no way to make tests, which is why imported YouTube and GitHub modules
+  had none (only the seeded module did).
+- Done: restored the test builder in `ModuleEditor` (a tab each for pre-test and post-test, pair keys, pairing
+  warnings, "Copy pre-test into post-test"), saving through the existing draft payload. A module with no tests
+  now says it will show no learning gain. Studio test builds a test by hand and checks the saved payload.
+- Next: AI drafting of both tests from the module's material.
+- Blocked: nothing.
 ### 2026-11-15: Krishna (lane E, in lane D's folder; Jad to review)
 - Done: a student who has not joined yet ("Seat not claimed") now links to their student page, so an
   instructor can give them a login code (Reset login code works for unclaimed seats; there was just no
