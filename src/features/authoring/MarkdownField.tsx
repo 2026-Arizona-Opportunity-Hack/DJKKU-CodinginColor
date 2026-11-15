@@ -1,11 +1,11 @@
 import { useId, useState } from 'react'
-import Markdown from 'react-markdown'
+import { Reading } from '@/components/learning/ActivityContent'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import type { UseFormRegisterReturn } from 'react-hook-form'
 
-/** A markdown box with a Write and a Preview tab. Raw HTML is never rendered (skipHtml), as in the player. */
+/** A markdown box with a Write and a Preview tab. The preview is the player's own Reading (no raw HTML, safe links). */
 export function MarkdownField({
   label,
   registration,
@@ -33,8 +33,8 @@ export function MarkdownField({
       {/* Both stay mounted so switching tabs never loses what was typed. */}
       <Textarea id={`${id}-text`} rows={8} hidden={tab !== 'write'} disabled={disabled} aria-invalid={Boolean(error)} {...registration} />
       {tab === 'preview' && (
-        <div aria-label={`${label} preview`} role="region" className="min-h-24 rounded-md border p-3 leading-relaxed [&_a]:underline [&_code]:rounded [&_code]:bg-muted [&_h2]:text-xl [&_h2]:font-semibold [&_ol]:list-decimal [&_ol]:pl-6 [&_pre]:overflow-x-auto [&_pre]:bg-muted [&_pre]:p-2 [&_ul]:list-disc [&_ul]:pl-6">
-          {value.trim() ? <Markdown skipHtml>{value}</Markdown> : <p className="text-muted-foreground">Nothing to preview yet.</p>}
+        <div aria-label={`${label} preview`} role="region" className="min-h-24 rounded-md border p-3">
+          {value.trim() ? <Reading markdown={value} /> : <p className="text-muted-foreground">Nothing to preview yet.</p>}
         </div>
       )}
       <p role="alert" className="text-sm font-medium text-destructive empty:hidden">{error}</p>

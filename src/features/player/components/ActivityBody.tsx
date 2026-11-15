@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 
 import type { ActivityResponse } from '../content'
 import type { Activity } from '../types'
-import { Reading, VideoEmbed } from './ActivityContent'
+import { Reading, VideoEmbed } from '@/components/learning/ActivityContent'
 import { QuestionForm } from './QuestionForm'
 
 type Props = {
