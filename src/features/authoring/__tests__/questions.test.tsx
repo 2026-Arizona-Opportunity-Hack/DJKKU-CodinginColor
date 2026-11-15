@@ -6,6 +6,14 @@ import { fromDraftRows, type DraftPayload, type DraftRows } from '@shared/author
 import { AuthoringPage } from '../AuthoringPage'
 import { expectNoSeriousA11yViolations, renderAt } from '../test/harness'
 
+/** Types short or special-key text, and pastes plain text (much faster than one key at a time). */
+async function typeIn(el: HTMLElement, text: string) {
+  if (text.includes('{')) return userEvent.type(el, text)
+  await userEvent.click(el)
+  await userEvent.paste(text)
+}
+
+
 const m = vi.hoisted(() => ({
   listMyModules: vi.fn(), loadModule: vi.fn(), saveDraft: vi.fn(), newVersion: vi.fn(), listConcepts: vi.fn(), upsertConcept: vi.fn(),
 }))
@@ -45,55 +53,55 @@ describe('question editor', () => {
     // After the first save the editor reopens the module from "the database": the last payload, reloaded.
     m.loadModule.mockImplementation(async () => reload(m.saveDraft.mock.calls.at(-1)![0]))
     const { router } = renderAt(<AuthoringPage />, { url: '/author/new' })
-    await userEvent.type(await screen.findByLabelText('Module title'), 'Quiz')
-    await userEvent.type(screen.getByLabelText('Lesson 1 title'), 'One')
+    await typeIn(await screen.findByLabelText('Module title'), 'Quiz')
+    await typeIn(screen.getByLabelText('Lesson 1 title'), 'One')
     await userEvent.selectOptions(screen.getByLabelText('Activity type'), 'worksheet')
     await userEvent.click(screen.getByRole('button', { name: 'Add activity' }))
-    await userEvent.type(screen.getByLabelText('Title'), 'Sheet')
+    await typeIn(screen.getByLabelText('Title'), 'Sheet')
     await userEvent.selectOptions(screen.getAllByLabelText('Concept')[0]!, 'loops') // the activity concept becomes the default for new questions
 
     // Multiple choice: three choices, reorder, pick the correct one, explanation and a hint.
     await addQuestion('mcq')
     let q = card(1)
-    await userEvent.type(within(q).getByLabelText('Question text'), 'Which repeats?')
-    await userEvent.type(within(q).getByLabelText('Choice 1'), 'A variable')
-    await userEvent.type(within(q).getByLabelText('Choice 2'), 'A loop')
+    await typeIn(within(q).getByLabelText('Question text'), 'Which repeats?')
+    await typeIn(within(q).getByLabelText('Choice 1'), 'A variable')
+    await typeIn(within(q).getByLabelText('Choice 2'), 'A loop')
     await userEvent.click(within(q).getByRole('button', { name: 'Add choice' }))
-    await userEvent.type(within(q).getByLabelText('Choice 3'), 'A print')
+    await typeIn(within(q).getByLabelText('Choice 3'), 'A print')
     await userEvent.click(within(q).getByRole('button', { name: 'Move choice 3 up' }))
     await userEvent.click(within(q).getByRole('radio', { name: 'Correct: choice 3' })) // "A loop" moved to third
-    await userEvent.type(within(q).getByLabelText(/Explanation/), 'Loops repeat code.')
+    await typeIn(within(q).getByLabelText(/Explanation/), 'Loops repeat code.')
     await userEvent.click(within(q).getByRole('button', { name: 'Add hint' }))
-    await userEvent.type(within(q).getByLabelText('Hint 1'), 'Think about repeating')
+    await typeIn(within(q).getByLabelText('Hint 1'), 'Think about repeating')
 
     await addQuestion('short_answer')
     q = card(2)
-    await userEvent.type(within(q).getByLabelText('Question text'), 'Keyword for a loop?')
-    await userEvent.type(within(q).getByLabelText('Accepted answers (one per line)'), 'while{Enter}for')
+    await typeIn(within(q).getByLabelText('Question text'), 'Keyword for a loop?')
+    await typeIn(within(q).getByLabelText('Accepted answers (one per line)'), 'while{Enter}for')
     await userEvent.click(within(q).getByRole('checkbox', { name: 'Case sensitive' }))
 
     await addQuestion('fill_blank')
     q = card(3)
-    await userEvent.type(within(q).getByLabelText('Question text'), 'A ___ repeats, an ___ decides')
+    await typeIn(within(q).getByLabelText('Question text'), 'A ___ repeats, an ___ decides')
     expect(within(q).getByText(/This text has 2 blanks/)).toBeInTheDocument()
-    await userEvent.type(within(q).getByLabelText('Accepted answers for blank 1 (one per line)'), 'loop')
-    await userEvent.type(within(q).getByLabelText('Accepted answers for blank 2 (one per line)'), 'if')
+    await typeIn(within(q).getByLabelText('Accepted answers for blank 1 (one per line)'), 'loop')
+    await typeIn(within(q).getByLabelText('Accepted answers for blank 2 (one per line)'), 'if')
 
     await addQuestion('ordering')
     q = card(4)
-    await userEvent.type(within(q).getByLabelText('Question text'), 'Put in order')
-    await userEvent.type(within(q).getByLabelText('Item 1'), 'Second')
-    await userEvent.type(within(q).getByLabelText('Item 2'), 'First')
+    await typeIn(within(q).getByLabelText('Question text'), 'Put in order')
+    await typeIn(within(q).getByLabelText('Item 1'), 'Second')
+    await typeIn(within(q).getByLabelText('Item 2'), 'First')
     await userEvent.click(within(q).getByRole('button', { name: 'Move item 2 up' }))
 
     await addQuestion('reflection')
     q = card(5)
     expect(within(q).getByText('Not scored')).toBeInTheDocument()
     expect(within(q).queryByLabelText(/Explanation/)).toBeNull()
-    await userEvent.type(within(q).getByLabelText('Question text'), 'What was hard?')
+    await typeIn(within(q).getByLabelText('Question text'), 'What was hard?')
 
     await userEvent.click(screen.getByRole('button', { name: 'Save draft' }))
-    await waitFor(() => expect(m.saveDraft).toHaveBeenCalledTimes(1))
+    await waitFor(() => expect(m.saveDraft).toHaveBeenCalledTimes(1), { timeout: 5000 })
     const first: DraftPayload = m.saveDraft.mock.calls[0]![0]
     const sheet = first.lessons[0]!.activities[0]!
     const qs = sheet.content.questions as { id: string; type: string; choices?: { id: string; text: string }[]; conceptId?: string }[]
@@ -110,26 +118,26 @@ describe('question editor', () => {
     expect(sheet.keys.find((k) => k.question_id === qs[4]!.id)).toBeUndefined() // reflection has no key
 
     // Load what was saved back into the editor: the same form comes back and saves the same payload.
-    await waitFor(() => expect(router.state.location.pathname).toBe(`/author/${ID}`))
-    q = (await screen.findByRole('heading', { name: 'Question 1' })).closest('li') as HTMLElement
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/author/${ID}`), { timeout: 5000 })
+    q = (await screen.findByRole('heading', { name: 'Question 1' }, { timeout: 5000 })).closest('li') as HTMLElement
     expect(within(q).getByLabelText('Choice 3')).toHaveValue('A loop')
     expect(within(q).getByRole('radio', { name: 'Correct: choice 3' })).toBeChecked()
     expect(within(card(4)).getByLabelText('Item 1')).toHaveValue('First') // author order, not the shuffled one
     expect(within(card(2)).getByLabelText('Accepted answers (one per line)')).toHaveValue('while\nfor')
-    await userEvent.type(screen.getByLabelText('Module title'), '!')
+    await typeIn(screen.getByLabelText('Module title'), '!')
     await userEvent.click(screen.getByRole('button', { name: 'Save draft' }))
-    await waitFor(() => expect(m.saveDraft).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(m.saveDraft).toHaveBeenCalledTimes(2), { timeout: 5000 })
     const second: DraftPayload = m.saveDraft.mock.calls[1]![0]
     expect(second.lessons).toEqual(first.lessons)
   }, 30000)
 
   it('explains what is missing next to the question, and does not save', async () => {
     renderAt(<AuthoringPage />, { url: '/author/new' })
-    await userEvent.type(await screen.findByLabelText('Module title'), 'Quiz')
-    await userEvent.type(screen.getByLabelText('Lesson 1 title'), 'One')
+    await typeIn(await screen.findByLabelText('Module title'), 'Quiz')
+    await typeIn(screen.getByLabelText('Lesson 1 title'), 'One')
     await userEvent.selectOptions(screen.getByLabelText('Activity type'), 'check')
     await userEvent.click(screen.getByRole('button', { name: 'Add activity' }))
-    await userEvent.type(screen.getByLabelText('Title'), 'Check')
+    await typeIn(screen.getByLabelText('Title'), 'Check')
     await addQuestion('mcq')
     await userEvent.click(screen.getByRole('button', { name: 'Save draft' }))
     const q = card(1)

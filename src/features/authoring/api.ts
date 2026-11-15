@@ -122,5 +122,34 @@ export async function loadModule(moduleId: string): Promise<LoadedModule> {
   return { ...fromDraftRows(draft), id: module.id, slug: module.slug, version: module.version, keysHidden }
 }
 
+const Check = z.object({ errors: z.array(z.string()), warnings: z.array(z.string()) })
+export type CheckResult = z.infer<typeof Check>
+
+/** The database refused to submit or publish. `problems` is its list, one entry per problem. */
+export class ModuleProblems extends Error {
+  readonly problems: string[]
+  constructor(problems: string[]) {
+    super('Fix these first.')
+    this.name = 'ModuleProblems'
+    this.problems = problems
+  }
+}
+
+/** submit_module and publish_module raise "Fix these first: a; b; c" when something blocks them. */
+async function checked(fn: string, moduleId: string): Promise<CheckResult> {
+  const { data, error } = await getSupabase().rpc(fn, { p_module_id: moduleId })
+  if (error) {
+    const m = /^Fix these first: (.*)$/s.exec(error.message ?? '')
+    if (m) throw new ModuleProblems(m[1]!.split('; ').filter(Boolean))
+    throw authoringError(error)
+  }
+  return Check.parse(data)
+}
+
+/** Owner sends a draft for review; it is locked until an admin publishes it or sends it back. */
+export const submitModule = (moduleId: string) => checked('submit_module', moduleId)
+/** CIC admins only. Freezes this version forever. */
+export const publishModule = (moduleId: string) => checked('publish_module', moduleId)
+
 /** Saves the whole draft in one transaction. Returns the module id. */
 export const saveDraft = (payload: DraftPayload) => rpc('save_module_draft', { p_module: payload }, z.string().uuid())

@@ -7,13 +7,20 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { authoredModule, toDraftPayload, type AuthoredAssessment, type AuthoredModule } from '@shared/authoring/schemas'
-import { loadModule, newVersion, saveDraft } from './api'
+import { authoredAssessment, authoredModule, toDraftPayload, type AuthoredAssessment, type AuthoredModule } from '@shared/authoring/schemas'
+import { useMe } from '@/lib/session'
+import { loadModule, ModuleProblems, newVersion, publishModule, saveDraft, submitModule } from './api'
+import { IssuesContext } from './issues'
+import { TestBuilder } from './TestBuilder'
 import type { ModuleFV } from './formTypes'
 import { LessonEditor } from './LessonEditor'
 import { modulesKey } from './keys'
 
-const EMPTY: ModuleFV = { title: '', summary: '', lessons: [{ title: '', activities: [] }] }
+const EMPTY: ModuleFV = { title: '', summary: '', lessons: [{ title: '', activities: [] }], pre: null, post: null }
+
+// The module contract plus its two tests, validated together on save.
+const editorSchema = authoredModule.extend({ pre: authoredAssessment.nullable().optional(), post: authoredAssessment.nullable().optional() })
+type EditorOutput = AuthoredModule & { pre?: AuthoredAssessment | null; post?: AuthoredAssessment | null }
 
 /** `/author/new` and `/author/:moduleId`. A saved module is loaded fresh each time it is opened. */
 export function ModuleEditor() {
@@ -24,7 +31,7 @@ export function ModuleEditor() {
     enabled: Boolean(moduleId),
     gcTime: 0, // never reuse an old copy: the form starts from whatever was loaded
   })
-  if (!moduleId) return <EditorForm moduleId={null} initial={EMPTY} pre={null} post={null} status="draft" version={1} />
+  if (!moduleId) return <EditorForm moduleId={null} initial={EMPTY} status="draft" version={1} />
   if (loaded.isPending) return <p role="status">Loading the module…</p>
   if (loaded.isError) {
     return (
@@ -35,17 +42,16 @@ export function ModuleEditor() {
     )
   }
   const m = loaded.data
-  return <EditorForm moduleId={m.id} slug={m.slug} initial={m.module as ModuleFV} pre={m.pre} post={m.post} status={m.module.status} version={m.version} keysHidden={m.keysHidden} />
+  const initial = { ...m.module, pre: m.pre, post: m.post } as ModuleFV
+  return <EditorForm moduleId={m.id} slug={m.slug} initial={initial} status={m.module.status} version={m.version} keysHidden={m.keysHidden} />
 }
 
 function EditorForm({
-  moduleId, slug, initial, pre, post, status, version, keysHidden = false,
+  moduleId, slug, initial, status: initialStatus, version, keysHidden = false,
 }: {
   moduleId: string | null
   slug?: string
   initial: ModuleFV
-  pre: AuthoredAssessment | null
-  post: AuthoredAssessment | null
   status: 'draft' | 'submitted' | 'published'
   version: number
   keysHidden?: boolean
@@ -54,18 +60,25 @@ function EditorForm({
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
+  const isAdmin = useMe().data?.role === 'cic_admin'
+  const [status, setStatus] = useState(initialStatus)
+  const [issues, setIssues] = useState<string[]>([])
+  const [notes, setNotes] = useState<string[]>([])
+  const [done, setDone] = useState('')
   const readOnly = status !== 'draft'
   const skipBlock = useRef(false)
   const [savedAt, setSavedAt] = useState<Date | null>(() => {
     const t = (location.state as { savedAt?: number } | null)?.savedAt
     return t ? new Date(t) : null
   })
-  const form = useForm<ModuleFV>({ resolver: zodResolver(authoredModule) as unknown as Resolver<ModuleFV>, defaultValues: initial })
-  const { control, register, handleSubmit, reset, formState: { errors, isDirty, submitCount } } = form
+  const form = useForm<ModuleFV>({ resolver: zodResolver(editorSchema) as unknown as Resolver<ModuleFV>, defaultValues: initial })
+  const { control, register, handleSubmit, reset, setValue, formState: { errors, isDirty, submitCount } } = form
   const lessons = useFieldArray({ control, name: 'lessons' })
 
+  const toPayload = ({ pre, post, ...module }: EditorOutput) => toDraftPayload({ moduleId, slug, module, pre: pre ?? null, post: post ?? null })
   const save = useMutation({
-    mutationFn: (values: AuthoredModule) => saveDraft(toDraftPayload({ moduleId, slug, module: values, pre, post })),
+    mutationFn: (values: EditorOutput) => saveDraft(toPayload(values)),
+    onMutate: () => setIssues([]),
     onSuccess: async (savedId, values) => {
       skipBlock.current = true
       reset(values as ModuleFV)
@@ -74,6 +87,30 @@ function EditorForm({
       if (!moduleId) navigate(`/author/${savedId}`, { replace: true, state: { savedAt: Date.now() } })
       else skipBlock.current = false
     },
+  })
+  // Submit (or, for an admin, publish): save first so the database checks exactly what is on screen.
+  const send = useMutation({
+    mutationFn: async ({ values, publish }: { values: EditorOutput | null; publish: boolean }) => {
+      const savedId = values ? await saveDraft(toPayload(values)) : moduleId!
+      try {
+        return { savedId, check: await (publish ? publishModule(savedId) : submitModule(savedId)), publish, values }
+      } catch (e) {
+        if (e instanceof ModuleProblems && !moduleId) navigate(`/author/${savedId}`, { replace: true })
+        throw e
+      }
+    },
+    onMutate: () => { setIssues([]); setNotes([]); setDone('') },
+    onSuccess: async ({ savedId, check, publish, values }) => {
+      skipBlock.current = true
+      if (values) reset(values as ModuleFV)
+      setStatus(publish ? 'published' : 'submitted')
+      setNotes(check.warnings)
+      setDone(publish ? 'Published. Instructors can now assign it to a class.' : 'Submitted. A CIC admin will publish it.')
+      await queryClient.invalidateQueries({ queryKey: modulesKey })
+      if (!moduleId) navigate(`/author/${savedId}`, { replace: true })
+      else skipBlock.current = false
+    },
+    onError: (e) => { if (e instanceof ModuleProblems) setIssues(e.problems) },
   })
   const version2 = useMutation({
     mutationFn: () => newVersion(moduleId!),
@@ -114,7 +151,22 @@ function EditorForm({
           <Button type="button" disabled={version2.isPending} onClick={() => version2.mutate()}>{version2.isPending ? 'Copying…' : 'New version'}</Button>
         </div>
       )}
-      {status === 'submitted' && <p className="rounded-md border p-3">Submitted for review. It is locked until a CIC admin publishes it or sends it back.</p>}
+      {done && <p role="status" className="rounded-md border border-green-600 bg-green-50 p-3 font-medium text-green-900">{done}</p>}
+      {status === 'submitted' && (
+        <div className="flex flex-wrap items-center gap-3 rounded-md border p-3">
+          <p>Submitted for review. It is locked until a CIC admin publishes it or sends it back.</p>
+          {isAdmin && <Button type="button" disabled={send.isPending} onClick={() => send.mutate({ values: null, publish: true })}>Publish now</Button>}
+        </div>
+      )}
+      {issues.length > 0 && (
+        <div role="alert" className="rounded-md border border-destructive p-3 text-destructive">
+          <p className="font-medium">Fix these first. The module is still a draft.</p>
+          <ul className="list-disc pl-5">{issues.map((i) => <li key={i}>{i}</li>)}</ul>
+        </div>
+      )}
+      {notes.length > 0 && (
+        <ul aria-label="Notes from the check" className="list-disc rounded-md border py-2 pr-3 pl-8 text-sm">{notes.map((n) => <li key={n}>{n}</li>)}</ul>
+      )}
       {keysHidden && <p className="rounded-md border p-3">You can read this module but not its answer keys.</p>}
       <p role="alert" className="text-destructive empty:hidden">{version2.error?.message}</p>
 
@@ -129,6 +181,7 @@ function EditorForm({
         <p role="alert" className="text-sm font-medium text-destructive empty:hidden">{errors.summary?.message}</p>
       </div>
 
+      <IssuesContext value={issues}>
       <section aria-labelledby={`${id}-lessons`} className="flex flex-col gap-4">
         <h3 id={`${id}-lessons`} className="text-xl font-semibold">Lessons</h3>
         <ol className="flex flex-col gap-4">
@@ -150,12 +203,24 @@ function EditorForm({
         {!readOnly && <Button type="button" variant="outline" className="self-start" onClick={() => lessons.append({ title: '', activities: [] })}>Add lesson</Button>}
       </section>
 
+      <TestBuilder control={control} register={register} setValue={setValue} errors={errors} readOnly={readOnly} issues={issues} />
+      </IssuesContext>
+
       {!readOnly && (
         <div className="flex flex-wrap items-center gap-4 border-t pt-4">
-          <Button type="submit" size="lg" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save draft'}</Button>
+          <Button type="submit" size="lg" disabled={save.isPending || send.isPending}>{save.isPending ? 'Saving…' : 'Save draft'}</Button>
+          <Button type="button" size="lg" variant="outline" disabled={save.isPending || send.isPending} onClick={handleSubmit((v) => send.mutate({ values: v as unknown as EditorOutput, publish: false }))}>
+            {send.isPending ? 'Checking…' : 'Submit for review'}
+          </Button>
+          {isAdmin && (
+            <Button type="button" size="lg" variant="outline" disabled={save.isPending || send.isPending} onClick={handleSubmit((v) => send.mutate({ values: v as unknown as EditorOutput, publish: true }))}>
+              Publish now
+            </Button>
+          )}
           <p role="status" className="text-sm">{savedAt && !isDirty ? `Saved at ${savedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : isDirty ? 'Unsaved changes' : ''}</p>
           <p role="alert" className="basis-full font-medium text-destructive empty:hidden">
-            {save.error?.message ?? (invalid ? 'Some fields need attention. Fix them and save again.' : '')}
+            {save.error?.message ?? (send.error && !(send.error instanceof ModuleProblems) ? send.error.message : '') ?? ''}
+            {!save.error && !send.error && invalid ? 'Some fields need attention. Fix them and save again.' : ''}
           </p>
         </div>
       )}
