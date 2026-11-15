@@ -391,13 +391,47 @@ describe.skipIf(!up)('the student journey, end to end', () => {
     answers: Object.fromEntries(Object.entries(keys).map(([id, k]) => [id, good(k, wrongIds.includes(id))])),
   })
 
-  it('claiming a code binds the device to the class, and the code works once', async () => {
-    const { claimed, roster, class_id } = await setup()
+  it('claiming a code binds the device to the class; a wrong code is refused', async () => {
+    const { claimed, class_id } = await setup()
     expect(claimed).toEqual({ class_id, class_name: 'Test class', display_name: 'Pat Q.' })
     const other = await mkUser()
     await as(other)
-    await fails('select public.claim_login_code($1)', [roster[0]!.login_code], /not valid/)
     await fails('select public.claim_login_code($1)', ['0000-0000-0000-0000'], /not valid/)
+  })
+
+  it('the same code works on another device, and everything the student has moves with them', async () => {
+    const { student, roster, class_id } = await setup()
+    await as(student)
+    await q('select public.submit_assessment($1, $2::jsonb)', [PRE, JSON.stringify(await testAnswers(PRE))])
+    await q(`select public.save_note($1, 'remember range starts at 0')`, [ACT(1)])
+    const mentor = await mkUser('mentor')
+    const admin = await mkUser('cic_admin')
+    await as(admin)
+    await q('select public.assign_mentor($1, $2)', [mentor, student])
+
+    // Home phone, same code: the seat, the test result, the note and the mentor move there.
+    const phone = await mkUser()
+    await as(phone)
+    expect((await one<{ class_id: string }>('select public.claim_login_code($1) as r', [roster[0]!.login_code])).class_id).toBe(class_id)
+    expect((await one<{ taken: boolean }>('select public.get_assessment($1) as r', [PRE])).taken).toBe(true)
+    await asSuper()
+    expect((await q<{ body: string }>('select body from student_notes where profile_id = $1', [phone])).map((n) => n.body)).toEqual(['remember range starts at 0'])
+    expect((await q('select 1 from mentor_assignments where student_id = $1 and active', [phone])).length).toBe(1)
+
+    // One device at a time: the lab Chromebook no longer has the class, until the code is used there again.
+    await as(student)
+    expect((await q('select 1 from class_members where profile_id = $1', [student])).length).toBe(0)
+    expect((await one<{ class_id: string }>('select public.claim_login_code($1) as r', [roster[0]!.login_code])).class_id).toBe(class_id)
+    expect((await one<{ taken: boolean }>('select public.get_assessment($1) as r', [PRE])).taken).toBe(true)
+  })
+
+  it('a reset makes the old code stop working', async () => {
+    const { ins, roster } = await setup()
+    await as(ins)
+    await q('select public.reset_login_code($1)', [roster[0]!.member_id])
+    const other = await mkUser()
+    await as(other)
+    await fails('select public.claim_login_code($1)', [roster[0]!.login_code], /not valid/)
   })
 
   it('follows the unlock rules: pre-test first, strict order, post-test last', async () => {
