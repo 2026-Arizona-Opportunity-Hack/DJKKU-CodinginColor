@@ -267,3 +267,22 @@ instead of repeating them.
   ("Not allowed to read these answer keys") and no progress rows visible.
 - Next: 8b documentation.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane E, AI hints 9a)
+- Done: `POST /api/hint` (Cloudflare Pages Function; logic in `shared/hint/` so it is tested without
+  Cloudflare). It checks the body (zod, 4 KB), asks Supabase Auth who the student's token belongs to, and
+  calls `get_activity` WITH THE STUDENT'S TOKEN (a locked or foreign activity is a 403). Only then it
+  uses the service role, to read the answer key, count the student's hints (3 per activity, then 429),
+  look in `hint_cache`, and write `hint_events`. With a `GEMINI_API_KEY` it asks `gemini-3.5-flash-lite`
+  (stable, free tier; endpoint, `x-goog-api-key` header and request shape taken from the current Gemini
+  docs on 2026-11-14) for one nudge with a 4 second timeout, sending only the question and the student's
+  answer. It refuses output over 300 characters or that contains any correct answer (whole words, ignoring
+  case and punctuation) and falls back to the next written ladder hint, or "Re-read the question and try
+  one part at a time." An AI failure is never a 5xx. Nothing identifying goes to the model, and logs hold only
+  the request id, status and source. New server variable `SUPABASE_ANON_KEY`. Deploy guide now sets
+  `VITE_FEATURE_HINTS=true`. The instructor "Needs attention" list shows "Hints used".
+  Checked end to end on a local Supabase through `wrangler pages dev`: a student got the written ladder,
+  the 4th hint was 429, a locked activity was 403 and a bad token 401. The live Gemini call is NOT checked
+  (no key); its shape is tested against a mocked fetch.
+- Next: 9b polish; set `GEMINI_API_KEY` on Pages and try one real hint.
+- Blocked: nothing.
