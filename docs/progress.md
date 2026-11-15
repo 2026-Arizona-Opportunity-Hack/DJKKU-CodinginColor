@@ -793,3 +793,11 @@ instead of repeating them.
   have no screens in this version (ask an admin for another role) and is signed out. Docs no longer
   describe mentor as offered; the database rules stay for the next version.
 - Blocked: nothing.
+### 2026-11-15: Krishna (lane E, final documentation)
+- Done: README rewritten around the judging criteria (scope, polish, security, accessibility,
+  documentation), with every feature by role, a self-hosting guide CIC can follow from the repo alone,
+  the configuration reference, known limits, the next version and the handover checklist. Added the
+  complete guide for stakeholders (`docs/handbook/CIC-Learn-Complete-Guide.pdf`, source `handbook.html`,
+  rendered with Chrome; structure from ISO/IEC/IEEE 26514, Diataxis and the federal plain language
+  guidelines). Demo video link is a placeholder until upload.
+- Blocked: nothing.
