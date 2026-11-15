@@ -461,6 +461,14 @@ instead of repeating them.
   (same signature and grants). DB test added (fails on the old function, passes now). Note: `behind_by`
   still compares completed counts with the class median, so a placed student can show as "behind";
   worth a decision with Umang.
+### 2026-11-14: Krishna (lane E; "Submit for review" in lane C's folder, Umang to review)
+- Done: authors could not send a draft to the publish queue (the database had `submit_module`; no
+  screen called it), so a new version of a module could never be published. The editor now has
+  **Submit for review** for a saved draft: it asks first, refuses while there are unsaved changes,
+  lists the database's "Fix these first" reasons one per line, and on success reloads the module
+  locked, with the database's warnings shown as notes for the reviewer and focus moved to them. The
+  admin publish queue then shows it as before.
+- Next: an instructor assigns the new version to a class (students on version 1 stay on it).
 
 ### 2026-11-15: Umang (lanes A and C, code activities 6a: data)
 - Done: the data layer for Python-in-the-browser activities. New migration

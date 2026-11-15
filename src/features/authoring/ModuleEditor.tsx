@@ -12,6 +12,7 @@ import { loadModule, newVersion, saveDraft } from './api'
 import type { ModuleFV } from './formTypes'
 import { LessonEditor } from './LessonEditor'
 import { modulesKey } from './keys'
+import { SubmitForReview } from './SubmitForReview'
 
 const EMPTY: ModuleFV = { title: '', summary: '', lessons: [{ title: '', activities: [] }] }
 
@@ -83,6 +84,21 @@ function EditorForm({
     },
   })
 
+  // After submitting, the module reloads as "submitted" (locked); focus moves to that message so a
+  // screen reader hears it, since the button that was focused is gone.
+  const [reviewNotes, setReviewNotes] = useState<string[] | null>(null)
+  const submittedBox = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (status === 'submitted' && reviewNotes) submittedBox.current?.focus()
+  }, [status, reviewNotes])
+  const onSubmitted = async (warnings: string[]) => {
+    setReviewNotes(warnings)
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: modulesKey }),
+      queryClient.invalidateQueries({ queryKey: ['authoring', 'module', moduleId] }),
+    ])
+  }
+
   // Leaving with unsaved changes: the browser asks on reload or close, the router asks on navigation.
   const blocker = useBlocker(({ currentLocation, nextLocation }) => isDirty && !skipBlock.current && currentLocation.pathname !== nextLocation.pathname)
   useEffect(() => {
@@ -114,7 +130,17 @@ function EditorForm({
           <Button type="button" disabled={version2.isPending} onClick={() => version2.mutate()}>{version2.isPending ? 'Copying…' : 'New version'}</Button>
         </div>
       )}
-      {status === 'submitted' && <p className="rounded-md border p-3">Submitted for review. It is locked until a CIC admin publishes it or sends it back.</p>}
+      {status === 'submitted' && (
+        <div ref={submittedBox} tabIndex={-1} className="flex flex-col gap-2 rounded-md border p-3">
+          <p>Submitted for review. It is locked until a CIC admin publishes it or sends it back.</p>
+          {reviewNotes && reviewNotes.length > 0 && (
+            <>
+              <p className="font-medium">Notes for the reviewer:</p>
+              <ul className="list-disc pl-6">{reviewNotes.map((n) => <li key={n}>{n}</li>)}</ul>
+            </>
+          )}
+        </div>
+      )}
       {keysHidden && <p className="rounded-md border p-3">You can read this module but not its answer keys.</p>}
       <p role="alert" className="text-destructive empty:hidden">{version2.error?.message}</p>
 
@@ -157,6 +183,11 @@ function EditorForm({
           <p role="alert" className="basis-full font-medium text-destructive empty:hidden">
             {save.error?.message ?? (invalid ? 'Some fields need attention. Fix them and save again.' : '')}
           </p>
+          {moduleId && (
+            <div className="basis-full">
+              <SubmitForReview moduleId={moduleId} dirty={isDirty} onSubmitted={onSubmitted} />
+            </div>
+          )}
         </div>
       )}
     </form>
