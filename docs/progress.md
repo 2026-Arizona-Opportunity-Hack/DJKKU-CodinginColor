@@ -365,3 +365,15 @@ instead of repeating them.
   Checked on a local Supabase as a real instructor; a class you do not teach says so plainly.
 - Next: Parsons problems.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lanes A and B, catch-up plan)
+- Done: a catch-up plan for students who miss class (chronic absence compounds, and attendance is uneven in
+  CIC's programs). New migration `20261115110000_lane_a_catch_up.sql`: `get_catch_up` (student) and
+  `get_class_catch_up` (class instructor or admin) return the steps still to do, in course order (pre-test,
+  activities, post-test), with minutes estimated from the median time classmates actually spent (once 3 have
+  finished; a default by kind before that), and how many steps behind the class median the student is. Only
+  aggregates leave the functions. On Start here the student sees "You are 7 steps behind the class. That
+  happens, and it is fixable: 8 steps left, about 19 minutes." (the seed's Cam R.) with the steps listed. DB tests
+  per role; contract updated. The instructor "Catch-up" column on the live view follows once #41 merges.
+- Next: Python in the browser (PRIMM).
+- Blocked: nothing.

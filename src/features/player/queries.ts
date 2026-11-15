@@ -78,6 +78,11 @@ export function useMyProgress(classId: string) {
   return useQuery({ queryKey: keys.progress(classId), queryFn: () => api.getMyProgress(classId) })
 }
 
+export function useCatchUp(classId: string) {
+  const api = useStudentApi()
+  return useQuery({ queryKey: ['catchUp', classId] as const, queryFn: () => api.getCatchUp(classId) })
+}
+
 export function useOpenModules() {
   const api = useStudentApi()
   return useQuery({ queryKey: keys.openModules, queryFn: () => api.listOpenModules() })
@@ -105,6 +110,8 @@ export function useSubmitAnswer(activityId: string) {
         void qc.invalidateQueries({ queryKey: ['outline'] })
         void qc.invalidateQueries({ queryKey: ['next'] })
         void qc.invalidateQueries({ queryKey: ['progress'] })
+      void qc.invalidateQueries({ queryKey: ['catchUp'] })
+        void qc.invalidateQueries({ queryKey: ['catchUp'] })
         void qc.invalidateQueries({ queryKey: ['activity'] })
       }
     },

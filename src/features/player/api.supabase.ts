@@ -16,6 +16,7 @@ import type { StudentApi } from './api'
 import { ApiError, fromHttpStatus, fromRpcError, isOnline } from './errors'
 import {
   Activity,
+  CatchUp,
   Assessment,
   AssessmentResult,
   MeSchema,
@@ -129,6 +130,7 @@ export function createSupabaseApi(sb: SupabaseClient = getSupabase()): StudentAp
       await rpc('heartbeat', { p_activity_id: activityId, p_seconds: seconds }, z.unknown())
     },
     getMyProgress: (classId) => rpc('get_my_progress', { p_class_id: classId }, MyProgress),
+    getCatchUp: (classId) => rpc('get_catch_up', { p_class_id: classId }, CatchUp),
 
     listOpenModules: () => rpc('list_open_modules', {}, OpenModule.array()),
     getOpenActivity: (activityId) => rpc('get_activity', { p_activity_id: activityId }, Activity),
