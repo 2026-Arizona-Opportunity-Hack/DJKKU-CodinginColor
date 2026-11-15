@@ -73,11 +73,23 @@ Other commands: `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`
 `.env.example`. Contributing, lane ownership and how to add a feature or endpoint:
 the "Stack, commands and layout" section of [AGENTS.md](AGENTS.md).
 
+## Demo logins
+
+The demo site holds fake data only. Use these to try it without an account:
+
+- **Student:** go to `/sign-in` and type the login code `DEMO-0000-0000-0001`. You land on
+  "Start: Variables and Loops pre-test".
+- **Student, class link:** open `/join/DEMO-JOIN-1234` and pick an unclaimed name.
+- **Staff (teacher, CIC admin, reviewer):** sign in with Google at `/sign-in`. A CIC admin has to
+  invite your email first. Steps for the admin are in [docs/deploy.md](docs/deploy.md), Part 3.
+
+Each student code works once. Setting up your own copy: [docs/deploy.md](docs/deploy.md).
+
 ## Links
 
-- Live demo:
+- Live demo: <!-- paste the Cloudflare Pages address here once deployed, for example https://cic-demo.pages.dev -->
 - Demo video:
-- Design / docs:
+- Design / docs: [docs/](docs/), deploy steps in [docs/deploy.md](docs/deploy.md)
 
 ## After the hackathon
 

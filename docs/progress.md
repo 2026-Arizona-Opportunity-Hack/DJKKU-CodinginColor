@@ -175,6 +175,20 @@ instead of repeating them.
 - Next: 4b, the dashboard on real views.
 - Blocked: nothing.
 
+### 2026-11-14: Umang (lane A, deploy prep)
+- Done: wrote [docs/deploy.md](deploy.md), the click-by-click Supabase and Cloudflare Pages
+  guide (project, migrations and seed, Google and anonymous sign-in, URL configuration, raising the
+  anonymous sign-in limit from 30 to 500, first admin, teammates, API key, and a check list). Local
+  config now matches (`anonymous_users = 500`). README has a Live demo placeholder and Demo logins.
+  Checked on local runs: Pages serves deep links such as `/learn/x` and `/join/...` without any
+  config (a `_redirects` rule `/* /index.html 200` is rejected by Pages as an infinite loop, so none
+  was added), `/api/*` still reaches the Functions, and the read API returns the two demo classes for
+  a new key. Found and fixed in the docs: the SQL editor has no signed-in user, so `invite_staff`,
+  `add_class_instructor` and `create_api_key` refuse to run there unless a `set_config` line comes
+  first; the earlier README steps leaving that out were wrong. Also removed the "keep the limit
+  low" advice and the duplicate "CIC Open" step for seeded projects.
+- Next: someone with the Cloudflare and Supabase accounts follows the guide; paste the live URL into the README.
+- Blocked: needs the human with the dashboard accounts.
 ### 2026-11-14: Umang (lane A, CI)
 - Done: pinned the Supabase CLI in `.github/workflows/db-tests.yml` to 3.1.0. With `version: latest`
   the setup step asks the GitHub API for the newest release, and that call hit "rate limit exceeded"
