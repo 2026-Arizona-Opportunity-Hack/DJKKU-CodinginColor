@@ -19,6 +19,8 @@ export function createQueryClient(): QueryClient {
     // Query failures are logged here, once. Mutations log in their own hooks (with their event names).
     queryCache: new QueryCache({
       onError: (error, query) => {
+        // A query that marks its failure as expected (e.g. a video with no transcript) logs it itself.
+        if (query.meta?.expectedFailure) return
         log.error('query.fail', {
           path: String(query.queryKey[0]),
           errorCode: isApiError(error) ? error.code : 'unknown',

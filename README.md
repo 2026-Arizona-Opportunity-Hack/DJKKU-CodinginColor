@@ -207,6 +207,7 @@ the Cloudflare Pages dashboard, or your shell.
 | `AI_GATEWAY_URL`, `AI_GATEWAY_KEY`, `AI_MODEL` | Pages Function secret | Optional, instead of Gemini: an OpenAI-compatible gateway for hints (the OHack gateway during the event). `AI_MODEL` defaults to `gpt-oss-120b`. |
 | `YOUTUBE_API_KEY` | Pages Function secret | YouTube Data API v3 key for Find material. Optional: without it, only GitHub is searched. |
 | `GITHUB_TOKEN` | Pages Function secret | GitHub token with no scopes for Find material. Optional: 30 searches a minute instead of 10. |
+| `SUPADATA_API_KEY` | Pages Function secret | Supadata key for real video transcripts ("Read the transcript"). Free plan: 100 requests a month, no card; each video is fetched once and cached. Optional: without it, the author's written summary shows. |
 | `NODE_VERSION` | Cloudflare Pages build setting | Set to `22.12.0` so the build has a new enough Node. |
 | `SUPABASE_DB_URL` | Shell or CI (tests only) | Overrides where the database tests connect. Defaults to the local Supabase. |
 | `REQUIRE_DB` | Shell or CI (tests only) | `1` makes the database tests fail when no database is reachable, instead of skipping. |
