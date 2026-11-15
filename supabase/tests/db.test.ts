@@ -254,6 +254,92 @@ describe.skipIf(!up)('roles and direct table access', () => {
   })
 })
 
+describe.skipIf(!up)('removing staff and cancelling invites', () => {
+  const P3 = '11000000-0000-4000-8000-000000000002'
+  const teach = (classId: string, who: string) =>
+    q(`insert into class_members (class_id, profile_id, member_role, display_name) values ($1, $2, 'instructor', 'T')`, [classId, who])
+
+  it('takes access away but keeps the account, and warns about classes left without an instructor', async () => {
+    const admin = await mkUser('cic_admin')
+    const ins = await mkUser('instructor', { author: true, email: 'leaving@school.org' })
+    const other = await mkUser('instructor')
+    await asSuper()
+    await teach(P1, ins) // only instructor of Period 1
+    await teach(P3, ins)
+    await teach(P3, other) // Period 3 still has someone
+    await q(`insert into staff_invites (email, role, accepted_at) values ('leaving@school.org', 'instructor', now())`)
+    await as(admin)
+    const preview = await one<{ classes_left_without_instructor: { id: string }[] }>('select public.remove_staff($1, true) as r', [ins])
+    expect(preview.classes_left_without_instructor.map((c) => c.id)).toEqual([P1])
+    await asSuper()
+    expect((await q(`select 1 from class_members where profile_id = $1`, [ins])).length).toBe(2) // a dry run changes nothing
+
+    await as(admin)
+    await q('select public.remove_staff($1)', [ins])
+    await asSuper()
+    expect((await q<{ role: string; can_author: boolean }>('select role, can_author from profiles where id = $1', [ins]))[0]).toEqual({ role: 'student', can_author: false })
+    expect((await q(`select 1 from class_members where profile_id = $1`, [ins])).length).toBe(0)
+    expect((await q(`select 1 from class_members where profile_id = $1`, [other])).length).toBe(1)
+    expect((await q(`select 1 from staff_invites where email = 'leaving@school.org'`)).length).toBe(0)
+    expect((await q('select 1 from auth.users where id = $1', [ins])).length).toBe(1) // the account stays
+    await as(ins)
+    expect((await q('select * from progress')).length).toBe(0) // and sees nothing now
+  })
+
+  it('ends a removed mentor\'s assignments', async () => {
+    const admin = await mkUser('cic_admin')
+    const mentor = await mkUser('mentor')
+    await as(admin)
+    await q('select public.assign_mentor($1, $2)', [mentor, SEED_STUDENT_1])
+    await q('select public.remove_staff($1)', [mentor])
+    await asSuper()
+    expect((await q<{ active: boolean }>('select active from mentor_assignments where mentor_id = $1', [mentor]))[0]!.active).toBe(false)
+    await as(mentor)
+    expect((await q('select * from progress')).length).toBe(0)
+  })
+
+  it('a re-invite gives the access back', async () => {
+    const admin = await mkUser('cic_admin')
+    const ins = await mkUser('instructor', { email: 'back@school.org' })
+    await asSuper()
+    await q(`update auth.users set raw_app_meta_data = '{"provider":"google"}' where id = $1`, [ins])
+    await as(admin)
+    await q('select public.remove_staff($1)', [ins])
+    await q(`select public.invite_staff('back@school.org', 'instructor', false)`)
+    await asSuper()
+    expect((await q<{ role: string }>('select role from profiles where id = $1', [ins]))[0]!.role).toBe('instructor')
+  })
+
+  it('refuses yourself, non-staff, non-admins and unknown people', async () => {
+    const admin = await mkUser('cic_admin')
+    const ins = await mkUser('instructor')
+    await as(admin)
+    await fails('select public.remove_staff($1)', [admin], /cannot remove yourself/)
+    await fails('select public.remove_staff($1)', [SEED_STUDENT_1], /not staff/)
+    await fails('select public.remove_staff($1)', [randomUUID()], /not found/)
+    await as(ins)
+    await fails('select public.remove_staff($1)', [admin], /Only a CIC admin/)
+    await as(SEED_STUDENT_1)
+    await fails('select public.remove_staff($1)', [ins], /Only a CIC admin/)
+  })
+
+  it('cancels an unused invite only, and only for admins', async () => {
+    const admin = await mkUser('cic_admin')
+    const ins = await mkUser('instructor')
+    await as(admin)
+    await q(`select public.invite_staff('Wrong.Email@School.org', 'instructor', false)`)
+    await asSuper()
+    await q(`insert into staff_invites (email, role, accepted_at) values ('joined@school.org', 'instructor', now())`)
+    await as(ins)
+    await fails(`select public.cancel_staff_invite('wrong.email@school.org')`, [], /Only a CIC admin/)
+    await as(admin)
+    await q(`select public.cancel_staff_invite(' WRONG.email@school.org ')`)
+    await fails(`select public.cancel_staff_invite('joined@school.org')`, [], /no unused invite/)
+    await asSuper()
+    expect((await q(`select email from staff_invites where email in ('wrong.email@school.org', 'joined@school.org')`)).length).toBe(1)
+  })
+})
+
 describe.skipIf(!up)('grading', () => {
   const g = (type: string, key: Row, resp: Row) => one<boolean>('select public.grade_question($1, $2::jsonb, $3::jsonb) as r', [type, JSON.stringify(key), JSON.stringify(resp)])
   it('short answers ignore case and extra spaces unless the key says caseSensitive', async () => {
