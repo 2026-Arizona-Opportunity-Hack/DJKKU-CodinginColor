@@ -37,7 +37,7 @@ export function ProgressPage() {
               <p className="text-lg">
                 You've completed <strong>{p.completed}</strong> of <strong>{p.total}</strong> activities.
               </p>
-              {p.modules.map((m) => (
+              {p.modules.map((m, i) => (
                 <Card key={m.title}>
                   <CardHeader>
                     <CardTitle>{m.title}</CardTitle>
@@ -59,6 +59,11 @@ export function ProgressPage() {
                         </div>
                       ))}
                     </dl>
+                    {m.post_pct !== null && m.post_pct !== undefined && (
+                      <Link to={paths.certificate(classId, i)} className="inline-flex min-h-11 items-center self-start font-medium text-primary underline">
+                        View my certificate for {m.title}
+                      </Link>
+                    )}
                   </CardContent>
                 </Card>
               ))}

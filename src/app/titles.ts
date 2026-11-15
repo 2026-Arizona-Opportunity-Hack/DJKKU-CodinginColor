@@ -8,6 +8,8 @@ const RULES: [RegExp, string][] = [
   [/^\/learn\/explore\/a\//, 'Free lesson'],
   [/^\/learn\/explore/, 'Free lessons'],
   [/^\/learn\/[^/]+\/progress/, 'My progress'],
+  [/^\/learn\/[^/]+\/certificate\//, 'Certificate'],
+  [/^\/learn\/[^/]+\/notebook/, 'My notebook'],
   [/^\/learn\/[^/]+\/test\//, 'Test'],
   [/^\/learn\/[^/]+\/a\//, 'Activity'],
   [/^\/learn\/[^/]+/, 'Your path'],

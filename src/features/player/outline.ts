@@ -76,6 +76,7 @@ export const paths = {
   activity: (classId: string, activityId: string) => `/learn/${classId}/a/${activityId}`,
   test: (classId: string, assessmentId: string) => `/learn/${classId}/test/${assessmentId}`,
   progress: (classId: string) => `/learn/${classId}/progress`,
+  certificate: (classId: string, moduleIndex: number) => `/learn/${classId}/certificate/${moduleIndex}`,
   notebook: (classId: string) => `/learn/${classId}/notebook`,
   guestActivity: (activityId: string) => `/learn/explore/a/${activityId}`,
 }

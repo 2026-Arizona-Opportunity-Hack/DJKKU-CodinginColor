@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import '../test/setup'
-import { screen, within } from '@testing-library/react'
+import { cleanup, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -9,6 +9,7 @@ import { CLASS_ID, expectNoSeriousA11yViolations, MAYA, MID_MODULE, mockApi, ren
 
 import { ActivityPage } from '../pages/ActivityPage'
 import { AssessmentPage } from '../pages/AssessmentPage'
+import { CertificatePage } from '../pages/CertificatePage'
 import { ClassPathPage } from '../pages/ClassPathPage'
 import { LearnHomePage } from '../pages/LearnHomePage'
 import { LearnLayout } from '../pages/LearnLayout'
@@ -174,6 +175,22 @@ describe('B10 own progress', () => {
     expect(screen.getByText('+67 points')).toBeInTheDocument()
     expect(screen.getAllByText('Not taken')).toHaveLength(2) // module 2 pre and post
     await expectNoSeriousA11yViolations(container)
+  })
+
+  it('links a finished module to a printable certificate that shows the growth', async () => {
+    const api = mockApi({ ...MID_MODULE, assessments: { 'pre-basics': { score_pct: 33 }, 'post-basics': { score_pct: 100 } } })
+    renderRoute(<ProgressPage />, { path: '/learn/:classId/progress', url: `/learn/${CLASS_ID}/progress`, api })
+    const link = await screen.findByRole('link', { name: /View my certificate for Python basics/ })
+    expect(link).toHaveAttribute('href', `/learn/${CLASS_ID}/certificate/0`)
+    cleanup()
+    const { container } = renderRoute(<CertificatePage />, { path: '/learn/:classId/certificate/:moduleIndex', url: `/learn/${CLASS_ID}/certificate/0`, api })
+    expect(await screen.findByRole('heading', { level: 1, name: 'Certificate of completion' })).toBeInTheDocument()
+    expect(await screen.findByText(MAYA.display_name)).toBeInTheDocument()
+    expect(screen.getByText('+67 points')).toBeInTheDocument()
+    await expectNoSeriousA11yViolations(container)
+    cleanup()
+    renderRoute(<CertificatePage />, { path: '/learn/:classId/certificate/:moduleIndex', url: `/learn/${CLASS_ID}/certificate/1`, api })
+    expect(await screen.findByText('No certificate yet')).toBeInTheDocument()
   })
 
   it('rounds the long decimals the database sends, and shows a missing gain as "Not yet", never 0', async () => {

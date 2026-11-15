@@ -560,6 +560,15 @@ instead of repeating them.
 - Next: belonging wording, completion certificate.
 - Blocked: nothing.
 
+### 2026-11-15: Umang (lane B folder, completion certificate)
+
+- Done: when a student has taken a module's post-test, My progress shows "View my certificate for <module>",
+  which opens a printable certificate at `/learn/:classId/certificate/:moduleIndex`: their display name, the
+  module, the class, the date, and their pre-to-post growth when it is positive. Before the post-test the page
+  says how to earn it. Built from data the student already sees; nothing new is stored. Page titles added for
+  the certificate and the notebook.
+- Next: the larger testing pass across all new features, then the demo.
+- Blocked: nothing.
 ### 2026-11-15: Umang (lanes B and C, belonging moments)
 
 - Done: a wrong answer now also shows a short "struggle is normal" line ("Every coder gets stuck. A wrong try

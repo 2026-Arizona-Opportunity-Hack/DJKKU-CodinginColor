@@ -14,6 +14,7 @@ import { paths } from './outline'
 import { NotebookPage } from './pages/NotebookPage'
 import { ActivityPage } from './pages/ActivityPage'
 import { AssessmentPage } from './pages/AssessmentPage'
+import { CertificatePage } from './pages/CertificatePage'
 import { ClassPathPage } from './pages/ClassPathPage'
 import { ExplorePage } from './pages/ExplorePage'
 import { GuestActivityPage } from './pages/GuestActivityPage'
@@ -60,6 +61,7 @@ function PlayerRoutes({ apiPromise }: { apiPromise: Promise<StudentApi> }) {
           <Route index element={<LearnHomePage />} />
           <Route path=":classId" element={<ClassPathPage />} />
           <Route path=":classId/progress" element={<ProgressPage />} />
+          <Route path=":classId/certificate/:moduleIndex" element={<CertificatePage />} />
           <Route path=":classId/notebook" element={<NotebookPage />} />
           <Route path=":classId/a/:activityId" element={<ActivityPage />} />
           <Route path=":classId/test/:assessmentId" element={<AssessmentPage />} />
