@@ -17,6 +17,7 @@ import type {
   AssessmentResult,
   ClassOutline,
   HintResult,
+  SimplifyResult,
   ImportResult,
   MyClass,
   MyProgress,
@@ -58,6 +59,8 @@ export interface StudentApi {
 
   // Hints (feature-flagged)
   requestHint(activityId: string, response: ActivityResponse): Promise<HintResult>
+  /** "Explain it for my grade" for a reading or video. Guests may use it on open lessons. */
+  simplify(activityId: string, grade: number): Promise<SimplifyResult>
 }
 
 /** Heartbeats are capped at 30 s each (contract). */

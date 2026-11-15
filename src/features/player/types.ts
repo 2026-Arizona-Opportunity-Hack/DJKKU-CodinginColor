@@ -173,3 +173,15 @@ export const HintResult = z.object({
   remaining: z.number().int().min(0),
 })
 export type HintResult = z.infer<typeof HintResult>
+
+/** /api/simplify: a reading or video rewritten for one grade, by the rubric in shared/simplify/rubric.ts. */
+export const SimplifyResult = z.object({
+  grade: z.number().int().min(1).max(12),
+  summary: z.string(),
+  explanation: z.string(),
+  example: z.string(),
+  keyTerms: z.array(z.object({ term: z.string(), meaning: z.string() })),
+  checkQuestion: z.object({ question: z.string(), answer: z.string() }),
+  source: z.enum(['ai', 'cache', 'demo']),
+})
+export type SimplifyResult = z.infer<typeof SimplifyResult>

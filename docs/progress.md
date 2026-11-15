@@ -725,3 +725,12 @@ instead of repeating them.
   with a fake AI (200, cache, guest, 401, 403, 400, 413, 422, 502, 503).
 - Next: the student panel.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane B, Explain it for my grade panel)
+
+- Done: "Explain it for my grade" under every reading and video. A student picks grade 1 to 12 (remembered on this
+  device only, never stored in the database) and gets the lesson rewritten by the grade rubric: a short summary,
+  an explanation, an example, words to know (none for grades 1 and 2) and a "check yourself" question whose
+  answer stays hidden until they ask. Works for guests on open lessons. Demo mode shows a labelled sample built
+  from the rubric. Tests: grade remembered, answer hidden then shown, glossary only for older grades, axe.
+- Blocked: nothing. Try it on the deployed site with the Cloudflare AI settings.
