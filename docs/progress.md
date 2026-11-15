@@ -228,3 +228,12 @@ instead of repeating them.
   updated, its tests unchanged and passing), plus a new presentational `QuestionPreview`.
 - Next: 6b part 2: pre-test and post-test builder, submit for review, publish.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane A, fix)
+- Done: new migration `20261115090000_lane_a_fix_validate_module.sql`. `_validate_module` appended
+  two plain string literals to a `text[]` with `||`, which Postgres reads as an array literal, so
+  submitting or publishing a module with no pre or post test (or with no lessons) failed with
+  "malformed array literal" instead of returning the warning or the error. Now `array_append`.
+  New DB test covers both cases (it failed before the fix). Found while testing the studio end to end.
+- Next: nothing for this; the studio's submit button relies on it.
+- Blocked: nothing.
