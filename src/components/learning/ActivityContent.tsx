@@ -5,6 +5,7 @@ import { parseYouTubeId, youtubeEmbedUrl } from '@shared/authoring/schemas'
 
 import { safeUrl } from './safeUrl'
 import { VideoTranscript } from './VideoTranscript'
+import { useYouTubePlayer } from './useYouTubePlayer'
 
 /**
  * Privacy-enhanced YouTube embed (B8) with the real transcript (see VideoTranscript) and a plain link as fallbacks.
@@ -13,17 +14,28 @@ import { VideoTranscript } from './VideoTranscript'
 export function VideoEmbed({ embedUrl, title, transcript }: { embedUrl: string; title: string; transcript?: string | null }) {
   const videoId = parseYouTubeId(embedUrl)
   if (!videoId) return <p>This video isn't available.</p>
+  return <VideoPlayer videoId={videoId} title={title} transcript={transcript} />
+}
+
+function VideoPlayer({ videoId, title, transcript }: { videoId: string; title: string; transcript?: string | null }) {
+  // The player reports where it is, so the transcript can follow along (see useYouTubePlayer).
+  const { frame, onLoad, seek, timeMs, playing } = useYouTubePlayer()
+  // enablejsapi lets the page read the time; origin restricts who may talk to the player.
+  const src = `${youtubeEmbedUrl(videoId)}?rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`
   return (
     <div className="flex flex-col gap-3">
       <div className="aspect-video w-full overflow-hidden rounded-lg bg-muted">
         <iframe
+          ref={frame}
+          onLoad={onLoad}
           className="size-full"
-          src={`${youtubeEmbedUrl(videoId)}?rel=0`}
+          src={src}
           title={`Video: ${title}`}
           loading="lazy"
           referrerPolicy="strict-origin-when-cross-origin"
           // Fullscreen is granted by `allow`; adding allowFullScreen too makes browsers warn in the console.
-          allow="encrypted-media; picture-in-picture; fullscreen"
+          // autoplay: a timestamp in the transcript asks the player to play from that moment.
+          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
         />
       </div>
       <a
@@ -36,7 +48,7 @@ export function VideoEmbed({ embedUrl, title, transcript }: { embedUrl: string; 
         <span className="sr-only">(opens in a new tab)</span>
       </a>
       {/* The real transcript from the video's captions; the author's text is the fallback. */}
-      <VideoTranscript videoId={videoId} fallback={transcript} />
+      <VideoTranscript videoId={videoId} fallback={transcript} timeMs={timeMs} playing={playing} onSeek={seek} />
     </div>
   )
 }

@@ -77,6 +77,13 @@ describe('GET /api/transcript', () => {
     expect(writes()).toEqual([expect.objectContaining({ status: 'ok', lang: 'en' })])
   })
 
+  it('refetches paragraph-sized rows cached before line-by-line follow-along, and asks for raw caption lines', async () => {
+    world.cache = [{ status: 'ok', lang: 'en', segments: [{ start_ms: 0, text: 'x'.repeat(400) }, { start_ms: 22_000, text: 'y'.repeat(380) }], fetched_at: '2026-11-15T10:00:00Z' }]
+    const res = await get()
+    expect(await res.json()).toMatchObject({ source: 'supadata' })
+    expect(supadataCalls()[0]!.url).not.toContain('chunkSize') // caption lines as YouTube timed them
+  })
+
   it('accepts regional English such as en-US', async () => {
     world.supadata = () => Response.json({ lang: 'en-US', availableLangs: ['en-US'], content: [{ text: 'Hello.', offset: 0, duration: 1000 }] })
     expect((await get()).status).toBe(200)
