@@ -52,7 +52,7 @@ export function QuestionField({ question, index, disabled }: Props) {
             {question.choices.map((choice) => (
               <label
                 key={choice.id}
-                className="flex min-h-11 cursor-pointer items-center gap-3 rounded-md border px-3 py-2 has-[:checked]:border-primary has-[:checked]:bg-accent has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
+                className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border bg-white px-3 py-2 transition-colors hover:border-tint-green-edge has-[:checked]:border-primary has-[:checked]:bg-tint-green has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring"
               >
                 <input type="radio" value={choice.id} className="size-5 accent-primary" {...register(name)} />
                 <span>
@@ -137,6 +137,8 @@ function OrderingList({
 }) {
   const [announcement, setAnnouncement] = useState('')
   const textOf = (itemId: string) => question.items.find((i) => i.id === itemId)?.text ?? itemId
+  // A Parsons problem: the items are lines of code, indentation included.
+  const code = question.display === 'code'
 
   function moveItem(from: number, to: number) {
     const itemId = order[from]
@@ -151,13 +153,14 @@ function OrderingList({
       <legend className={legendClass}>
         <InlineCode text={question.prompt} />
       </legend>
+      {code && <p className="mb-2 text-sm text-muted-foreground">Put the lines of code in order. The indentation is already right.</p>}
       <ol className="flex flex-col gap-2">
         {order.map((itemId, i) => (
           <li key={itemId} className="flex min-h-11 items-center gap-2 rounded-md border px-3 py-1">
             <span aria-hidden="true" className="w-6 text-sm text-muted-foreground">
               {i + 1}.
             </span>
-            <span className="flex-1 font-mono text-sm break-words">{textOf(itemId)}</span>
+            <span className={`flex-1 font-mono text-sm ${code ? 'whitespace-pre-wrap' : 'break-words'}`}>{textOf(itemId)}</span>
             <Button
               type="button"
               variant="ghost"
@@ -181,6 +184,12 @@ function OrderingList({
           </li>
         ))}
       </ol>
+      {code && (
+        <figure className="mt-3">
+          <figcaption className="mb-1 text-sm font-medium">Your program so far</figcaption>
+          <pre className="overflow-x-auto rounded-md bg-muted p-3 font-mono text-sm">{order.map(textOf).join(String.fromCharCode(10))}</pre>
+        </figure>
+      )}
       <p aria-live="polite" className="sr-only">
         {announcement}
       </p>

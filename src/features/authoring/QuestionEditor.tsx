@@ -41,9 +41,9 @@ function LinesField({ label, value, onChange, disabled }: { label: string; value
 }
 
 /** One editable row (a choice or an ordering item) with move and delete. */
-function RowEditor({ label, text, onText, index, count, min, onMove, onRemove, disabled, children }: {
+function RowEditor({ label, text, onText, index, count, min, onMove, onRemove, disabled, children, mono }: {
   label: string; text: string; onText: (t: string) => void; index: number; count: number; min: number
-  onMove: (to: number) => void; onRemove: () => void; disabled?: boolean; children?: React.ReactNode
+  onMove: (to: number) => void; onRemove: () => void; disabled?: boolean; children?: React.ReactNode; mono?: boolean
 }) {
   const id = useId()
   return (
@@ -51,7 +51,7 @@ function RowEditor({ label, text, onText, index, count, min, onMove, onRemove, d
       {children}
       <div className="flex min-w-48 flex-1 flex-col gap-1">
         <Label htmlFor={id}>{label}</Label>
-        <Input id={id} value={text} disabled={disabled} onChange={(e) => onText(e.target.value)} />
+        <Input id={id} value={text} disabled={disabled} className={mono ? 'font-mono whitespace-pre' : undefined} spellCheck={mono ? false : undefined} onChange={(e) => onText(e.target.value)} />
       </div>
       {!disabled && (
         <div className="flex gap-1">
@@ -148,14 +148,26 @@ function OrderingFields({ value, onChange, disabled }: Props) {
   const key = value.key
   // The author lists the items in the correct order; students see them shuffled.
   const setItems = (items: typeof content.items) => onChange({ content: { ...content, items }, key: { ...key, correctOrder: items.map((i) => i.id) } })
+  const code = content.display === 'code'
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="font-medium">Items, in the correct order (students see them shuffled)</legend>
+      <legend className="font-medium">{code ? 'Lines of code, in the correct order' : 'Items, in the correct order'} (students see them shuffled)</legend>
+      <label className="flex min-h-11 items-center gap-2">
+        <input
+          type="checkbox"
+          className="size-5"
+          disabled={disabled}
+          checked={code}
+          onChange={(e) => onChange({ content: { ...content, display: e.target.checked ? 'code' : undefined }, key })}
+        />
+        These are lines of code (a Parsons problem). Type each line with its indentation.
+      </label>
       <ol className="flex flex-col gap-2">
         {content.items.map((item, i) => (
           <RowEditor
             key={item.id}
-            label={`Item ${i + 1}`}
+            label={code ? `Line ${i + 1}` : `Item ${i + 1}`}
+            mono={code}
             text={item.text}
             index={i}
             count={content.items.length}
@@ -168,7 +180,7 @@ function OrderingFields({ value, onChange, disabled }: Props) {
         ))}
       </ol>
       {!disabled && content.items.length < 10 && (
-        <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => setItems([...content.items, { id: shortId('i', 4), text: '' }])}>Add item</Button>
+        <Button type="button" variant="outline" size="sm" className="self-start" onClick={() => setItems([...content.items, { id: shortId('i', 4), text: '' }])}>{code ? 'Add line' : 'Add item'}</Button>
       )}
     </fieldset>
   )

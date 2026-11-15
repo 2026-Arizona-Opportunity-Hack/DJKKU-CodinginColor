@@ -78,8 +78,21 @@ export const fillBlankContent = z
     path: ['prompt'],
   });
 
+// Ordering items keep their leading spaces: in a Parsons problem the indentation of a line of code is
+// part of the line. Only trailing space is dropped.
+const orderItem = z
+  .object({
+    id,
+    text: z.string().max(300).refine((s) => s.trim().length > 0, 'Required').transform((s) => s.replace(/\s+$/, '')),
+  })
+  .strict();
+
+/**
+ * Ordering. With display 'code' it is a Parsons problem: lines of code to put in order (Ericson et al. 2017:
+ * similar learning to writing the code, in less time). The correct order stays in the key.
+ */
 export const orderingContent = z
-  .object({ ...scoredBase, type: z.literal('ordering'), items: z.array(choice).min(2).max(10) })
+  .object({ ...scoredBase, type: z.literal('ordering'), items: z.array(orderItem).min(2).max(10), display: z.enum(['text', 'code']).optional() })
   .strict()
   .refine((q) => idsUnique(q.items), { message: 'Item ids must be unique', path: ['items'] });
 

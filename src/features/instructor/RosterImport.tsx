@@ -1,7 +1,11 @@
-import { useState, type ChangeEvent } from 'react'
+import { useId, useState, type ChangeEvent } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { importRoster, type ImportedRosterMember } from './api.supabase'
 import { checkRoster, type RosterPreview } from './lib/roster'
+import { listClassModules, setStartModule } from './setupApi'
+import { classModulesKey, placementsKey, selectClass } from './placement'
+import { ModuleOptions } from './StartingPoint'
 
 /** Imports a roster into the class chosen at the top of the page (no class picker of its own). */
 export function RosterImport({
@@ -19,6 +23,12 @@ export function RosterImport({
   const [fileName, setFileName] = useState('')
   const [preview, setPreview] = useState<RosterPreview | null>(null)
   const [error, setError] = useState('')
+
+  const startId = useId()
+  const queryClient = useQueryClient()
+  // Late joiners: where these students start (empty = from the beginning). Shown when the class has 2+ modules.
+  const modules = useQuery({ queryKey: classModulesKey(classId), queryFn: () => listClassModules(classId), enabled: Boolean(classId) })
+  const [startModule, setStartModuleId] = useState('')
 
   const [importing, setImporting] = useState(false)
   const [imported, setImported] = useState<ImportedRosterMember[]>([])
@@ -61,6 +71,15 @@ export function RosterImport({
       const result = await importRoster(classId, preview.valid)
       setImported(result)
       onImported(result)
+      if (startModule) {
+        try {
+          await setStartModule(result.map((m) => m.member_id), startModule)
+        } catch (cause) {
+          // The roster is in and the codes are shown; only the placement failed.
+          setError(`Students were added, but their starting point was not saved: ${cause instanceof Error ? cause.message : 'unknown error'}. Set it under Starting point.`)
+        }
+      }
+      void queryClient.invalidateQueries({ queryKey: placementsKey(classId) })
     } catch (cause) {
       setError(
         cause instanceof Error
@@ -78,7 +97,7 @@ export function RosterImport({
         <h2 id="roster-heading" className="text-2xl font-semibold">
           Import student roster
         </h2>
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-muted-foreground">
           Upload a CSV with one student name per row. Do not include student
           email addresses or other personal information.
         </p>
@@ -102,13 +121,13 @@ export function RosterImport({
         />
 
         {fileName && (
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-muted-foreground">
             Selected: {fileName}
           </p>
         )}
 
         {error && (
-          <p role="alert" className="mt-3 text-sm font-medium text-red-700">
+          <p role="alert" className="mt-3 text-sm font-medium text-destructive">
             {error}
           </p>
         )}
@@ -186,7 +205,17 @@ export function RosterImport({
           )}
 
           {preview.valid.length > 0 && imported.length === 0 && (
-            <div>
+            <div className="flex flex-col gap-3">
+              {(modules.data?.length ?? 0) > 1 && (
+                <div className="flex flex-col gap-1">
+                  <label htmlFor={startId} className="text-sm font-medium">Where do these students start?</label>
+                  <select id={startId} className={selectClass} value={startModule} onChange={(e) => setStartModuleId(e.target.value)}>
+                    <ModuleOptions modules={modules.data ?? []} />
+                  </select>
+                  <p className="text-sm text-muted-foreground">Joining late? Earlier modules are skipped for them only.</p>
+                </div>
+              )}
+              <div>
               <button
                 type="button"
                 onClick={() => void handleImport()}
@@ -199,10 +228,11 @@ export function RosterImport({
               </button>
 
               {preview.problems.length > 0 && (
-                <p className="mt-2 text-sm text-gray-600">
+                <p className="mt-2 text-sm text-muted-foreground">
                   Fix the roster problems before importing.
                 </p>
               )}
+              </div>
             </div>
           )}
 
@@ -215,7 +245,7 @@ export function RosterImport({
                 Student login codes
               </h3>
 
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-muted-foreground">
                 Save or print these codes now. Each code is shown only once.
               </p>
 

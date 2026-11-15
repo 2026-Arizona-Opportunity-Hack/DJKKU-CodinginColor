@@ -452,3 +452,35 @@ describe('code activities (Python in the browser)', () => {
     expect(back.module.lessons[0]!.activities[0]).toEqual(code);
   });
 });
+
+describe('Parsons problems (ordering with display "code")', () => {
+  const parsons: AuthoredQuestion = {
+    content: { type: 'ordering', id: 'q-p', prompt: 'Order it', conceptId: 'loops', display: 'code', items: [{ id: 'a', text: 'for i in range(3):' }, { id: 'b', text: '    print(i)   ' }] },
+    key: { type: 'ordering', correctOrder: ['a', 'b'], hints: [] },
+  } as AuthoredQuestion;
+
+  it('keeps the indentation of each line, drops only trailing space, and stays strict', () => {
+    const parsed = authoredQuestion.parse(parsons);
+    expect(parsed.content.type === 'ordering' && parsed.content.items.map((i) => i.text)).toEqual(['for i in range(3):', '    print(i)']);
+    expect(parsed.content.type === 'ordering' && parsed.content.display).toBe('code');
+    const blank = { ...parsons, content: { ...parsons.content, items: [{ id: 'a', text: '   ' }, { id: 'b', text: 'x' }] } };
+    expect(authoredQuestion.safeParse(blank).success).toBe(false);
+    expect(authoredQuestion.safeParse({ ...parsons, content: { ...parsons.content, display: 'pretty' } }).success).toBe(false);
+  });
+
+  it('ships shuffled, keeps display in content and the order only in the key, and round-trips', () => {
+    const { content, key } = splitQuestion(parsons);
+    expect(content).toMatchObject({ type: 'ordering', display: 'code' });
+    expect(content.type === 'ordering' && content.items.map((i) => i.id)).not.toEqual(['a', 'b']);
+    expect(key).toMatchObject({ correctOrder: ['a', 'b'] });
+    const module: AuthoredModule = { title: 'P', summary: '', status: 'draft', lessons: [{ title: 'L', activities: [{ kind: 'check', title: 'C', required: true, questions: [parsons] }] }] };
+    const payload = toDraftPayload({ moduleId: null, module, pre: null, post: null });
+    const a = payload.lessons[0]!.activities[0]!;
+    const back = fromDraftRows({
+      module: { title: 'P', summary: '', status: 'draft' }, lessons: [{ id: 'l', position: 0, title: 'L' }],
+      activities: [{ id: 'x', lesson_id: 'l', position: 0, kind: 'check', title: 'C', content: a.content, required: true, concept_id: null }],
+      assessments: [], assessmentItems: [], activityKeys: { x: a.keys }, assessmentKeys: {},
+    });
+    expect((back.module.lessons[0]!.activities[0] as { questions: AuthoredQuestion[] }).questions[0]).toEqual(authoredQuestion.parse(parsons));
+  });
+});

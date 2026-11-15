@@ -42,7 +42,9 @@ export const whole = (n: number): number => Math.round(n)
 
 export type Tally = { done: number; total: number; pct: number }
 
-function tally(activities: OutlineActivity[]): Tally {
+// Skipped work (a late joiner placed at a later module) is neither done nor missing.
+function tally(all: OutlineActivity[]): Tally {
+  const activities = all.filter((a) => a.status !== 'skipped')
   const total = activities.length
   const done = activities.filter((a) => a.status === 'done').length
   return { done, total, pct: total === 0 ? 0 : Math.round((done / total) * 100) }
@@ -51,8 +53,9 @@ function tally(activities: OutlineActivity[]): Tally {
 export const moduleTally = (m: OutlineModule): Tally => tally(m.lessons.flatMap((l) => l.activities))
 export const overallTally = (o: ClassOutline): Tally => tally(o.modules.flatMap((m) => m.lessons.flatMap((l) => l.activities)))
 
-/** A module's pretest gates it (B7): taken = status 'done'. */
-export const needsPretest = (m: OutlineModule): boolean => m.pretest !== null && m.pretest.status !== 'done'
+/** A module's pretest gates it (B7): taken = status 'done'; a skipped module owes no pre-test. */
+export const needsPretest = (m: OutlineModule): boolean =>
+  m.pretest !== null && m.pretest.status !== 'done' && m.pretest.status !== 'skipped'
 
 export const KIND_LABEL: Record<OutlineActivity['kind'], string> = {
   video: 'Video',

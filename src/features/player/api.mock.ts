@@ -329,6 +329,20 @@ export function createMockApi(opts: Options = {}): StudentApi & { readonly state
         update((st) => ({ ...st, seconds: { ...st.seconds, [activityId]: (st.seconds[activityId] ?? 0) + s } }))
       }),
 
+    getCatchUp: (classId) =>
+      delay(() => {
+        requireMe()
+        if (classId !== SEED_CLASS.class_id) throw new ApiError('not_found')
+        // Same order and default minutes as the database; the mock has no classmates, so never "behind".
+        const MIN: Record<string, number> = { video: 5, reading: 4, worksheet: 10 }
+        const steps = outline().modules.flatMap((m) => [
+          ...(m.pretest && m.pretest.status !== 'done' ? [{ kind: 'pretest', activity_id: null, assessment_id: m.pretest.assessment_id, title: `Pre-test: ${m.title}`, minutes: 5 }] : []),
+          ...m.lessons.flatMap((l) => l.activities.filter((a) => a.required && a.status !== 'done').map((a) => ({ kind: a.kind, activity_id: a.activity_id, assessment_id: null, title: a.title, minutes: MIN[a.kind] ?? 3 }))),
+          ...(m.posttest && m.posttest.status !== 'done' ? [{ kind: 'posttest', activity_id: null, assessment_id: m.posttest.assessment_id, title: `Post-test: ${m.title}`, minutes: 5 }] : []),
+        ])
+        return { steps_left: steps.length, minutes_left: steps.reduce((n, s) => n + s.minutes, 0), behind_by: 0, steps: steps.slice(0, 8) }
+      }),
+
     getMyProgress: (classId) =>
       delay(() => {
         requireMe()

@@ -453,6 +453,117 @@ describe.skipIf(!up)('the student journey, end to end', () => {
     // In CIC Open modules are not chained and there is no pre-test lock for browsing lessons already viewed.
     expect((await one<{ status: string }>('select public.get_activity($1) as r', [ACT(1)])).status).toBe('done')
   })
+
+  describe('late joiners start at a module the instructor chooses', () => {
+    type Outline = { modules: { module_id: string; pretest: { status: string } | null; posttest: { status: string } | null; lessons: { activities: { activity_id: string; status: string; locked_reason: string | null }[] }[] }[] }
+
+    /** A second published module (one video, no tests) assigned after the seed module. */
+    async function addSecondModule(ins: string, class_id: string) {
+      await asSuper()
+      const mod = await one<string>(`insert into modules (slug, title, status, created_by) values ($1, 'Functions', 'draft', $2) returning id as r`, [`test-fn-${randomUUID()}`, ins])
+      const lesson = await one<string>(`insert into lessons (module_id, position, title) values ($1, 0, 'Defining functions') returning id as r`, [mod])
+      const act = await one<string>(
+        `insert into activities (lesson_id, position, kind, title, content, required) select $1, 0, kind, 'Watch: functions', content, true from activities where id = $2 returning id as r`,
+        [lesson, ACT(1)])
+      await q(`update modules set status = 'published', published_at = now() where id = $1`, [mod])
+      await as(ins)
+      await q('select public.assign_module($1, $2)', [class_id, mod])
+      return { mod, act }
+    }
+
+    it('places an imported student at module 2 before they sign in; module 1 is skipped, not missing', async () => {
+      const { ins, class_id, roster } = await setup()
+      const { mod, act } = await addSecondModule(ins, class_id)
+      const sam = roster[1]!                                                    // imported, not signed in yet
+      await as(ins)
+      const placed = await one<Row>('select public.set_start_module($1::uuid[], $2) as r', [[sam.member_id], mod])
+      expect(placed).toEqual({ students: 1, start_module_id: mod, skipped_modules: 1 })
+
+      const late = await mkUser()
+      await as(late)
+      await q('select public.claim_login_code($1)', [sam.login_code])
+      const outline = await one<Outline>('select public.get_class_outline($1) as r', [class_id])
+      const [m1, m2] = outline.modules
+      expect(m1!.pretest!.status).toBe('skipped')
+      expect(m1!.posttest!.status).toBe('skipped')
+      expect(m1!.lessons.flatMap((l) => l.activities).every((a) => a.status === 'skipped' && a.locked_reason === null)).toBe(true)
+      expect(m2!.lessons[0]!.activities[0]!.status).toBe('available')
+      // "Start here" is module 2's first activity, and the server lets them do it.
+      expect(await one('select public.next_activity($1) as r', [class_id])).toMatchObject({ activity_id: act })
+      expect(await one<Row>('select public.submit_answer($1, $2::jsonb) as r', [act, '{"viewed":true}'])).toMatchObject({ completed: true })
+      // Skipped work stays open to review.
+      expect((await one<{ status: string }>('select public.get_activity($1) as r', [ACT(1)])).status).toBe('skipped')
+
+      // The instructor's progress view counts only module 2: 1 of 1 done.
+      await as(ins)
+      const [row] = await q<{ required_activities: number; completed_activities: number }>(
+        'select required_activities, completed_activities from v_class_progress where class_id = $1 and student_id = $2', [class_id, late])
+      expect(row).toEqual({ required_activities: 1, completed_activities: 1 })
+    })
+
+    it('the catch-up plan leaves out modules the student was told to skip', async () => {
+      const { ins, class_id, roster, student } = await setup()
+      const { mod, act } = await addSecondModule(ins, class_id)
+      await as(ins)
+      await q('select public.set_start_module($1::uuid[], $2)', [[roster[0]!.member_id], mod])
+      await as(student)
+      type Plan = { steps_left: number; steps: { kind: string; activity_id: string | null; title: string }[] }
+      const plan = await one<Plan>('select public.get_catch_up($1) as r', [class_id])
+      // Only module 2's one video is left: no pre-test, activities or post-test from skipped module 1.
+      expect(plan.steps_left).toBe(1)
+      expect(plan.steps).toEqual([expect.objectContaining({ kind: 'video', activity_id: act, title: 'Watch: functions' })])
+      expect(plan.steps.some((s) => /Variables and Loops/.test(s.title))).toBe(false)
+    })
+
+    it('"from the beginning" clears the placement, and a classmate is unaffected', async () => {
+      const { ins, class_id, roster, student } = await setup()
+      const { mod } = await addSecondModule(ins, class_id)
+      await as(ins)
+      await q('select public.set_start_module($1::uuid[], $2)', [[roster[0]!.member_id], mod])
+      await as(student)
+      expect((await one<Outline>('select public.get_class_outline($1) as r', [class_id])).modules[0]!.pretest!.status).toBe('skipped')
+      await as(ins)
+      expect(await one<Row>('select public.set_start_module($1::uuid[], null) as r', [[roster[0]!.member_id]])).toMatchObject({ skipped_modules: 0 })
+      await as(student)
+      expect((await one<Outline>('select public.get_class_outline($1) as r', [class_id])).modules[0]!.pretest!.status).toBe('available')
+      await as(ins)
+      expect(await q('select 1 from module_skips where class_id = $1', [class_id])).toHaveLength(0)
+    })
+
+    it('a signed-in student can open CIC Open lessons outside their class, but not other modules', async () => {
+      const { ins, class_id } = await setup()
+      const { act: notOpen } = await addSecondModule(ins, class_id)            // published, not in CIC Open
+      // A student in a class with NO modules: the seed module is only reachable because it is open.
+      await as(ins)
+      const other = await one<{ class_id: string }>(`select public.create_class('demo high school', 'No modules') as r`)
+      const [seat] = await one<{ login_code: string }[]>(`select public.import_roster($1, '["Lee T."]'::jsonb) as r`, [other.class_id])
+      const lee = await mkUser()
+      await as(lee)
+      await q('select public.claim_login_code($1)', [seat!.login_code])
+      const open = await one<{ activity_id: string; status: string }>('select public.get_activity($1) as r', [ACT(2)])
+      expect(open).toMatchObject({ activity_id: ACT(2), status: 'available' })
+      await fails('select public.get_activity($1)', [notOpen], /Activity not found/)
+    })
+
+    it('only the class instructor or an admin can place students, and only into the class modules', async () => {
+      const { ins, class_id, roster, student } = await setup()
+      const { mod } = await addSecondModule(ins, class_id)
+      const seat = [roster[1]!.member_id]
+      await as(student)
+      await fails('select public.set_start_module($1::uuid[], $2)', [seat, mod], /Not allowed/)
+      await fails(`insert into module_skips (member_id, class_id, module_id) values ($1, $2, $3)`, [seat[0], class_id, MODULE], /permission denied/)
+      const other = await mkUser('instructor')
+      await as(other)
+      await fails('select public.set_start_module($1::uuid[], $2)', [seat, mod], /Not allowed/)
+      await as(ins)
+      await fails('select public.set_start_module($1::uuid[], $2)', [seat, randomUUID()], /not assigned to this class/)
+      await fails('select public.set_start_module($1::uuid[], $2)', [[randomUUID()], mod], /not found in one class/)
+      await fails(`select public.set_start_module('{}'::uuid[], $1)`, [mod], /between 1 and 300/)
+      const admin = await mkUser('cic_admin')
+      await as(admin)
+      expect(await one<Row>('select public.set_start_module($1::uuid[], $2) as r', [seat, mod])).toMatchObject({ skipped_modules: 1 })
+    })
+  })
 })
 
 describe.skipIf(!up)('authoring and publishing', () => {
@@ -790,5 +901,52 @@ describe.skipIf(!up)('code activities', () => {
     await fails('select public.save_module_draft($1::jsonb)', [bad({ prompt: 'p', starter: '', tests: Array(11).fill('assert True') })], /activities_content_shape/)
     const video = JSON.stringify({ slug: `v-${randomUUID().slice(0, 8)}`, title: 'V', summary: '', lessons: [{ title: 'L', activities: [{ kind: 'video', title: 'V', required: true, content: { transcript: 'no link' }, keys: [] }] }], assessments: [] })
     await fails('select public.save_module_draft($1::jsonb)', [video], /activities_content_shape/) // the old check let this through
+  })
+})
+
+describe.skipIf(!up)('catch-up plan', () => {
+  type Plan = { steps_left: number; minutes_left: number; behind_by: number; steps: { kind: string; title: string; minutes: number }[] }
+
+  it('gives a student who fell behind their remaining steps in order, with minutes, and how far behind they are', async () => {
+    const seat = (await q<{ profile_id: string }>(`select profile_id from class_members where class_id = $1 and display_name = 'Cam R.'`, [P1]))[0]!.profile_id
+    await as(seat)
+    const plan = await one<Plan>('select public.get_catch_up($1) as r', [P1])
+    expect(plan.steps_left).toBeGreaterThan(5)
+    expect(plan.behind_by).toBeGreaterThan(0)
+    expect(plan.minutes_left).toBeGreaterThanOrEqual(plan.steps.reduce((n, s) => n + s.minutes, 0))
+    expect(plan.steps[0]!.kind).not.toBe('posttest')
+    expect(plan.steps.at(-1)!.kind).toBe('posttest')
+    expect(plan.steps.every((s) => s.minutes >= 1)).toBe(true)
+  })
+
+  it('is empty for a student who has finished everything, and refused for a class you are not in', async () => {
+    await as(SEED_STUDENT_1)
+    const done = await one<Plan>('select public.get_catch_up($1) as r', [P1])
+    expect(done).toMatchObject({ steps_left: 0, minutes_left: 0, behind_by: 0, steps: [] })
+    await fails('select public.get_catch_up($1)', ['11000000-0000-4000-8000-000000000002'], /not in this class/)
+    await as(null)
+    await fails('select public.get_catch_up($1)', [P1], /permission denied/)
+  })
+
+  it('a fresh student starts with the pre-test', async () => {
+    const id = await mkUser()
+    await as(id)
+    await q('select public.claim_login_code($1)', ['DEMO-0000-0000-0001'])
+    const plan = await one<Plan>('select public.get_catch_up($1) as r', [P1])
+    expect(plan.steps[0]).toMatchObject({ kind: 'pretest', title: 'Pre-test: Variables and Loops' })
+  })
+
+  it('lets the class instructor see everyone, and nobody else', async () => {
+    const ins = await mkUser('instructor')
+    await asSuper()
+    await q(`insert into class_members (class_id, profile_id, member_role, display_name) values ($1, $2, 'instructor', 'T')`, [P1, ins])
+    await as(ins)
+    const rows = await one<{ display_name: string; steps_left: number; behind_by: number }[]>('select public.get_class_catch_up($1) as r', [P1])
+    expect(rows.length).toBeGreaterThan(5)
+    expect(rows.find((r) => r.display_name === 'Cam R.')!.behind_by).toBeGreaterThan(0)
+    await fails('select public.get_class_catch_up($1)', ['11000000-0000-4000-8000-000000000002'], /Not allowed/)
+    await as(SEED_STUDENT_1)
+    await fails('select public.get_class_catch_up($1)', [P1], /Not allowed/)
+    await fails('select public._catch_up_steps($1, $2)', [SEED_STUDENT_1, P1], /permission denied/)
   })
 })
