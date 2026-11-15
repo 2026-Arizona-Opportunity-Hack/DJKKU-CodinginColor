@@ -253,3 +253,16 @@ instead of repeating them.
   own-role refusal.
 - Next: 7b: Classes, Schools, API keys, Mentors tabs.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane D, admin console 7b)
+- Done: the rest of the admin console. Classes (every class with school, instructors, student
+  count and average completion; Open goes to `/instructor/<id>`; add and remove instructors, with the
+  database's "A class needs at least one instructor" shown), Schools (list and add; a duplicate says
+  "That school already exists."), API keys (list without any secret; create with name and scope,
+  raw key shown once in a dialog with Copy and a curl example and dropped when it closes; revoke with
+  a confirm) and Mentors (assign a CIC Open student to a mentor). Checked on a local Supabase as an
+  admin, and the key curled through `wrangler pages dev`: `/api/v1/completion` returned the two demo
+  classes with the key and 401 without. Instructor names come from `class_members.display_name`
+  (a copy taken when the person was added), not a join to profiles.
+- Next: the instructor dashboard on real views.
+- Blocked: nothing.
