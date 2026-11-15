@@ -310,3 +310,15 @@ instead of repeating them.
   (no key); its shape is tested against a mocked fetch.
 - Next: 9b polish; set `GEMINI_API_KEY` on Pages and try one real hint.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane C, Parsons problems)
+- Done: an ordering question can now be a Parsons problem (lines of code to put in order), which research
+  finds gives similar learning to writing the code in less time (Ericson, Margulieux and Rick 2017; Ericson
+  et al. 2022). In the studio, a checkbox on an ordering question ("These are lines of code") turns its items into
+  monospace lines that keep their indentation. Students see the lines as code with "Your program so far" below,
+  updated as they move lines (keyboard first, as before). The preview and the reviewer view show it as code too.
+  Schema: `display: 'code'` on ordering content, and ordering items keep leading spaces (only trailing space is
+  dropped). Grading is unchanged (the order is still only in the key). The demo seed's "Loops worksheet" ordering
+  question is now a 4-line indented program.
+- Next: live class view and catch-up plan.
+- Blocked: nothing.
