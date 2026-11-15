@@ -15,8 +15,7 @@ export type QuestionType = Question['type']
 export type { ActivityKind }
 
 export const QUESTION_TYPES = ['mcq', 'short_answer', 'fill_blank', 'ordering', 'reflection'] as const satisfies readonly QuestionType[]
-// 'code' (Python in the browser) is rendered by the code runner, which lands in its own change.
-export const ACTIVITY_KINDS = activityKind.options.filter((k) => k !== 'code')
+export const ACTIVITY_KINDS = activityKind.options
 
 export const SHORT_ANSWER_MAX = 500
 export const REFLECTION_MAX = 2000
@@ -37,6 +36,10 @@ export const ActivityContentSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('check'), content: QuestionsContent }),
   z.object({ kind: z.literal('worksheet'), content: QuestionsContent }),
   z.object({ kind: z.literal('exit'), content: QuestionsContent }),
+  z.object({
+    kind: z.literal('code'),
+    content: z.object({ prompt: z.string(), starter: z.string(), predict: z.string().nullish(), tests: z.array(z.string()) }),
+  }),
 ])
 export type ActivityContent = z.infer<typeof ActivityContentSchema>
 
@@ -51,7 +54,9 @@ export type QuestionResponse = McqResponse | TextResponse | FillBlankResponse | 
 export type AnswersResponse = { answers: Record<string, QuestionResponse> }
 /** Video and reading send an explicit "viewed" marker. */
 export type ViewedResponse = { viewed: true }
-export type ActivityResponse = AnswersResponse | ViewedResponse
+/** A code activity sends the code and how many checks passed (graded in the browser: practice, not proof). */
+export type CodeResponse = { code: string; passed: number; total: number; prediction?: string }
+export type ActivityResponse = AnswersResponse | ViewedResponse | CodeResponse
 
 /** "Loop: ___ i in ___(3)" -> "Loop: [blank 1] i in [blank 2](3)", so screen readers hear the blanks. */
 export function labelBlanks(prompt: string): string {

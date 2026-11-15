@@ -368,3 +368,17 @@ instead of repeating them.
   The studio picker and the player pick up the new kind in the next two changes.
 - Next: 6b, the Pyodide runner in the player.
 - Blocked: nothing.
+
+### 2026-11-15: Umang (lane B folder, code activities 6b: Python runner in the player)
+
+- Done: students can write and run real Python on the activity page, with no install and no account. Python
+  (Pyodide 314.0.8, pinned on jsDelivr) loads in a Web Worker only when a code activity opens. A run that takes
+  over 5 seconds is stopped by ending the worker, so `while True:` never freezes a Chromebook; the next run
+  starts a fresh one. The page follows PRIMM: predict first (Run stays off until there is a guess), run, then
+  change the code until every visible check passes. Errors get a plain-language line next to Python's own
+  message ("On line 2: Python doesn't know the name "totl" yet..."). The editor is a monospace textarea where Tab
+  adds 4 spaces and Escape then Tab leaves it. Demo mode has a sample activity (`act-loops-code`, optional) and
+  the mock grader uses the same count rules as `submit_answer`. Playwright runs real Python on desktop: output,
+  an error, an endless loop, then a passing fix.
+- Next: 6c, the code activity editor in the studio and read-only previews.
+- Blocked: nothing.

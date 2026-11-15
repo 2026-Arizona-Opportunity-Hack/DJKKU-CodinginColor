@@ -60,6 +60,7 @@ export const KIND_LABEL: Record<OutlineActivity['kind'], string> = {
   check: 'Check',
   worksheet: 'Worksheet',
   exit: 'Exit ticket',
+  code: 'Code',
 }
 
 export const paths = {
