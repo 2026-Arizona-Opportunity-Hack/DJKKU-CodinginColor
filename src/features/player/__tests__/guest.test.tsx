@@ -14,6 +14,9 @@ import { GuestActivityPage } from '../pages/GuestActivityPage'
 import { LearnLayout } from '../pages/LearnLayout'
 import { SaveProgressPage } from '../pages/SaveProgressPage'
 
+// Only self-registered students may import guest progress (import_guest_progress checks the role).
+const SELF_REGISTERED = { ...MAYA, role: 'independent_student' as const }
+
 describe('B3 guest progress storage', () => {
   it('persists across reloads (a fresh read sees the same data)', () => {
     markGuestCompleted('act-vars-video', new Date('2026-11-14T10:00:00Z'))
@@ -172,7 +175,7 @@ describe('B4 self-register', () => {
 
   it('after sign-in, merges device progress exactly once and clears it', async () => {
     markGuestCompleted('act-vars-video')
-    const api = mockApi({ me: MAYA })
+    const api = mockApi({ me: SELF_REGISTERED })
     const importSpy = vi.spyOn(api, 'importGuestProgress')
     renderRoute(<LearnLayout />, { path: '/learn', url: '/learn', api })
     expect(await screen.findByText(/We copied 1 finished activity/)).toBeInTheDocument()
@@ -183,12 +186,23 @@ describe('B4 self-register', () => {
   it('if the merge fails, says so and keeps device progress', async () => {
     const logged = vi.spyOn(log, 'error').mockImplementation(() => {})
     markGuestCompleted('act-vars-video')
-    const api = mockApi({ me: MAYA })
+    const api = mockApi({ me: SELF_REGISTERED })
     vi.spyOn(api, 'importGuestProgress').mockRejectedValue(new ApiError('unavailable', { requestId: 'imp-1' }))
     renderRoute(<LearnLayout />, { path: '/learn', url: '/learn', api })
     expect(await screen.findByText(/didn't copy over/)).toBeInTheDocument()
     expect(readGuestProgress().completed['act-vars-video']).toBeDefined()
     expect(logged).toHaveBeenCalledWith('student.guest.import.fail', expect.objectContaining({ requestId: 'imp-1' }))
+  })
+
+  it("a class student (login code) never tries the merge, so no false 'didn't copy over' warning", async () => {
+    markGuestCompleted('act-vars-video')
+    const api = mockApi({ me: MAYA })
+    const importSpy = vi.spyOn(api, 'importGuestProgress')
+    renderRoute(<LearnLayout />, { path: '/learn', url: '/learn', api })
+    expect(await screen.findByText('Maya R.', { exact: false })).toBeInTheDocument()
+    expect(importSpy).not.toHaveBeenCalled()
+    expect(screen.queryByText(/didn't copy over/)).toBeNull()
+    expect(readGuestProgress().completed['act-vars-video']).toBeDefined() // left for a guest who registers later
   })
 })
 

@@ -3,9 +3,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { describeError } from '../errors'
 import { useImportGuestProgressOnce } from '../queries'
 
-/** Copies guest progress from this device once the student is signed in (B4), and says how it went. */
-export function GuestImportNotice() {
-  const merge = useImportGuestProgressOnce(true)
+/**
+ * Copies guest progress from this device once the student is signed in (B4), and says how it went.
+ * `enabled` is false for class students: import_guest_progress only accepts self-registered
+ * (independent) students, so trying for anyone else always failed and showed a false warning.
+ */
+export function GuestImportNotice({ enabled }: { enabled: boolean }) {
+  const merge = useImportGuestProgressOnce(enabled)
   if (merge.isSuccess && merge.data.imported > 0) {
     const n = merge.data.imported
     return (

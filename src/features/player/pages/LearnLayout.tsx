@@ -51,7 +51,8 @@ export function LearnLayout() {
   }
   return (
     <StudentLayout me={me.data}>
-      <GuestImportNotice />
+      {/* Only a self-registered student owns guest progress; the database refuses it for class students. */}
+      <GuestImportNotice enabled={me.data.role === 'independent_student'} />
       <Outlet />
     </StudentLayout>
   )
